@@ -1,0 +1,51 @@
+{
+  "Actions": [
+    {
+      "Icon": "images/toggleIcon",
+      "Name": "Generic button",
+      "States": [
+        {
+          "Image": "images/button",
+          "ShowTitle": false
+        }
+      ],
+      "SupportedInMultiActions": true,
+      "PropertyInspectorPath": "GenericToggle/index.html",
+      "Tooltip": "Use SimConnect or MobiFlight variables to define the toggle button action",
+      "UUID": "com.rvoronov.msfsDock.generic.toggle"
+    },
+    {
+      "Icon": "images/dialIcon",
+      "Name": "Generic dial",
+      "States": [
+        {
+          "Image": "images/dial",
+          "ShowTitle": false
+        }
+      ],
+      "SupportedInMultiActions": true,
+      "PropertyInspectorPath": "GenericDial/index.html",
+      "Tooltip": "Use SimConnect or MobiFlight variables to dispaly dials and interract with them",
+      "UUID": "com.rvoronov.msfsDock.generic.dial",
+      "Controllers": [ "Knob" ]
+    }
+  ],
+  "SDKVersion": 1,
+  "Author": "rvoronov",
+  "Category": "MSFS Dock",
+  "CategoryIcon": "images/toggleIcon",
+  "CodePath": "msfsDock.exe",
+  "Description": "Interact with Microsoft Flight Simulator right from your Stream Dock!",
+  "Name": "MSFS Dock",
+  "Icon": "images/gaugeIcon",
+  "Version": "0.1",
+  "OS": [
+    {
+      "Platform": "windows",
+      "MinimumVersion": "10"
+    }
+  ],
+  "Software": {
+    "MinimumVersion": "2.9"
+  }
+}

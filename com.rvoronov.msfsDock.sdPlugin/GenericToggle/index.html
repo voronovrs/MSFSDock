@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>MSFS Dock Generic Toggle PI</title>
+  <link rel="stylesheet" href="../static/css/sdpi.css" />
+  <style>
+    .sdpi-item {
+      margin: 2px auto;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="sdpi-wrapper" style="display: none">
+    <div class="sdpi-item">
+      <div class="sdpi-item-label">Header</div>
+      <input class="sdpi-item-value" id="header" value="" placeholder="e.g. YD">
+    </div>
+    <div class="sdpi-item">
+        <div class="sdpi-item-label">Event</div>
+        <input class="sdpi-item-value" id="toggleEvent" value="" placeholder="TOGGLE EVENT" pattern="[A-Z_]*">
+    </div>
+    <div class="sdpi-item">
+        <div class="sdpi-item-label">Status variable</div>
+        <input class="sdpi-item-value" id="feedbackVar" value="" placeholder="STATUS VARIABLE" pattern="[A-Z0-9: ]*">
+    </div>
+    <div class="sdpi-item">
+        <div class="sdpi-item-label">Display variable</div>
+        <input class="sdpi-item-value" id="displayVar" value="" placeholder="DISPLAY VARIABLE" pattern="[A-Z0-9: ]*">
+    </div>
+  </div>
+  <script src="../static/utils/common.js"></script>
+  <script src="../static/action.js"></script>
+  <script src="index.js"></script>
+</body>
+</html>
