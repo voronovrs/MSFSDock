@@ -47,6 +47,9 @@ void HSDAction::SendToPlugin(const nlohmann::json& payload) {
 void HSDAction::WillAppear(const nlohmann::json& payload) {
 }
 
+void HSDAction::WillDisappear(const nlohmann::json& payload) {
+}
+
 HSDConnectionManager* HSDAction::GetHSDConnection() const {
 	return mHSDConnection;
 }

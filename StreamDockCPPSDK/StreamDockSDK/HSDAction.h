@@ -42,6 +42,7 @@ class HSDAction {
   virtual void DialDown(const nlohmann::json& payload);
   virtual void SendToPlugin(const nlohmann::json& payload);
   virtual void WillAppear(const nlohmann::json& payload);
+  virtual void WillDisappear(const nlohmann::json& payload);
   virtual void RotateClockwise(const nlohmann::json& payload, const unsigned int ticks, const bool pressed);
   virtual void RotateCounterClockwise(const nlohmann::json& payload, const unsigned int ticks, const bool pressed);
 

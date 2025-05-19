@@ -95,6 +95,19 @@ void HSDPlugin::WillAppearForAction(
   action->WillAppear(inPayload);
 }
 
+void HSDPlugin::WillDisappearForAction(
+  const std::string& inAction,
+  const std::string& inContext,
+  const json& inPayload,
+  const std::string& inDeviceID) {
+  auto action = GetOrCreateAction(inAction, inContext);
+  if (!action) {
+      HSDLogger::LogMessage("No action for WillDisappear - " + inAction + " " + inContext);
+    return;
+  }
+  action->WillDisappear(inPayload);
+}
+
 void HSDPlugin::SendToPlugin(
   const std::string& inAction,
   const std::string& inContext,
