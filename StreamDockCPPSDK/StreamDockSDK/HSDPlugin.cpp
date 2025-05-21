@@ -46,7 +46,7 @@ void HSDPlugin::KeyUpForAction(
   action->KeyUp(inPayload);
 }
 
-void HSDPlugin::DialPressForAction(
+void HSDPlugin::DialDownForAction(
   const std::string& inAction,
   const std::string& inContext,
   const json& inPayload,
@@ -56,11 +56,20 @@ void HSDPlugin::DialPressForAction(
       HSDLogger::LogMessage("No action for dialPress - " + inAction + " " + inContext);
     return;
   }
-  if (inPayload["pressed"]) {
-    action->DialDown(inPayload);
-  } else {
-    action->DialUp(inPayload);
+  action->DialDown(inPayload);
+}
+
+void HSDPlugin::DialUpForAction(
+  const std::string& inAction,
+  const std::string& inContext,
+  const json& inPayload,
+  const std::string& inDeviceID) {
+  auto action = GetOrCreateAction(inAction, inContext);
+  if (!action) {
+      HSDLogger::LogMessage("No action for dialPress - " + inAction + " " + inContext);
+    return;
   }
+  action->DialUp(inPayload);
 }
 
 void HSDPlugin::DialRotateForAction(

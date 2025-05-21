@@ -11,6 +11,7 @@
 #include "NlohmannJSONUtils.h"
 #include "HSDLogger.h"
 #include "HSDLogger.h"
+#include <fstream>
 
 void HSDConnectionManager::OnOpen(WebsocketClient* inClient, websocketpp::connection_hdl inConnectionHandler) {
     HSDLogger::LogMessage("OnOpen");
@@ -75,6 +76,10 @@ void HSDConnectionManager::OnMessage(websocketpp::connection_hdl, WebsocketClien
             json payload;
             NlohmannJSONUtils::GetObjectByName(receivedJson, kESDSDKCommonPayload, payload);
 
+            // TODO: remove this logging
+            std::ofstream log("log.txt", std::ios::app);
+            log << "EVENT " << event << " ACTION " << action << " PAYLOAD " << payload << std::endl;
+
             if (event == kESDSDKEventKeyDown) {
                 mPlugin->KeyDownForAction(action, context, payload, deviceID);
             }
@@ -107,8 +112,11 @@ void HSDConnectionManager::OnMessage(websocketpp::connection_hdl, WebsocketClien
             else if (event == kESDSDKEventSystemDidWakeUp) {
                 mPlugin->SystemDidWakeUp();
             }
-            else if (event == kESDSDKEventDialPress) {
-                mPlugin->DialPressForAction(action, context, payload, deviceID);
+            else if (event == kESDSDKEventDialDown) {
+                mPlugin->DialDownForAction(action, context, payload, deviceID);
+            }
+            else if (event == kESDSDKEventDialUp) {
+                mPlugin->DialUpForAction(action, context, payload, deviceID);
             }
             else if (event == kESDSDKEventDialRotate) {
                 mPlugin->DialRotateForAction(action, context, payload, deviceID);
