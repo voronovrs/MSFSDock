@@ -3,7 +3,7 @@
 #include "GDIPlusManager.h"
 #include "Logger.h"
 #include "Plugin.h"
-#include "Sim.h"
+#include "SimManager.h"
 #include <thread>
 
 #include "StreamDockCPPSDK/StreamDockSDK/HSDMain.h"
@@ -14,9 +14,8 @@ int main(int argc, const char** argv) {
   InitGDIPlus();
   std::atexit(ShutdownGDIPlus);
 
-  std::thread simThread([] {
-    RunSimConnectLoop();  // your main loop
-  });
+  SimManager sim;
+  sim.Start();
 
   auto plugin = std::make_unique<MSFSDockPlugin>();
   return esd_main(argc, argv, plugin.get());
