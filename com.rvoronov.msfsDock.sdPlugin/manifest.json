@@ -33,11 +33,11 @@
   "SDKVersion": 1,
   "Author": "rvoronov",
   "Category": "MSFS Dock",
-  "CategoryIcon": "images/toggleIcon",
+  "CategoryIcon": "images/plugin_icon",
   "CodePath": "msfsDock.exe",
   "Description": "Interact with Microsoft Flight Simulator right from your Stream Dock!",
   "Name": "MSFS Dock",
-  "Icon": "images/gaugeIcon",
+  "Icon": "images/plugin_icon",
   "Version": "0.1",
   "OS": [
     {
