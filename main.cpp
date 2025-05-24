@@ -14,8 +14,7 @@ int main(int argc, const char** argv) {
   InitGDIPlus();
   std::atexit(ShutdownGDIPlus);
 
-  SimManager sim;
-  sim.Start();
+  SimManager::Instance().Start();
 
   auto plugin = std::make_unique<MSFSDockPlugin>();
   return esd_main(argc, argv, plugin.get());

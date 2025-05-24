@@ -2,6 +2,11 @@
 #include "Logger.h"
 
 
+SimManager& SimManager::Instance() {
+    static SimManager instance;
+    return instance;
+}
+
 SimManager::SimManager(/* args */) {}
 
 SimManager::~SimManager() {}
@@ -80,6 +85,17 @@ void CALLBACK SimManager::DispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, voi
             manager->Stop();
             break;
 
+        case SIMCONNECT_RECV_ID_SIMOBJECT_DATA: {
+            auto* data = reinterpret_cast<const SIMCONNECT_RECV_SIMOBJECT_DATA*>(pData);
+
+            if (data->dwRequestID == manager->liveGroup_.requestId) {
+                manager->liveGroup_.ParseValues(data);
+            } else if (data->dwRequestID == manager->feedbackGroup_.requestId) {
+                manager->feedbackGroup_.ParseValues(data);
+            }
+            break;
+        }
+
         // Handle other message types here
 
         default:
@@ -87,37 +103,74 @@ void CALLBACK SimManager::DispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, voi
     }
 }
 
-void SimManager::RegisterVariable(std::string name, std::string unit) {
+void SimManager::AddLiveVariable(const std::string& name, const std::string& unit) {
     QueueTask([=, this] {
-        std::unique_lock lock(mutex_);
-        if (variableNameToId_.contains(name))
-            return; // Already registered
+        liveGroup_.variables.push_back({ name, unit });
+        liveGroup_.Register(hSimConnect);
 
-        uint32_t varId = nextVarId_++;
-        variableNameToId_[name] = varId;
-        idToVariableName_[varId] = name;
-
-        HRESULT hr = SimConnect_AddToDataDefinition(hSimConnect, varId, name.c_str(), unit.c_str());
+        HRESULT hr = SimConnect_RequestDataOnSimObject(
+            hSimConnect,
+            liveGroup_.requestId,
+            liveGroup_.definitionId,
+            SIMCONNECT_OBJECT_ID_USER_AIRCRAFT,
+            SIMCONNECT_PERIOD_SECOND
+        );
         if (FAILED(hr)) {
-            LogError("Failed to register sim variable: " + name);
-        } else {
-            LogInfo("Registered sim variable: " + name + " -> ID " + std::to_string(varId));
+            LogError("Failed to request LiveGroup data");
         }
     });
 }
 
-std::optional<uint32_t> SimManager::GetVariableId(const std::string& name) const {
-    std::shared_lock lock(mutex_);
-    auto it = variableNameToId_.find(name);
-    if (it != variableNameToId_.end())
-        return it->second;
-    return std::nullopt;
+void SimManager::AddFeedbackVariable(const std::string& name, const std::string& unit) {
+    QueueTask([=, this] {
+        feedbackGroup_.variables.push_back({ name, unit });
+        feedbackGroup_.Register(hSimConnect);
+
+        HRESULT hr = SimConnect_RequestDataOnSimObject(
+            hSimConnect,
+            feedbackGroup_.requestId,
+            feedbackGroup_.definitionId,
+            SIMCONNECT_OBJECT_ID_USER_AIRCRAFT,
+            SIMCONNECT_PERIOD_SECOND
+        );
+        if (FAILED(hr)) {
+            LogError("Failed to request FeedbackGroup data");
+        }
+    });
 }
 
-std::optional<std::string> SimManager::GetVariableName(uint32_t id) const {
-    std::shared_lock lock(mutex_);
-    auto it = idToVariableName_.find(id);
-    if (it != idToVariableName_.end())
-        return it->second;
-    return std::nullopt;
+void SimManager::RemoveLiveVariables() {
+    QueueTask([=, this] {
+        HRESULT hr = SimConnect_RequestDataOnSimObject(
+            hSimConnect,
+            liveGroup_.requestId,
+            liveGroup_.definitionId,
+            SIMCONNECT_OBJECT_ID_USER_AIRCRAFT,
+            SIMCONNECT_PERIOD_NEVER
+        );
+        if (FAILED(hr)) {
+            LogError("Failed to request NEVER liveGroup data");
+        }
+
+        liveGroup_.variables.clear();
+        liveGroup_.DeRegister(hSimConnect);
+    });
+}
+
+void SimManager::RemoveFeedbackVariables() {
+    QueueTask([=, this] {
+        HRESULT hr = SimConnect_RequestDataOnSimObject(
+            hSimConnect,
+            feedbackGroup_.requestId,
+            feedbackGroup_.definitionId,
+            SIMCONNECT_OBJECT_ID_USER_AIRCRAFT,
+            SIMCONNECT_PERIOD_NEVER
+        );
+        if (FAILED(hr)) {
+            LogError("Failed to request NEVER FeedbackGroup data");
+        }
+
+        feedbackGroup_.variables.clear();
+        feedbackGroup_.DeRegister(hSimConnect);
+    });
 }

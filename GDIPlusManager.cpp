@@ -103,9 +103,6 @@ std::string DrawImage(const std::wstring& imagePath,
 
         std::wstring wheader = StringToWString(header);
         graphics.DrawString(wheader.c_str(), -1, &font, rect, &format, &brush);
-
-        LogInfo("width " + std::to_string(bmp->GetWidth()));
-        LogInfo("height " + std::to_string(bmp->GetHeight()));
     }
 
     if (!data.empty()) {

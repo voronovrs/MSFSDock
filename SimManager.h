@@ -11,27 +11,29 @@
 #include <optional>
 #include <functional>
 #include <condition_variable>
+#include "SimGroup.h"
 
 class SimManager {
 public:
-    SimManager();
-    ~SimManager();
+    static SimManager& Instance();  // Singleton accessor
+
+    SimManager(const SimManager&) = delete;
+    SimManager& operator=(const SimManager&) = delete;
 
     void Start();
     void Stop();
 
     void QueueTask(std::function<void()> task);
 
-    void RegisterVariable(std::string name, std::string unit = "number");
-    // Future extensions:
-    // void TryGetVariable(std::string name);
-    // void RegisterEvent(std::string name, std::string status);
-    // void DeregisterVariables();
-    // void DeregisterEvents();
-    std::optional<uint32_t> GetVariableId(const std::string& name) const;
-    std::optional<std::string> GetVariableName(uint32_t id) const;
+    void AddLiveVariable(const std::string& name, const std::string& unit);
+    void AddFeedbackVariable(const std::string& name, const std::string& unit);
+    void RemoveLiveVariables();
+    void RemoveFeedbackVariables();
 
 private:
+    SimManager();  // Private constructor
+    ~SimManager();
+
     void Run();
     static void CALLBACK DispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, void* pContext);
 
@@ -43,12 +45,8 @@ private:
     std::mutex simTaskMutex;
     std::condition_variable simTaskCV;
 
-    std::unordered_map<std::string, uint32_t> variableNameToId_;
-    std::unordered_map<std::string, uint32_t> eventNameToId_;
-    std::unordered_map<uint32_t, std::string> idToVariableName_;
-    std::unordered_map<uint32_t, std::string> idToEventName_;
-    uint32_t nextVarId_ = 0;
-    uint32_t nextEventId_ = 0;
+    SimGroup liveGroup_  = {1, 1, {}};
+    SimGroup feedbackGroup_ = {2, 2, {}};
 
     mutable std::shared_mutex mutex_;
 };
