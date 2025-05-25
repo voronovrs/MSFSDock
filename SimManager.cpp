@@ -89,9 +89,9 @@ void CALLBACK SimManager::DispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, voi
             auto* data = reinterpret_cast<const SIMCONNECT_RECV_SIMOBJECT_DATA*>(pData);
 
             if (data->dwRequestID == manager->liveGroup_.requestId) {
-                manager->liveGroup_.ParseValues(data);
+                manager->ParseGroupValues(data, manager->liveGroup_);
             } else if (data->dwRequestID == manager->feedbackGroup_.requestId) {
-                manager->feedbackGroup_.ParseValues(data);
+                manager->ParseGroupValues(data, manager->feedbackGroup_);
             }
             break;
         }
@@ -173,4 +173,24 @@ void SimManager::RemoveFeedbackVariables() {
         feedbackGroup_.variables.clear();
         feedbackGroup_.DeRegister(hSimConnect);
     });
+}
+
+void SimManager::ParseGroupValues(const SIMCONNECT_RECV_SIMOBJECT_DATA* data, const SimGroup& group) {
+    const BYTE* raw = reinterpret_cast<const BYTE*>(&data->dwData);
+    std::unique_lock lock(variableMutex_);
+
+    for (const auto& var : group.variables) {
+        double val = *reinterpret_cast<const double*>(raw);
+        variableValues_[var.name] = val;
+        LogInfo(var.name + " = " + std::to_string(val));
+        raw += sizeof(double);
+    }
+}
+
+std::optional<double> SimManager::GetVariableValue(const std::string& name) const {
+    std::shared_lock lock(variableMutex_);
+    auto it = variableValues_.find(name);
+    if (it != variableValues_.end())
+        return it->second;
+    return std::nullopt;
 }

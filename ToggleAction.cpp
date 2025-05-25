@@ -19,6 +19,10 @@ void ToggleAction::KeyDown(const nlohmann::json& payload) {
 
     toggle_settings.isActive = !toggle_settings.isActive;
     LogInfo((toggle_settings.isActive) ? "isactive true" : "isactive false");
+    // auto value = SimManager::Instance().GetVariableValue(toggle_settings.displayVar);
+    // if (value) {
+    //     SetTitle(std::to_string(static_cast<int>(*value)));
+    // }
 
     UpdateImage();
 }
