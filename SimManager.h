@@ -12,7 +12,7 @@
 #include <string>
 #include <thread>
 #include <unordered_map>
-#include <vector> 
+#include <vector>
 // #include "SimGroup.h"
 
 struct SimVarDefinition {
@@ -45,6 +45,11 @@ struct SimGroup {
             LogInfo("Sim vars deregistered.");
         }
     }
+
+    bool ContainsVariable(const std::string& name) const {
+        return std::any_of(variables.begin(), variables.end(),
+                        [&](const auto& v) { return v.name == name; });
+    }
 };
 
 
@@ -66,6 +71,12 @@ public:
     void RemoveFeedbackVariables();
 
     std::optional<double> GetVariableValue(const std::string& name) const;
+    std::string GetVariableAsString(const std::string& name, int precision = 0) const;
+
+    using VariableUpdateCallback = std::function<void(const std::string& name, double value)>;
+    std::unordered_map<std::string, std::vector<VariableUpdateCallback>> updateCallbacks_;
+    std::shared_mutex callbackMutex_;
+    void SubscribeToVariable(const std::string& name, VariableUpdateCallback callback);
 
 private:
     SimManager();  // Private constructor

@@ -5,25 +5,32 @@
 
 #include "StreamDockCPPSDK/StreamDockSDK/NlohmannJSONUtils.h"
 
-void ToggleAction::DidReceiveSettings(const nlohmann::json& payload) {
-    LogInfo("ToggleAction DidReceiveSettings. Payload: " + payload.dump());
+void ToggleAction::InitializeSettings(const nlohmann::json& payload) {
     nlohmann::json settings = payload["settings"];
     toggle_settings.FromJson(settings);
+    if (!toggle_settings.displayVar.empty()) {
+        SimManager::Instance().AddLiveVariable(toggle_settings.displayVar, "feet");
+    }
+    if (!toggle_settings.feedbackVar.empty()) {
+        SimManager::Instance().AddFeedbackVariable(toggle_settings.feedbackVar, "number");
+    }
+}
+
+void ToggleAction::DestroySettings() {
+    SimManager::Instance().RemoveLiveVariables();
+    SimManager::Instance().RemoveFeedbackVariables();
+}
+
+void ToggleAction::DidReceiveSettings(const nlohmann::json& payload) {
+    LogInfo("ToggleAction DidReceiveSettings. Payload: " + payload.dump());
+    InitializeSettings(payload);
     UpdateImage();
 }
 
 void ToggleAction::KeyDown(const nlohmann::json& payload) {
     LogInfo("ToggleAction KeyDown. Payload: " + payload.dump());
-    nlohmann::json settings = payload["settings"];
-    toggle_settings.FromJson(settings);
-
     toggle_settings.isActive = !toggle_settings.isActive;
     LogInfo((toggle_settings.isActive) ? "isactive true" : "isactive false");
-    // auto value = SimManager::Instance().GetVariableValue(toggle_settings.displayVar);
-    // if (value) {
-    //     SetTitle(std::to_string(static_cast<int>(*value)));
-    // }
-
     UpdateImage();
 }
 
@@ -37,38 +44,40 @@ void ToggleAction::KeyUp(const nlohmann::json& payload) {
 
 void ToggleAction::WillAppear(const nlohmann::json& payload) {
     LogInfo("ToggleAction WillAppear. Payload: " + payload.dump());
-    nlohmann::json settings = payload["settings"];
-    toggle_settings.FromJson(settings);
-    SimManager::Instance().AddLiveVariable(toggle_settings.displayVar, "feet");
-    SimManager::Instance().AddFeedbackVariable(toggle_settings.feedbackVar, "number");
+    InitializeSettings(payload);
+    SimManager::Instance().SubscribeToVariable(toggle_settings.displayVar,
+        [this](const std::string& name, double value) {
+            // Throttle if needed
+            // SetTitle(std::to_string(static_cast<int>(value)));
+            if (toggle_settings.displayValue != std::to_string(static_cast<int>(value))) {
+                // LogInfo("Cur value changed to" + std::to_string(static_cast<int>(value)));
+                toggle_settings.displayValue = std::to_string(static_cast<int>(value));
+                UpdateImage();
+            }
+        });
+
     UpdateImage();
 }
 
 void ToggleAction::WillDisappear(const nlohmann::json& payload) {
     LogInfo("ToggleAction WillDisappear. Payload: " + payload.dump());
-    nlohmann::json settings = payload["settings"];
-    toggle_settings.FromJson(settings);
-    SimManager::Instance().RemoveLiveVariables();
-    SimManager::Instance().RemoveFeedbackVariables();
-    // if (settings.contains("header")) {
-    // //     ShowAlert();
-    //     SetTitle(settings["header"]);
-    // }
+    DestroySettings();
 }
 
 void ToggleAction::SendToPlugin(const nlohmann::json& payload) {
     LogInfo("ToggleAction SendToPlugin. Payload: " + payload.dump());
     // SetTitle(payload["header"]);
-    SetSettings(payload);
-    nlohmann::json settings = payload["settings"];
-    toggle_settings.FromJson(settings);
+    // SetSettings(payload);
+    // nlohmann::json settings = payload["settings"];
+    // toggle_settings.FromJson(settings);
     // SimManager::Instance().RegisterVariable(toggle_settings.feedbackVar);
     // SimManager::Instance().RegisterVariable(toggle_settings.displayVar);
+    InitializeSettings(payload);
     UpdateImage();
 }
 
 void ToggleAction::UpdateImage() {
     std::wstring img_path = (toggle_settings.isActive) ? toggle_settings.backgroundImageActive : toggle_settings.backgroundImageInactive;
-    std::string base64Image = DrawImage(img_path, toggle_settings.header, toggle_settings.displayVar);
+    std::string base64Image = DrawImage(img_path, toggle_settings.header, (!toggle_settings.displayVar.empty()) ? toggle_settings.displayValue : "");
     SetImage(base64Image, kESDSDKTarget_HardwareAndSoftware, -1);
 }

@@ -11,6 +11,7 @@ struct PluginSettings {
     std::string toggleEvent;
     std::string feedbackVar;
     std::string displayVar;
+    std::string displayValue = "-----";
     bool isActive = false;
 
     void FromJson(const nlohmann::json& json) {
@@ -36,4 +37,6 @@ class ToggleAction : public HSDAction
     virtual void WillAppear(const nlohmann::json& payload);
     virtual void WillDisappear(const nlohmann::json& payload);
     virtual void UpdateImage();
+    void InitializeSettings(const nlohmann::json& payload);
+    void DestroySettings();
 };
