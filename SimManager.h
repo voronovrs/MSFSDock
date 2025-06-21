@@ -3,6 +3,7 @@
 #include <Windows.h>
 #include <SimConnect.h>
 #include "Logger.h"
+#include "SimVar.h"
 #include <condition_variable>
 #include <functional>
 #include <mutex>
@@ -13,44 +14,6 @@
 #include <thread>
 #include <unordered_map>
 #include <vector>
-// #include "SimGroup.h"
-
-struct SimVarDefinition {
-    std::string name;
-    std::string unit;
-};
-
-struct SimGroup {
-    uint32_t definitionId;
-    uint32_t requestId;
-    std::vector<SimVarDefinition> variables;
-
-    void Register(HANDLE hSimConnect) const {
-        for (const auto& var : variables) {
-            HRESULT hr = SimConnect_AddToDataDefinition(hSimConnect, definitionId, var.name.c_str(), var.unit.c_str(), SIMCONNECT_DATATYPE_FLOAT64);
-            if (FAILED(hr)) {
-                LogError("Failed to register sim var: " + var.name);
-            } else {
-                LogInfo("Registered sim var: " + var.name);
-            }
-        }
-    }
-
-    void DeRegister(HANDLE hSimConnect) const {
-        LogInfo("Try to deregister sim vars with ID " + std::to_string(definitionId));
-        HRESULT hr = SimConnect_ClearDataDefinition(hSimConnect, definitionId);
-        if (FAILED(hr)) {
-            LogError("Failed to deregister sim vars.");
-        } else {
-            LogInfo("Sim vars deregistered.");
-        }
-    }
-
-    bool ContainsVariable(const std::string& name) const {
-        return std::any_of(variables.begin(), variables.end(),
-                        [&](const auto& v) { return v.name == name; });
-    }
-};
 
 
 class SimManager {
@@ -65,11 +28,6 @@ public:
 
     void QueueTask(std::function<void()> task);
 
-    void AddLiveVariable(const std::string& name, const std::string& unit);
-    void AddFeedbackVariable(const std::string& name, const std::string& unit);
-    void RemoveLiveVariables();
-    void RemoveFeedbackVariables();
-
     std::optional<double> GetVariableValue(const std::string& name) const;
     std::string GetVariableAsString(const std::string& name, int precision = 0) const;
 
@@ -77,6 +35,12 @@ public:
     std::unordered_map<std::string, std::vector<VariableUpdateCallback>> updateCallbacks_;
     std::shared_mutex callbackMutex_;
     void SubscribeToVariable(const std::string& name, VariableUpdateCallback callback);
+
+
+    void RegisterSimVars(const std::vector<SimVarDefinition>& vars);
+    void DeregisterSimVars(const std::vector<SimVarDefinition>& vars);
+    void RegisterVariables();
+    void DeregisterVariables();
 
 private:
     SimManager();  // Private constructor
@@ -93,10 +57,14 @@ private:
     std::mutex simTaskMutex;
     std::condition_variable simTaskCV;
 
-    SimGroup liveGroup_  = {1, 1, {}};
-    SimGroup feedbackGroup_ = {2, 2, {}};
+    std::vector<SimVarDefinition> variables_;
 
     std::unordered_map<std::string, double> variableValues_;
     mutable std::shared_mutex variableMutex_;
-    void ParseGroupValues(const SIMCONNECT_RECV_SIMOBJECT_DATA* data, const SimGroup& group);
+    void ParseGroupValues(const SIMCONNECT_RECV_SIMOBJECT_DATA* data, const DEFINITIONS group);
+
+    std::mutex executionMutex_;
+
+    void AddNewVariables(const std::vector<SimVarDefinition>& incoming);
+    void RmUnusedVariables(const std::vector<SimVarDefinition>& incoming);
 };
