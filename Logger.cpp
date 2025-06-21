@@ -12,6 +12,11 @@ static void WriteLog(const std::string& level, const std::string& line) {
     log << level << ": " << line << std::endl;
 }
 
+void LogError(const std::string& line) {
+    WriteLog("ERROR", line);
+}
+
+#ifndef NDEBUG
 void LogInfo(const std::string& line) {
     WriteLog("INFO", line);
 }
@@ -19,8 +24,4 @@ void LogInfo(const std::string& line) {
 void LogWarn(const std::string& line) {
     WriteLog("WARN", line);
 }
-
-void LogError(const std::string& line) {
-    WriteLog("ERROR", line);
-}
-
+#endif
