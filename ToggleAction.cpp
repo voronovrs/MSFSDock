@@ -44,6 +44,7 @@ void ToggleAction::UninitializeSettings() {
     toggle_settings.displayReg = {};
     toggle_settings.feedbackReg = {};
     toggle_settings.displayValue = "";
+    toggle_settings.isActive = false;
 }
 
 void ToggleAction::DidReceiveSettings(const nlohmann::json& payload) {
@@ -72,8 +73,19 @@ void ToggleAction::WillAppear(const nlohmann::json& payload) {
     SimManager::Instance().SubscribeToVariable(toggle_settings.displayVar,
         [this](const std::string& name, double value) {
             // Throttle if needed
-            if (toggle_settings.displayValue != std::to_string(static_cast<int>(value))) {
-                toggle_settings.displayValue = std::to_string(static_cast<int>(value));
+            if (!toggle_settings.displayVar.empty()) {
+                if (toggle_settings.displayValue != std::to_string(static_cast<int>(value))) {
+                    toggle_settings.displayValue = std::to_string(static_cast<int>(value));
+                    UpdateImage();
+                }
+            }
+        });
+
+    SimManager::Instance().SubscribeToVariable(toggle_settings.feedbackVar,
+        [this](const std::string& name, double value) {
+            // Throttle if needed
+            if (!toggle_settings.feedbackVar.empty()) {
+                toggle_settings.isActive = (static_cast<int>(value) != 0);
                 UpdateImage();
             }
         });
@@ -101,6 +113,6 @@ void ToggleAction::SendToPlugin(const nlohmann::json& payload) {
 
 void ToggleAction::UpdateImage() {
     std::wstring img_path = (toggle_settings.isActive) ? toggle_settings.backgroundImageActive : toggle_settings.backgroundImageInactive;
-    std::string base64Image = DrawButtonImage(img_path, toggle_settings.header, (!toggle_settings.displayVar.empty()) ? toggle_settings.displayValue : "123456");
+    std::string base64Image = DrawButtonImage(img_path, toggle_settings.header, (!toggle_settings.displayVar.empty()) ? toggle_settings.displayValue : "");
     SetImage(base64Image, kESDSDKTarget_HardwareAndSoftware, -1);
 }

@@ -95,8 +95,8 @@ void CALLBACK SimManager::DispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, voi
 
             if (data->dwRequestID == LIVE_VARIABLE) {
                 manager->ParseGroupValues(data, LIVE_VARIABLE);
-            // } else if (data->dwRequestID == manager->feedbackGroup_.requestId) {
-                // manager->ParseGroupValues(data, manager->feedbackGroup_);
+            } else if (data->dwRequestID == FEEDBACK_VARIABLE) {
+                manager->ParseGroupValues(data, FEEDBACK_VARIABLE);
             }
             break;
         }
@@ -149,6 +149,10 @@ void SimManager::RmUnusedVariables(const std::vector<SimVarDefinition>& incoming
                     // LogInfo("Variable " + reg.name + " usage- " + std::to_string(reg.used));
                 }
                 if (!reg.IsInUse()) {
+                    {
+                        std::unique_lock lock(variableMutex_);
+                        variableValues_.erase(reg.name);
+                    }
                     LogInfo("Remove unused variable " + reg.name + " from group " + std::to_string(reg.group));
                 }
             }
@@ -186,6 +190,16 @@ void SimManager::RegisterVariables() {
         if (FAILED(hr)) {
             LogError("Failed to request LIVE_VARIABLE data");
         }
+        hr = SimConnect_RequestDataOnSimObject(
+            hSimConnect,
+            FEEDBACK_VARIABLE,
+            FEEDBACK_VARIABLE,
+            SIMCONNECT_OBJECT_ID_USER_AIRCRAFT,
+            SIMCONNECT_PERIOD_VISUAL_FRAME
+        );
+        if (FAILED(hr)) {
+            LogError("Failed to request FEEDBACK_VARIABLE data");
+        }
 
     });
 }
@@ -203,6 +217,16 @@ void SimManager::DeregisterVariables() {
         );
         if (FAILED(hr)) {
             LogError("Failed to request NEVER liveGroup data");
+        }
+        hr = SimConnect_RequestDataOnSimObject(
+            hSimConnect,
+            FEEDBACK_VARIABLE,
+            FEEDBACK_VARIABLE,
+            SIMCONNECT_OBJECT_ID_USER_AIRCRAFT,
+            SIMCONNECT_PERIOD_NEVER
+        );
+        if (FAILED(hr)) {
+            LogError("Failed to request NEVER FEEDBACK data");
         }
 
         hr = SimConnect_ClearDataDefinition(hSimConnect, LIVE_VARIABLE);
@@ -258,48 +282,19 @@ void SimManager::ParseGroupValues(const SIMCONNECT_RECV_SIMOBJECT_DATA* data, co
     }
 }
 
-// void SimManager::ParseGroupValues(const SIMCONNECT_RECV_SIMOBJECT_DATA* data, const SimGroup& group) {
-//     const BYTE* raw = reinterpret_cast<const BYTE*>(&data->dwData);
-
-//     for (const auto& var : group.variables) {
-//         double newVal = *reinterpret_cast<const double*>(raw);
-//         raw += sizeof(double);
-
-//         bool changed = false;
-//         {
-//             std::unique_lock lock(variableMutex_);
-//             auto& old = variableValues_[var.name];
-//             if (old != newVal) {
-//                 old = newVal;
-//                 changed = true;
-//             }
-//         }
-
-//         if (changed) {
-//             std::shared_lock lock(callbackMutex_);
-//             auto it = updateCallbacks_.find(var.name);
-//             if (it != updateCallbacks_.end()) {
-//                 for (const auto& cb : it->second) {
-//                     cb(var.name, newVal);
-//                 }
-//             }
-//         }
-//     }
+// std::optional<double> SimManager::GetVariableValue(const std::string& name) const {
+//     std::shared_lock lock(variableMutex_);
+//     auto it = variableValues_.find(name);
+//     if (it != variableValues_.end())
+//         return it->second;
+//     return std::nullopt;
 // }
 
-std::optional<double> SimManager::GetVariableValue(const std::string& name) const {
-    std::shared_lock lock(variableMutex_);
-    auto it = variableValues_.find(name);
-    if (it != variableValues_.end())
-        return it->second;
-    return std::nullopt;
-}
-
-std::string SimManager::GetVariableAsString(const std::string& name, int precision) const {
-    if (auto val = GetVariableValue(name)) {
-        std::ostringstream oss;
-        oss << std::fixed << std::setprecision(precision) << *val;
-        return oss.str();
-    }
-    return "-----";
-}
+// std::string SimManager::GetVariableAsString(const std::string& name, int precision) const {
+//     if (auto val = GetVariableValue(name)) {
+//         std::ostringstream oss;
+//         oss << std::fixed << std::setprecision(precision) << *val;
+//         return oss.str();
+//     }
+//     return "-----";
+// }

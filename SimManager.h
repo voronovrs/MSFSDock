@@ -28,8 +28,8 @@ public:
 
     void QueueTask(std::function<void()> task);
 
-    std::optional<double> GetVariableValue(const std::string& name) const;
-    std::string GetVariableAsString(const std::string& name, int precision = 0) const;
+    // std::optional<double> GetVariableValue(const std::string& name) const;
+    // std::string GetVariableAsString(const std::string& name, int precision = 0) const;
 
     using VariableUpdateCallback = std::function<void(const std::string& name, double value)>;
     std::unordered_map<std::string, std::vector<VariableUpdateCallback>> updateCallbacks_;
