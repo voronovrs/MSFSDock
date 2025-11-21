@@ -75,7 +75,7 @@ void DialAction::UpdateImage() {
     }
 
     LogInfo("conversion done");
-    std::string base64Image = DrawImage(img_path, dial_settings.header, dial_settings.displayVar, dial_settings.secDisplayVar,
+    std::string base64Image = DrawButtonImage(img_path, dial_settings.header, dial_settings.displayVar, dial_settings.secDisplayVar,
                                         headerOffset, headerFontSize, dataOffset, dataFontSize, data2Offset, data2FontSize);
     SetImage(base64Image, kESDSDKTarget_HardwareAndSoftware, -1);
     LogInfo("set image done");

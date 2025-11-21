@@ -1,0 +1,1 @@
+Strictly seven-segment (plus point) calculator display face, fixed-width and free.  (c) Cedric Knight 2014.  Licensed under SIL Open Font Licence v1.1.  Reserved name: Segment7.

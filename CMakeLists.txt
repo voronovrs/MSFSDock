@@ -17,6 +17,7 @@ add_subdirectory(StreamDockCPPSDK/StreamDockSDK)
 set(
   SOURCES
   BaseAction.cpp
+  GDIFonts.cpp
   GDIPlusManager.cpp
   Logger.cpp
   SimManager.cpp

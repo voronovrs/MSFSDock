@@ -101,6 +101,6 @@ void ToggleAction::SendToPlugin(const nlohmann::json& payload) {
 
 void ToggleAction::UpdateImage() {
     std::wstring img_path = (toggle_settings.isActive) ? toggle_settings.backgroundImageActive : toggle_settings.backgroundImageInactive;
-    std::string base64Image = DrawImage(img_path, toggle_settings.header, (!toggle_settings.displayVar.empty()) ? toggle_settings.displayValue : "");
+    std::string base64Image = DrawButtonImage(img_path, toggle_settings.header, (!toggle_settings.displayVar.empty()) ? toggle_settings.displayValue : "123456");
     SetImage(base64Image, kESDSDKTarget_HardwareAndSoftware, -1);
 }
