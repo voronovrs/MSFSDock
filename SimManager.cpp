@@ -47,7 +47,7 @@ void SimManager::Run() {
                 lock.unlock();
                 {
                     std::unique_lock execLock(executionMutex_);
-                    task();  // 🔒 Only one task runs at a time here
+                    task();  // Only one task runs at a time here
                 }
                 lock.lock();
             }
@@ -85,7 +85,7 @@ void CALLBACK SimManager::DispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, voi
     // LogInfo("Recieved dwID " + std::to_string(pData->dwID));
     switch (pData->dwID) {
         case SIMCONNECT_RECV_ID_QUIT:
-            LogWarn("MSFS has closed or disconnected.");
+            LogWarn("MSFS was closed or disconnected.");
             // Signal your thread to exit or try reconnect
             manager->Stop();
             break;
@@ -117,7 +117,7 @@ void SimManager::AddNewVariables(const std::vector<SimVarDefinition>& incoming) 
             });
 
         if (it == variables_.end()) {
-            LogInfo("Adding new variable " + def.name + " to group " + std::to_string(def.group));
+            LogInfo("Adding new variable: " + def.name + " to group: " + std::to_string(def.group));
             variables_.push_back(def);
         }
         for (auto& reg : variables_) {
@@ -153,7 +153,7 @@ void SimManager::RmUnusedVariables(const std::vector<SimVarDefinition>& incoming
                         std::unique_lock lock(variableMutex_);
                         variableValues_.erase(reg.name);
                     }
-                    LogInfo("Remove unused variable " + reg.name + " from group " + std::to_string(reg.group));
+                    LogInfo("Remove unused variable: " + reg.name + " from group: " + std::to_string(reg.group));
                 }
             }
     }
@@ -172,74 +172,69 @@ void SimManager::DeregisterSimVars(const std::vector<SimVarDefinition>& vars) {
 void SimManager::RegisterVariables() {
     QueueTask([=, this] {
         for (const auto& var : variables_) {
-            HRESULT hr = SimConnect_AddToDataDefinition(hSimConnect, var.group, var.name.c_str(), var.GetUnit().c_str(), SIMCONNECT_DATATYPE_FLOAT64);
+            HRESULT hr = SimConnect_AddToDataDefinition(hSimConnect,
+                                                        var.group,
+                                                        var.name.c_str(),
+                                                        var.GetUnit().c_str(),
+                                                        SIMCONNECT_DATATYPE_FLOAT64);
             if (FAILED(hr)) {
-                LogError("Failed to register sim var: " + var.name);
+                LogError("Failed to add data definition for variable: " + var.name);
             } else {
-                LogInfo("Registered sim var: " + var.name);
+                LogInfo("Added data definition for variable: " + var.name);
             }
         }
 
-        HRESULT hr = SimConnect_RequestDataOnSimObject(
-            hSimConnect,
-            LIVE_VARIABLE,
-            LIVE_VARIABLE,
-            SIMCONNECT_OBJECT_ID_USER_AIRCRAFT,
-            SIMCONNECT_PERIOD_VISUAL_FRAME
-        );
-        if (FAILED(hr)) {
-            LogError("Failed to request LIVE_VARIABLE data");
-        }
-        hr = SimConnect_RequestDataOnSimObject(
-            hSimConnect,
-            FEEDBACK_VARIABLE,
-            FEEDBACK_VARIABLE,
-            SIMCONNECT_OBJECT_ID_USER_AIRCRAFT,
-            SIMCONNECT_PERIOD_VISUAL_FRAME
-        );
-        if (FAILED(hr)) {
-            LogError("Failed to request FEEDBACK_VARIABLE data");
-        }
+        for (int def = LIVE_VARIABLE; def <= FEEDBACK_VARIABLE; def++) {
+            HRESULT hr = SimConnect_RequestDataOnSimObject(
+                hSimConnect,
+                def,
+                def,
+                SIMCONNECT_OBJECT_ID_USER_AIRCRAFT,
+                SIMCONNECT_PERIOD_VISUAL_FRAME
+            );
 
+            if (FAILED(hr)) {
+                LogError("Failed to request data for group: " + std::to_string(def));
+            } else {
+                LogInfo("Added request data for group: " + std::to_string(def));
+            }
+        }
     });
+}
+
+bool SimManager::TryGetCachedValue(const std::string& name, double& outValue) {
+    std::shared_lock lock(variableMutex_);
+    auto it = variableValues_.find(name);
+    if (it == variableValues_.end())
+        return false;
+
+    outValue = it->second;
+    return true;
 }
 
 void SimManager::DeregisterVariables() {
     QueueTask([=, this] {
-        HRESULT hr;
+        for (int def = LIVE_VARIABLE; def <= FEEDBACK_VARIABLE; def++) {
+            HRESULT hr = SimConnect_RequestDataOnSimObject(
+                hSimConnect,
+                def,
+                def,
+                SIMCONNECT_OBJECT_ID_USER_AIRCRAFT,
+                SIMCONNECT_PERIOD_NEVER
+            );
 
-        hr = SimConnect_RequestDataOnSimObject(
-            hSimConnect,
-            LIVE_VARIABLE,
-            LIVE_VARIABLE,
-            SIMCONNECT_OBJECT_ID_USER_AIRCRAFT,
-            SIMCONNECT_PERIOD_NEVER
-        );
-        if (FAILED(hr)) {
-            LogError("Failed to request NEVER liveGroup data");
-        }
-        hr = SimConnect_RequestDataOnSimObject(
-            hSimConnect,
-            FEEDBACK_VARIABLE,
-            FEEDBACK_VARIABLE,
-            SIMCONNECT_OBJECT_ID_USER_AIRCRAFT,
-            SIMCONNECT_PERIOD_NEVER
-        );
-        if (FAILED(hr)) {
-            LogError("Failed to request NEVER FEEDBACK data");
-        }
+            if (FAILED(hr)) {
+                LogError("Failed to change request period to NEVER for group: " + std::to_string(def));
+            } else {
+                LogInfo("Changed request period to NEVER for group: " + std::to_string(def));
+            }
 
-        hr = SimConnect_ClearDataDefinition(hSimConnect, LIVE_VARIABLE);
-        if (FAILED(hr)) {
-            LogError("Failed to deregister sim vars definition " + std::to_string(LIVE_VARIABLE));
-        } else {
-            LogError("Deregister sim vars definition " + std::to_string(LIVE_VARIABLE));
-        }
-        hr = SimConnect_ClearDataDefinition(hSimConnect, FEEDBACK_VARIABLE);
-        if (FAILED(hr)) {
-            LogError("Failed to deregister sim vars definition " + std::to_string(FEEDBACK_VARIABLE));
-        } else {
-            LogError("Deregister sim vars definition " + std::to_string(FEEDBACK_VARIABLE));
+            hr = SimConnect_ClearDataDefinition(hSimConnect, def);
+            if (FAILED(hr)) {
+                LogError("Failed to clear data definition for group: " + std::to_string(def));
+            } else {
+                LogInfo("Cleared data definition for group: " + std::to_string(def));
+            }
         }
     });
 }
@@ -259,6 +254,11 @@ void SimManager::ParseGroupValues(const SIMCONNECT_RECV_SIMOBJECT_DATA* data, co
         double newVal = *reinterpret_cast<const double*>(raw);
         raw += sizeof(double);
 
+        if (!IsValueValid(newVal)) {
+            LogWarn("Rejected invalid value for variable: " + var.name + " = " + std::to_string(newVal));
+            continue;
+        }
+
         bool changed = false;
         {
             std::unique_lock lock(variableMutex_);
@@ -271,7 +271,7 @@ void SimManager::ParseGroupValues(const SIMCONNECT_RECV_SIMOBJECT_DATA* data, co
 
         if (changed) {
             std::shared_lock lock(callbackMutex_);
-            LogInfo("Changed var " + var.name + " value " + std::to_string(newVal));
+            LogInfo("Variable: " + var.name + " new value = " + std::to_string(newVal));
             auto it = updateCallbacks_.find(var.name);
             if (it != updateCallbacks_.end()) {
                 for (const auto& cb : it->second) {
@@ -282,19 +282,31 @@ void SimManager::ParseGroupValues(const SIMCONNECT_RECV_SIMOBJECT_DATA* data, co
     }
 }
 
-// std::optional<double> SimManager::GetVariableValue(const std::string& name) const {
-//     std::shared_lock lock(variableMutex_);
-//     auto it = variableValues_.find(name);
-//     if (it != variableValues_.end())
-//         return it->second;
-//     return std::nullopt;
-// }
+DWORD SimManager::RegisterEvent(const std::string& name) {
+    auto it = m_events.find(name);
+    if (it != m_events.end())
+        return it->second;
 
-// std::string SimManager::GetVariableAsString(const std::string& name, int precision) const {
-//     if (auto val = GetVariableValue(name)) {
-//         std::ostringstream oss;
-//         oss << std::fixed << std::setprecision(precision) << *val;
-//         return oss.str();
-//     }
-//     return "-----";
-// }
+    DWORD id = m_nextEventId++;
+    m_events[name] = id;
+    HRESULT hr = SimConnect_MapClientEventToSimEvent(hSimConnect, id, name.c_str());
+    if (FAILED(hr)) {
+        LogError("Failed to register event: " + std::string(name) + " with ID: " + std::to_string(id));
+    } else {
+        LogInfo("Event: " + std::string(name) + " registered with ID: " + std::to_string(id));
+    }
+    return id;
+}
+
+void SimManager::SendEvent(const std::string& name) {
+    DWORD id = RegisterEvent(name);
+
+    SimConnect_TransmitClientEvent(
+        hSimConnect,
+        SIMCONNECT_OBJECT_ID_USER,
+        id,
+        0,
+        SIMCONNECT_GROUP_PRIORITY_HIGHEST,
+        SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY
+    );
+}

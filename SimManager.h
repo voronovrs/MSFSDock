@@ -28,19 +28,19 @@ public:
 
     void QueueTask(std::function<void()> task);
 
-    // std::optional<double> GetVariableValue(const std::string& name) const;
-    // std::string GetVariableAsString(const std::string& name, int precision = 0) const;
-
     using VariableUpdateCallback = std::function<void(const std::string& name, double value)>;
     std::unordered_map<std::string, std::vector<VariableUpdateCallback>> updateCallbacks_;
     std::shared_mutex callbackMutex_;
     void SubscribeToVariable(const std::string& name, VariableUpdateCallback callback);
 
-
     void RegisterSimVars(const std::vector<SimVarDefinition>& vars);
     void DeregisterSimVars(const std::vector<SimVarDefinition>& vars);
     void RegisterVariables();
     void DeregisterVariables();
+    DWORD RegisterEvent(const std::string& name);
+    void SendEvent(const std::string& name);
+
+    bool TryGetCachedValue(const std::string& name, double& outValue);
 
 private:
     SimManager();  // Private constructor
@@ -67,4 +67,14 @@ private:
 
     void AddNewVariables(const std::vector<SimVarDefinition>& incoming);
     void RmUnusedVariables(const std::vector<SimVarDefinition>& incoming);
+
+    DWORD m_nextEventId = 1000;
+    std::unordered_map<std::string, DWORD> m_events;
+
+    static inline bool IsValueValid(double v) {
+        if (std::isnan(v)) return false;
+        if (std::isinf(v)) return false;
+        if (v < -1e6 || v > 1e6) return false;
+        return true;
+    }
 };
