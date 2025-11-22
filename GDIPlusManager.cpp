@@ -1,5 +1,7 @@
 #include "GDIPlusManager.h"
+#include "GDIFonts.h"
 #include "Logger.h"
+#include <memory>
 #include <vector>
 
 #pragma comment(lib, "Gdiplus.lib")
@@ -76,7 +78,7 @@ static std::string BitmapToBase64(Gdiplus::Bitmap* bmp) {
 }
 
 // Draw text over the loaded PNG and return base64
-std::string DrawImage(const std::wstring& imagePath,
+std::string DrawButtonImage(const std::wstring& imagePath,
                       const std::string& header, const std::string& data, const std::string& data2,
                       int headerOffset, int headerFontSize, int dataOffset, int dataFontSize,
                       int data2Offset, int data2FontSize) {
@@ -103,40 +105,48 @@ std::string DrawImage(const std::wstring& imagePath,
 
         std::wstring wheader = StringToWString(header);
         graphics.DrawString(wheader.c_str(), -1, &font, rect, &format, &brush);
-
-        LogInfo("width " + std::to_string(bmp->GetWidth()));
-        LogInfo("height " + std::to_string(bmp->GetHeight()));
     }
 
     if (!data.empty()) {
-        FontFamily fontFamily(L"Digital-7");
-        Font font(&fontFamily, TO_REAL(dataFontSize), FontStyleRegular, UnitPixel);
         SolidBrush brush(Color(255, 255, 255, 255)); // White
 
-        // RectF rect(0, 0, static_cast<REAL>(bmp->GetWidth()), static_cast<REAL>(bmp->GetHeight()));
         RectF rect(0, TO_REAL(dataOffset), TO_REAL(bmp->GetWidth()), TO_REAL(dataFontSize + 4));
         StringFormat format;
         format.SetAlignment(StringAlignmentCenter);
         format.SetLineAlignment(StringAlignmentNear);
 
         std::wstring wdata = StringToWString(data);
-        graphics.DrawString(wdata.c_str(), -1, &font, rect, &format, &brush);
+
+        Font* font = GDIFonts::GetFont(TO_REAL(dataFontSize));
+        // Font fallbackFont(L"Arial", 20, FontStyleRegular, UnitPixel);
+        if (font) {
+            if (font->GetLastStatus() != Ok) {
+                LogError("Font is invalid or not loaded properly.");
+            }
+            graphics.DrawString(wdata.c_str(), -1, font, rect, &format, &brush);
+        } else {
+            LogInfo("No font for drawing");
+        }
     }
 
-    if (!data2.empty()) {
-        FontFamily fontFamily(L"Digital-7");
-        Font font(&fontFamily, TO_REAL(data2FontSize), FontStyleRegular, UnitPixel);
-        SolidBrush brush(Color(255, 255, 255, 255)); // White
+    // if (!data2.empty()) {
+    //     FontFamily fontFamily(L"Digital-7");
+    //     // Font font(&fontFamily, TO_REAL(data2FontSize), FontStyleRegular, UnitPixel);
+    //     // Font font = CreateCustomFont(TO_REAL(data2FontSize));
+    //     SolidBrush brush(Color(255, 255, 255, 255)); // White
 
-        // RectF rect(0, 0, static_cast<REAL>(bmp->GetWidth()), static_cast<REAL>(bmp->GetHeight()));
-        RectF rect(0, TO_REAL(data2Offset), TO_REAL(bmp->GetWidth()), TO_REAL(data2FontSize + 4));
-        StringFormat format;
-        format.SetAlignment(StringAlignmentCenter);
-        format.SetLineAlignment(StringAlignmentNear);
+    //     // RectF rect(0, 0, static_cast<REAL>(bmp->GetWidth()), static_cast<REAL>(bmp->GetHeight()));
+    //     RectF rect(0, TO_REAL(data2Offset), TO_REAL(bmp->GetWidth()), TO_REAL(data2FontSize + 4));
+    //     StringFormat format;
+    //     format.SetAlignment(StringAlignmentCenter);
+    //     format.SetLineAlignment(StringAlignmentNear);
 
-        std::wstring wdata = StringToWString(data2);
-        graphics.DrawString(wdata.c_str(), -1, &font, rect, &format, &brush);
-    }
+    //     std::wstring wdata = StringToWString(data2);
+    //     // Font* font = FontManager::GetFont(TO_REAL(data2FontSize));
+    //     // if (font) {
+    //     //     graphics.DrawString(wdata.c_str(), -1, font, rect, &format, &brush);
+    //     // }
+    // }
 
     std::string base64Image = BitmapToBase64(bmp);
     delete bmp;

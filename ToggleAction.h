@@ -2,6 +2,8 @@
 
 #include <string>
 #include <Windows.h>
+#include "BaseAction.h"
+#include "SimManager.h"
 #include "StreamDockSDK/HSDAction.h"
 
 struct PluginSettings {
@@ -11,6 +13,9 @@ struct PluginSettings {
     std::string toggleEvent;
     std::string feedbackVar;
     std::string displayVar;
+    std::string displayValue = "";
+    SimVarDefinition displayReg;
+    SimVarDefinition feedbackReg;
     bool isActive = false;
 
     void FromJson(const nlohmann::json& json) {
@@ -18,11 +23,10 @@ struct PluginSettings {
         if (json.contains("toggleEvent")) toggleEvent = json["toggleEvent"].get<std::string>();
         if (json.contains("feedbackVar")) feedbackVar = json["feedbackVar"].get<std::string>();
         if (json.contains("displayVar")) displayVar = json["displayVar"].get<std::string>();
-        // Add other fields if needed
     }
 };
 
-class ToggleAction : public HSDAction
+class ToggleAction : public HSDAction, public BaseAction
 {
     using HSDAction::HSDAction;
 
@@ -30,10 +34,15 @@ class ToggleAction : public HSDAction
 
     virtual void DidReceiveSettings(const nlohmann::json& payload);
     virtual void KeyDown(const nlohmann::json& payload);
-    // virtual void DialDown(const nlohmann::json& payload);
     virtual void KeyUp(const nlohmann::json& payload);
     virtual void SendToPlugin(const nlohmann::json& payload);
     virtual void WillAppear(const nlohmann::json& payload);
     virtual void WillDisappear(const nlohmann::json& payload);
-    virtual void UpdateImage();
+
+    void InitializeSettings(const nlohmann::json& payload) override;
+    void UpdateImage() override;
+    void UninitializeSettings() override;
+
+private:
+    std::vector<SimVarDefinition> CollectVariables() override;
 };

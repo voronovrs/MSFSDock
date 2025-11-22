@@ -38,10 +38,10 @@ function updateSettings() {
 
 // Listen to input events and send full payload
 $dom.header.on("input", updateSettings);
-$dom.toggleEvent.on("input", updateSettings);
-$dom.feedbackVar.on("input", updateSettings);
-$dom.displayVar.on("input", updateSettings);
+$dom.toggleEvent.on("change", updateSettings);
+$dom.feedbackVar.on("change", updateSettings);
+$dom.displayVar.on("change", updateSettings);
 
-$propEvent.sendToPropertyInspector = (data) => {
-    console.log("From plugin:", data);
-};
+// $propEvent.sendToPropertyInspector = (data) => {
+//     console.log("From plugin:", data);
+// };

@@ -1,6 +1,7 @@
 ![screenshot](com.rvoronov.msfsDock.sdPlugin/images/plugin_icon.png)
-# Description
+# This is work in progress
 
+# Description
 MSFSDock plugin for Ajazz AKP05, Mirabox N4 and other compatible devices. Plugin allows interaction with Microsoft Flight Simulartor 2020 and 2024, read sim variable, toggle actions, change values etc.
 
 # Plugin Actions
@@ -9,11 +10,12 @@ This action intended to implement plane button on Stream Dock button. Button can
 ### Generic Button parameters:
 - Header - header to be displayed on a button
 - Event - event to be triggered by button
-- Status variable - Variable used in displaying active status
+- Status variable - Variable used in displaying active status (green light in the button bottom)
 - Display variable - Variable used in displaying additional data on a button if necessary
 
 ## Generic Dial
-This action intended to implement plane dial on Stream Dock knob. Dial can display one or two values, change value by rotating a knob, call event by pressing a knob or switch between dials if dual dial is set and both dials are configurable.
+(Not in build yet)
+This action intended to implement plane dial on Stream Dock display. Dial can display one or two values, change value by rotating a knob, call event by pressing a knob/screen or switch between dials if dual dial is set and both dials are configured.
 ### Generic Dial parameters:
 #### Common settings
 - Type - Singe or Dual dial setup
@@ -28,7 +30,7 @@ This action intended to implement plane dial on Stream Dock knob. Dial can displ
 - Inc event - event to be triggered by rotating knob clockwise when second dial active
 - Dec event - event to be triggered by rotating knob counterclockwise when second dial active
 #### Dial push settings
-- Push event - pushing a knob could trigger event, this setting is available in both single and dual dial configuration, but only if one of the dials is configurable in dual case (Inc and Dec events set only to one of the dials, if both dials are configurable in dual dial pushing knob will switch between dials.
+- Push event - pushing a knob/screen could trigger event, this setting is available in both single and dual dial configuration, but only if one of the dials is configured in dual case (Inc and Dec events set only to one of the dials, if both dials are configured pushing knob will switch between dials).
 
 # Installation
 
