@@ -17,6 +17,7 @@ struct PluginSettings {
     SimVarDefinition displayReg;
     SimVarDefinition feedbackReg;
     bool isActive = false;
+    DWORD toggleEventID = 0;
 
     void FromJson(const nlohmann::json& json) {
         if (json.contains("header")) header = json["header"].get<std::string>();
