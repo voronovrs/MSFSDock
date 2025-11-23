@@ -46,4 +46,5 @@ class ToggleAction : public HSDAction, public BaseAction
 
 private:
     std::vector<SimVarDefinition> CollectVariables() override;
+    std::vector<std::string> CollectEvents() override;
 };

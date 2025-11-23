@@ -1,4 +1,5 @@
 #pragma once
+#include <Windows.h>
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -43,4 +44,9 @@ struct SimVarDefinition {
     int GetDecimals() const {
         return KnownVariables::GetDecimals(name);
     }
+};
+
+struct EventDefinition {
+    std::string name;
+    DWORD id;
 };

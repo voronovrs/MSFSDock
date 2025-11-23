@@ -15,6 +15,14 @@ std::vector<SimVarDefinition> ToggleAction::CollectVariables() {
     return variables;
 }
 
+std::vector<std::string> ToggleAction::CollectEvents() {
+    std::vector<std::string> events;
+    if (!toggle_settings.toggleEvent.empty()) {
+        events.push_back(toggle_settings.toggleEvent);
+    }
+    return events;
+}
+
 void ToggleAction::InitializeSettings(const nlohmann::json& payload) {
     nlohmann::json settings = payload["settings"];
     toggle_settings.FromJson(settings);
@@ -27,10 +35,6 @@ void ToggleAction::InitializeSettings(const nlohmann::json& payload) {
     }
     if (!toggle_settings.feedbackVar.empty()) {
         newFeedbackReg = {.name=toggle_settings.feedbackVar, .group=FEEDBACK_VARIABLE};
-    }
-
-    if (!toggle_settings.toggleEvent.empty()) {
-        toggle_settings.toggleEventID = SimManager::Instance().RegisterEvent(toggle_settings.toggleEvent);
     }
 
     if (newDisplayReg == toggle_settings.displayReg && newFeedbackReg == toggle_settings.feedbackReg) {

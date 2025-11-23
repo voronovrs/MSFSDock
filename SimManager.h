@@ -34,10 +34,10 @@ public:
     void SubscribeToVariable(const std::string& name, VariableUpdateCallback callback);
 
     void RegisterSimVars(const std::vector<SimVarDefinition>& vars);
+    void RegisterEvents(const std::vector<std::string>& events);
     void DeregisterSimVars(const std::vector<SimVarDefinition>& vars);
     void RegisterVariables();
     void DeregisterVariables();
-    DWORD RegisterEvent(const std::string& name);
     void SendEvent(const std::string& name);
 
     bool TryGetCachedValue(const std::string& name, double& outValue);
@@ -47,17 +47,26 @@ private:
     ~SimManager();
 
     void Run();
+    void SafeDisconnect();
+    void HandleSimDisconnect(); // cleanup after disconnect
+    void OnSimConnected();
+    void OnSimStart();
+    void NotifyAndClearAllVariables();
     static void CALLBACK DispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, void* pContext);
 
     HANDLE hSimConnect = nullptr;
     std::thread simThread;
     std::atomic<bool> running = false;
+    std::atomic<bool> simReady = false;
 
+    std::queue<std::function<void()>> pendingTasks_;
+    std::mutex pendingMutex_;
     std::queue<std::function<void()>> simTasks;
     std::mutex simTaskMutex;
     std::condition_variable simTaskCV;
 
     std::vector<SimVarDefinition> variables_;
+    std::vector<EventDefinition> registeredEvents_;
 
     std::unordered_map<std::string, double> variableValues_;
     mutable std::shared_mutex variableMutex_;
@@ -68,8 +77,10 @@ private:
     void AddNewVariables(const std::vector<SimVarDefinition>& incoming);
     void RmUnusedVariables(const std::vector<SimVarDefinition>& incoming);
 
+    void AddNewEvents(const std::vector<std::string>& incoming);
+    void RegisterEventsInSim();
+
     DWORD m_nextEventId = 1000;
-    std::unordered_map<std::string, DWORD> m_events;
 
     static inline bool IsValueValid(double v) {
         if (std::isnan(v)) return false;
