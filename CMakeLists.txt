@@ -5,9 +5,16 @@ project(com.mirabox.msfsDock VERSION 0.1)
 # set the C++ standard to C++ 20
 set(CMAKE_CXX_STANDARD 20)
 set(CXX_STANDARD_REQUIRED true)
+
 if (MSVC)
-  add_definitions("/Zc:__cplusplus" -DUNICODE=1)
+    add_definitions("/Zc:__cplusplus" -DUNICODE=1)
+
+    # Debug → MDd, Release → MT
+    set(CMAKE_MSVC_RUNTIME_LIBRARY
+        "$<$<CONFIG:Debug>:MultiThreadedDebugDLL>$<$<CONFIG:Release>:MultiThreaded>"
+    )
 endif()
+
 include_directories("${CMAKE_SOURCE_DIR}")
 
 # StreamDock CPP SDK

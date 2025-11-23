@@ -16,4 +16,5 @@ public:
     virtual ~BaseAction() = default;
 private:
     virtual std::vector<SimVarDefinition> CollectVariables() = 0;
+    virtual std::vector<std::string> CollectEvents() = 0;
 };

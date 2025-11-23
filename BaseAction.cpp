@@ -4,10 +4,12 @@
 
 void BaseAction::RegisterValues() {
     std::vector<SimVarDefinition> variables = CollectVariables();
+    std::vector<std::string> events = CollectEvents();
 
     SimManager::Instance().RegisterSimVars(variables);
     SimManager::Instance().DeregisterVariables();
     SimManager::Instance().RegisterVariables();
+    SimManager::Instance().RegisterEvents(events);
 }
 
 void BaseAction::DeregisterValues() {
@@ -15,5 +17,5 @@ void BaseAction::DeregisterValues() {
 
     SimManager::Instance().DeregisterSimVars(variables);
     SimManager::Instance().DeregisterVariables();
-    SimManager::Instance().RegisterVariables();
+    // SimManager::Instance().RegisterVariables();
 }
