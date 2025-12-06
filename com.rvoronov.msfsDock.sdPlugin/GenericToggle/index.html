@@ -16,19 +16,19 @@
   <div class="sdpi-wrapper" style="display: none">
     <div class="sdpi-item">
       <div class="sdpi-item-label">Header</div>
-      <input class="sdpi-item-value" id="header" value="" placeholder="e.g. YD">
+      <input class="sdpi-item-value" id="header" value="" placeholder="">
     </div>
     <div class="sdpi-item">
-        <div class="sdpi-item-label">Event</div>
-        <input class="sdpi-item-value" id="toggleEvent" value="" placeholder="TOGGLE EVENT" pattern="[A-Z_]*">
+        <div class="sdpi-item-label" title="Sim event to be called when button pressed">Button event</div>
+        <input class="sdpi-item-value" id="toggleEvent" value="" placeholder="EVENT" pattern="[A-Z0-9:_ ]*">
     </div>
     <div class="sdpi-item">
-        <div class="sdpi-item-label">Status variable</div>
-        <input class="sdpi-item-value" id="feedbackVar" value="" placeholder="STATUS VARIABLE" pattern="[A-Z0-9: ]*">
+        <div class="sdpi-item-label" title="Sim variable to be displayed on a button">Display variable</div>
+        <input class="sdpi-item-value" id="displayVar" value="" placeholder="DISPLAY VARIABLE" pattern="[A-Z0-9:_ ]*">
     </div>
     <div class="sdpi-item">
-        <div class="sdpi-item-label">Display variable</div>
-        <input class="sdpi-item-value" id="displayVar" value="" placeholder="DISPLAY VARIABLE" pattern="[A-Z0-9: ]*">
+        <div class="sdpi-item-label" title="Sim variable to be used to show active status on a button (green light)">Status variable</div>
+        <input class="sdpi-item-value" id="feedbackVar" value="" placeholder="STATUS VARIABLE" pattern="[A-Z0-9:_ ]*">
     </div>
   </div>
   <script src="../static/utils/common.js"></script>

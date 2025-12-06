@@ -1,23 +1,16 @@
 const $local = false, $back = false,
     $dom = {
         main: $('.sdpi-wrapper'),
-        type: $("#type"),
         header: $("#header"),
         displayVar: $("#displayVar"),
         incEvent: $("#incEvent"),
         decEvent: $("#decEvent"),
+        toggleEvent: $("#toggleEvent"),
         feedbackVar: $("#feedbackVar"),
-        pushEvent: $("#pushEvent"),
-        secDisplayVar: $("#secDisplayVar"),
-        secIncEvent: $("#secIncEvent"),
-        secDecEvent: $("#secDecEvent")
     },
     $propEvent = {
         didReceiveSettings() {
             console.log($settings);
-            if ($settings.type) {
-                $dom.type.value = $settings.type;
-            }
             if ($settings.header) {
                 $dom.header.value = $settings.header;
             }
@@ -30,20 +23,11 @@ const $local = false, $back = false,
             if ($settings.decEvent) {
                 $dom.decEvent.value = $settings.decEvent;
             }
+            if ($settings.toggleEvent) {
+                $dom.toggleEvent.value = $settings.toggleEvent;
+            }
             if ($settings.feedbackVar) {
                 $dom.feedbackVar.value = $settings.feedbackVar;
-            }
-            if ($settings.pushEvent) {
-                $dom.pushEvent.value = $settings.pushEvent;
-            }
-            if ($settings.secDisplayVar) {
-                $dom.secDisplayVar.value = $settings.secDisplayVar;
-            }
-            if ($settings.secIncEvent) {
-                $dom.secIncEvent.value = $settings.secIncEvent;
-            }
-            if ($settings.secDecEvent) {
-                $dom.secDecEvent.value = $settings.secDecEvent;
             }
         },
         sendToPropertyInspector(data) { }
@@ -52,32 +36,24 @@ const $local = false, $back = false,
 // Helper to send both values together
 function updateSettings() {
     const data = {
-        type: $dom.type.value,
         header: $dom.header.value,
         displayVar: $dom.displayVar.value,
         incEvent: $dom.incEvent.value,
         decEvent: $dom.decEvent.value,
+        toggleEvent: $dom.toggleEvent.value,
         feedbackVar: $dom.feedbackVar.value,
-        pushEvent: $dom.pushEvent.value,
-        secDisplayVar: $dom.secDisplayVar.value,
-        secIncEvent: $dom.secIncEvent.value,
-        secDecEvent: $dom.secDecEvent.value
     };
     $websocket.saveData(data);
 }
 
 // Listen to input events and send full payload
-$dom.type.on("input", updateSettings);
 $dom.header.on("input", updateSettings);
-$dom.displayVar.on("input", updateSettings);
-$dom.incEvent.on("input", updateSettings);
-$dom.decEvent.on("input", updateSettings);
-$dom.feedbackVar.on("input", updateSettings);
-$dom.pushEvent.on("input", updateSettings);
-$dom.secDisplayVar.on("input", updateSettings);
-$dom.secIncEvent.on("input", updateSettings);
-$dom.secDecEvent.on("input", updateSettings);
+$dom.displayVar.on("change", updateSettings);
+$dom.incEvent.on("change", updateSettings);
+$dom.decEvent.on("change", updateSettings);
+$dom.toggleEvent.on("change", updateSettings);
+$dom.feedbackVar.on("change", updateSettings);
 
-$propEvent.sendToPropertyInspector = (data) => {
-    console.log("From plugin:", data);
-};
+// $propEvent.sendToPropertyInspector = (data) => {
+//     console.log("From plugin:", data);
+// };

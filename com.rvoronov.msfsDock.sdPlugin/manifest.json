@@ -25,7 +25,7 @@
       ],
       "SupportedInMultiActions": true,
       "PropertyInspectorPath": "GenericDial/index.html",
-      "Tooltip": "Use SimConnect or MobiFlight variables to dispaly dials and interract with them",
+      "Tooltip": "Use SimConnect or MobiFlight variables to dispaly dial and interract with them",
       "UUID": "com.rvoronov.msfsDock.generic.dial",
       "Controllers": [ "Knob" ]
     }

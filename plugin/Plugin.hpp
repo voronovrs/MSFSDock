@@ -1,8 +1,6 @@
 #pragma once
 
 #include "StreamDockCPPSDK/StreamDockSDK/HSDPlugin.h"
-#include "ToggleAction.h"
-#include "DialAction.h"
 #include <set>
 #include <mutex>
 

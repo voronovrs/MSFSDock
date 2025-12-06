@@ -1,6 +1,6 @@
-#include "GDIPlusManager.h"
-#include "GDIFonts.h"
-#include "Logger.h"
+#include "GDIPlusManager.hpp"
+#include "GDIFonts.hpp"
+#include "plugin/Logger.hpp"
 #include <memory>
 #include <vector>
 
@@ -108,7 +108,8 @@ std::string DrawButtonImage(const std::wstring& imagePath,
     }
 
     if (!data.empty()) {
-        SolidBrush brush(Color(255, 255, 255, 255)); // White
+        SolidBrush brush(Color(255, 235, 235, 235)); // White
+        // SolidBrush brush(Color(255, 255, 165, 0)); // Orange
 
         RectF rect(0, TO_REAL(dataOffset), TO_REAL(bmp->GetWidth()), TO_REAL(dataFontSize + 4));
         StringFormat format;
@@ -128,6 +129,28 @@ std::string DrawButtonImage(const std::wstring& imagePath,
             LogInfo("No font for drawing");
         }
     }
+
+    // if (!data.empty()) {
+    //     SolidBrush brush(Color(255, 255, 255, 255)); // White
+
+    //     RectF rect(0, TO_REAL(dataOffset), TO_REAL(bmp->GetWidth()), TO_REAL(dataFontSize + 4));
+    //     StringFormat format;
+    //     format.SetAlignment(StringAlignmentCenter);
+    //     format.SetLineAlignment(StringAlignmentNear);
+
+    //     std::wstring wdata = StringToWString(data);
+
+    //     Font* font = GDIFonts::GetFont(TO_REAL(dataFontSize));
+    //     // Font fallbackFont(L"Arial", 20, FontStyleRegular, UnitPixel);
+    //     if (font) {
+    //         if (font->GetLastStatus() != Ok) {
+    //             LogError("Font is invalid or not loaded properly.");
+    //         }
+    //         graphics.DrawString(wdata.c_str(), -1, font, rect, &format, &brush);
+    //     } else {
+    //         LogInfo("No font for drawing");
+    //     }
+    // }
 
     // if (!data2.empty()) {
     //     FontFamily fontFamily(L"Digital-7");

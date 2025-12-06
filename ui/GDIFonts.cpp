@@ -1,5 +1,5 @@
-#include "GDIFonts.h"
-#include "Logger.h"
+#include "GDIFonts.hpp"
+#include "plugin/Logger.hpp"
 #include <vector>
 
 using namespace Gdiplus;

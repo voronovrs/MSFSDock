@@ -1,6 +1,9 @@
 ![screenshot](com.rvoronov.msfsDock.sdPlugin/images/plugin_icon.png)
 # This is work in progress
 
+# Example configuration
+![screenshot](com.rvoronov.msfsDock.sdPlugin/images/example.jpg)
+
 # Description
 MSFSDock plugin for Ajazz AKP05, Mirabox N4 and other compatible devices. Plugin allows interaction with Microsoft Flight Simulartor 2020 and 2024, read sim variable, toggle actions, change values etc.
 
@@ -18,29 +21,25 @@ This plugin supports regular variables along with L-vars and MobiFligtht\WASM ev
 This action intended to implement plane button on Stream Dock button. Button can display header, active state and value if necessary.
 ### Generic Button parameters:
 - Header - header to be displayed on a button
-- Event - event to be triggered by button
-- Status variable - Variable used in displaying active status (green light in the button bottom)
+- Button event - event to be triggered by button press
 - Display variable - Variable used in displaying additional data on a button if necessary
+- Status variable - Variable used in displaying active status (green light in the button bottom)
 
-## Generic Dial
-(Not in build yet)
-This action intended to implement plane dial on Stream Dock display. Dial can display one or two values, change value by rotating a knob, call event by pressing a knob/screen or switch between dials if dual dial is set and both dials are configured.
+## Generic Dial (single)
+This action intended to implement plane dial on Stream Dock display. Dial can display value, change value by rotating a knob, call event by pressing a knob/screen.
 ### Generic Dial parameters:
-#### Common settings
-- Type - Singe or Dual dial setup
-- Header - header to be displayed on a button
-- Display variable - Variable to display on a dial (first dial in Dual dial setup)
+- Header - header to be displayed on a dial
+- Display variable - Variable to display on a dial
 - Inc event - event to be triggered by rotating knob clockwise
 - Dec event - event to be triggered by rotating knob counterclockwise
-#### Single dial settings
-- Status variable - Variable used in displaying active status
-#### Dual dial settings
-- Display variable - Variable to display on a second dial
-- Inc event - event to be triggered by rotating knob clockwise when second dial active
-- Dec event - event to be triggered by rotating knob counterclockwise when second dial active
-#### Dial push settings
-- Push event - pushing a knob/screen could trigger event, this setting is available in both single and dual dial configuration, but only if one of the dials is configured in dual case (Inc and Dec events set only to one of the dials, if both dials are configured pushing knob will switch between dials).
+- Knob event - event to be triggered by pushing a knob or screen.
+- Status variable - Variable used in displaying active status (bottom field of a dial)
 
 # Installation
 
 Copy `com.rvoronov.msfsDock.sdPlugin` folder into `%appdata%/Hotspot/StreamDock/plugins/`.
+
+# Known issues and limitations
+- No choice of variable type, only integer so far
+- No dual dials yet
+- Probably a lot of bugs with registering\deregistering variables and events
