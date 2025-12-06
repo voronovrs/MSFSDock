@@ -1,11 +1,16 @@
 #include <fstream>
 
-#include "GDIFonts.h"
-#include "GDIPlusManager.h"
-#include "Logger.h"
-#include "Plugin.h"
-#include "SimManager.h"
+#include "plugin/Logger.hpp"
+#include "plugin/Plugin.hpp"
+#include "ui/GDIFonts.hpp"
+#include "ui/GDIPlusManager.hpp"
 #include <thread>
+
+#ifdef SIM_MOCK
+#include "sim/SimManagerMock.hpp"
+#else
+#include "sim/SimManager.hpp"
+#endif
 
 #include "StreamDockCPPSDK/StreamDockSDK/HSDMain.h"
 

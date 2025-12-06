@@ -1,6 +1,8 @@
 
-#include "Logger.h"
-#include "Plugin.h"
+#include "Logger.hpp"
+#include "Plugin.hpp"
+#include "core/ButtonAction.hpp"
+#include "core/DialAction.hpp"
 
 #include "StreamDockCPPSDK/StreamDockSDK/NlohmannJSONUtils.h"
 
@@ -13,7 +15,7 @@ std::shared_ptr<HSDAction> MSFSDockPlugin::GetOrCreateAction(const std::string& 
     }
 
     if (action == "com.rvoronov.msfsDock.generic.toggle") {
-        auto impl = std::make_shared<ToggleAction>(
+        auto impl = std::make_shared<ButtonAction>(
             mConnectionManager,
             action,
             context

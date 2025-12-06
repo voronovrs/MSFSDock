@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="utf-8" />
-  <title>MSFS Dock Generic Dial PI</title>
+  <title>MSFS Dock Single Dial PI</title>
   <link rel="stylesheet" href="../static/css/sdpi.css" />
   <style>
     .sdpi-item {
@@ -13,113 +13,34 @@
 </head>
 
 <body>
-  <div class="sdpi-wrapper">
-    <div class="sdpi-item">
-      <div class="sdpi-item-label">Type</div>
-        <select class="sdpi-item-value select" id="type" onchange="CustomShow()">
-          <option value="Single">Single</option>
-          <option value="Dual">Dual</option>
-        </select>
-    </div>
+  <div class="sdpi-wrapper" style="display: none">
     <div class="sdpi-item">
       <div class="sdpi-item-label">Header</div>
-      <input class="sdpi-item-value" id="header" value="" placeholder="e.g. YD" onchange="CustomShow()">
+      <input class="sdpi-item-value" id="header" value="" placeholder="">
     </div>
     <div class="sdpi-item">
-        <div class="sdpi-item-label">Display variable</div>
-        <input class="sdpi-item-value" id="displayVar" value="" placeholder="DIAL DISPLAY VARIABLE" pattern="[A-Z0-9: ]*" onchange="CustomShow()">
+        <div class="sdpi-item-label" title="Sim variable to be displayed on a dial">Display variable</div>
+        <input class="sdpi-item-value" id="displayVar" value="" placeholder="DISPLAY VARIABLE" pattern="[A-Z0-9:_ ]*">
     </div>
     <div class="sdpi-item">
-      <div class="sdpi-item-label">Inc event</div>
-      <input class="sdpi-item-value" id="incEvent" value="" placeholder="INCREMENT EVENT" onchange="CustomShow()" pattern="[A-Z_]">
+        <div class="sdpi-item-label" title="Sim event to be called when rotating knob CW">Inc event</div>
+        <input class="sdpi-item-value" id="incEvent" value="" placeholder="INCREMENT EVENT" pattern="[A-Z0-9:_ ]*">
     </div>
     <div class="sdpi-item">
-      <div class="sdpi-item-label">Dec event</div>
-      <input class="sdpi-item-value" id="decEvent" value="" placeholder="DECREMENT EVENT" onchange="CustomShow()" pattern="[A-Z_]">
+        <div class="sdpi-item-label" title="Sim event to be called when rotating knob CCW">Dec event</div>
+        <input class="sdpi-item-value" id="decEvent" value="" placeholder="DECREMENT EVENT" pattern="[A-Z0-9:_ ]*">
     </div>
-    <div id="singleFields">
-      <div class="sdpi-heading">Single Dial Settings</div>
-      <div class="sdpi-item">
-          <div class="sdpi-item-label">Status variable</div>
-          <input class="sdpi-item-value" id="feedbackVar" value="" placeholder="DIAL STATUS VARIABLE" onchange="CustomShow()" pattern="[A-Z0-9: ]*">
-      </div>
+    <div class="sdpi-item">
+        <div class="sdpi-item-label" title="Sim event to be called when knob pushed">Knob event</div>
+        <input class="sdpi-item-value" id="toggleEvent" value="" placeholder="KNOB EVENT" pattern="[A-Z0-9:_ ]*">
     </div>
-    <div id="singleConfigurableFields">
-        <div class="sdpi-heading">Dial push Settings</div>
-        <div class="sdpi-heading">
-            <sub>Applicable in both single and dual dial configuration, but only if Inc and Dec events configured for one of dials, otherwise dial push will switch active dial.</sub>
-        </div>
-        <div class="sdpi-item">
-            <div class="sdpi-item-label">Push event</div>
-            <input class="sdpi-item-value" id="pushEvent" value="" placeholder="KNOB\SCREEN PUSH EVENT" onchange="CustomShow()" pattern="[A-Z_]">
-        </div>
-    </div>
-    <div id="dualFields">
-        <div class="sdpi-heading">Dual Dial Settings</div>
-        <div class="sdpi-item">
-            <div id="LabelDisplayValue" class="sdpi-item-label">Display variable</div>
-            <input class="sdpi-item-value" id="secDisplayVar" value="" placeholder="DIAL2 DISPLAY VARIABLE" onchange="CustomShow()" pattern="[A-Z_]">
-        </div>
-        <div class="sdpi-item">
-            <div class="sdpi-item-label">Inc event</div>
-            <input class="sdpi-item-value" id="secIncEvent" value="" placeholder="DIAL2 INCREMENT EVENT" onchange="CustomShow()" pattern="[A-Z_]">
-        </div>
-        <div class="sdpi-item">
-            <div class="sdpi-item-label">Dec event</div>
-            <input class="sdpi-item-value" id="secDecEvent" value="" placeholder="DIAL2 DECREMENT EVENT" onchange="CustomShow()" pattern="[A-Z_]">
-        </div>
+    <div class="sdpi-item">
+        <div class="sdpi-item-label" title="Sim variable to be used to show active status on a dial (green light)">Status variable</div>
+        <input class="sdpi-item-value" id="feedbackVar" value="" placeholder="STATUS VARIABLE" pattern="[A-Z0-9:_ ]*">
     </div>
   </div>
   <script src="../static/utils/common.js"></script>
   <script src="../static/action.js"></script>
   <script src="index.js"></script>
-  <script language="JavaScript" type="text/javascript">
-        function loadSettings(settings) {
-            if (settings['type']) { type.value = settings['type'] };
-            if (settings['header']) { header.value = settings['header'] };
-            if (settings['incEvent']) { incEvent.value = settings['incEvent'] };
-            if (settings['decEvent']) { decEvent.value = settings['decEvent'] };
-            if (settings['pushEvent']) { pushEvent.value = settings['pushEvent'] };
-            if (settings['displayVar']) { displayVar.value = settings['displayVar'] };
-            if (settings['secDisplayVar']) { secDisplayVar.value = settings['secDisplayVar'] };
-            if (settings['secIncEvent']) { secIncEvent.value = settings['secIncEvent'] };
-            if (settings['secDecEvent']) { secDecEvent.value = settings['secDecEvent'] };
-            if (settings['feedbackVar']) { feedbackVar.value = settings['feedbackVar'] };
-            CustomShow();
-        }
-
-        function updateData() {
-            const payload = {
-                "header": header.value,
-                "type": type.value,
-                "incEvent": incEvent.value,
-                "decEvent": decEvent.value,
-                "pushEvent": pushEvent.value,
-                "displayVar": displayVar.value,
-                "secDisplayVar": secDisplayVar.value,
-                "secIncEvent": secIncEvent.value,
-                "secDecEvent": secDecEvent.value,
-                "feedbackVar": feedbackVar.value,
-            };
-            CustomShow();
-            sendToPlugin(payload);
-            saveData(payload);
-        }
-
-        function CustomShow() {
-            singleFields.hidden = type.value != "Single";
-            dualFields.hidden = type.value != "Dual";
-            singleConfigurableFields.hidden = type.value == "Dual"
-                                                && (incEvent.value != "" || decEvent.value != "")
-                                                && (secIncEvent.value != "" || secDecEvent.value != "");
-
-            switch (type.value) {
-                case "Single":
-                    break;
-                case "Dual":
-                    break;
-            }
-        }
-  </script>
 </body>
 </html>

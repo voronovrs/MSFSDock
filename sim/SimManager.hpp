@@ -2,8 +2,7 @@
 
 #include <Windows.h>
 #include <SimConnect.h>
-#include "Logger.h"
-#include "SimVar.h"
+#include "core/SimVar.hpp"
 #include <condition_variable>
 #include <functional>
 #include <mutex>
@@ -13,8 +12,11 @@
 #include <string>
 #include <thread>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
+#include <map>
 
+using SubscriptionId = uint64_t;
 
 class SimManager {
 public:
@@ -26,18 +28,22 @@ public:
     void Start();
     void Stop();
 
+    void AddSimVars(std::vector<SimVarDefinition>& vars);
+    void RemoveSimVars(const std::vector<SimVarDefinition>& vars);
+
+    void AddSimEvents(std::vector<SimEventDefinition>& events);
+    void RemoveSimEvents(const std::vector<SimEventDefinition>& events);
+
     void QueueTask(std::function<void()> task);
 
     using VariableUpdateCallback = std::function<void(const std::string& name, double value)>;
-    std::unordered_map<std::string, std::vector<VariableUpdateCallback>> updateCallbacks_;
+    struct CallbackEntry { SubscriptionId id; VariableUpdateCallback cb; };
+    std::unordered_map<std::string, std::vector<CallbackEntry>> updateCallbacks_;
     std::shared_mutex callbackMutex_;
-    void SubscribeToVariable(const std::string& name, VariableUpdateCallback callback);
+    std::atomic<SubscriptionId> nextSubscriptionId_{1};
+    SubscriptionId SubscribeToVariable(const std::string& name, VariableUpdateCallback callback);
+    void UnsubscribeFromVariable(const std::string& name, SubscriptionId id);
 
-    void RegisterSimVars(const std::vector<SimVarDefinition>& vars);
-    void RegisterEvents(const std::vector<std::string>& events);
-    void DeregisterSimVars(const std::vector<SimVarDefinition>& vars);
-    void RegisterVariables();
-    void DeregisterVariables();
     void SendEvent(const std::string& name);
 
     bool TryGetCachedValue(const std::string& name, double& outValue);
@@ -59,26 +65,19 @@ private:
     std::atomic<bool> running = false;
     std::atomic<bool> simReady = false;
 
-    std::queue<std::function<void()>> pendingTasks_;
-    std::mutex pendingMutex_;
+    void RegisterVariablesToSim();
+    void DeregisterVariablesFromSim();
+    void RegisterEventsToSim();
+    void DeregisterEventsFromSim();
+    void ProcessPendingChanges();
+
     std::queue<std::function<void()>> simTasks;
     std::mutex simTaskMutex;
     std::condition_variable simTaskCV;
 
-    std::vector<SimVarDefinition> variables_;
-    std::vector<EventDefinition> registeredEvents_;
-
-    std::unordered_map<std::string, double> variableValues_;
-    mutable std::shared_mutex variableMutex_;
     void ParseGroupValues(const SIMCONNECT_RECV_SIMOBJECT_DATA* data, const DEFINITIONS group);
 
     std::mutex executionMutex_;
-
-    void AddNewVariables(const std::vector<SimVarDefinition>& incoming);
-    void RmUnusedVariables(const std::vector<SimVarDefinition>& incoming);
-
-    void AddNewEvents(const std::vector<std::string>& incoming);
-    void RegisterEventsInSim();
 
     DWORD m_nextEventId = 1000;
 
@@ -88,4 +87,9 @@ private:
         if (v < -1e6 || v > 1e6) return false;
         return true;
     }
+
+    std::mutex mutex_;
+    std::map<std::string, SimVarDefinition> vars_;
+    std::map<std::string, SimEventDefinition> events_;
+    std::unordered_set<int> registeredGroups_;
 };

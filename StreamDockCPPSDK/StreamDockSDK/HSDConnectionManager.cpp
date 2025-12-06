@@ -77,8 +77,8 @@ void HSDConnectionManager::OnMessage(websocketpp::connection_hdl, WebsocketClien
             NlohmannJSONUtils::GetObjectByName(receivedJson, kESDSDKCommonPayload, payload);
 
             // TODO: remove this logging
-            std::ofstream log("log.txt", std::ios::app);
-            log << "EVENT " << event << " ACTION " << action << " PAYLOAD " << payload << std::endl;
+            // std::ofstream log("log.txt", std::ios::app);
+            // log << "GENERAL_EVENT " << event << " ACTION " << action << " PAYLOAD " << payload << std::endl;
 
             if (event == kESDSDKEventKeyDown) {
                 mPlugin->KeyDownForAction(action, context, payload, deviceID);
