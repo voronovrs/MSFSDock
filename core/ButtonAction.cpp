@@ -8,6 +8,7 @@ void ButtonAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
     const auto& settings = payload["settings"];
 
     header_ = settings.value("header", "");
+    skin_ = settings.value("skin", "skin1");
 
     std::vector<SimVarDefinition> varsToRegister;
     std::vector<SimVarDefinition> varsToDeregister;
@@ -38,19 +39,19 @@ void ButtonAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
     }
 
     // Add new variables if necessary
-    if (!newDisplay.empty()) {
+    if (!newDisplay.empty() && newDisplay != displayVar_) {
         displayVarDef_.name = newDisplay;
         displayVarDef_.group = LIVE_VARIABLE;
         varsToRegister.push_back(displayVarDef_);
     }
 
-    if (!newFeedback.empty()) {
+    if (!newFeedback.empty() && newFeedback != feedbackVar_) {
         feedbackVarDef_.name = newFeedback;
         feedbackVarDef_.group = FEEDBACK_VARIABLE;
         varsToRegister.push_back(feedbackVarDef_);
     }
 
-    if (!newEvent.empty()) {
+    if (!newEvent.empty() && newEvent != toggleEvent_) {
         toggleEventDef_.name = newEvent;
         eventsToRegister.push_back(toggleEventDef_);
     }
@@ -157,20 +158,34 @@ void ButtonAction::ClearSettings() {
     feedbackSubId_ = 0;
 }
 
-void ButtonAction::OnSimVarUpdated(const std::string& name, double value)
-{
-    if (name == displayVar_) {
-        displayValue_ = std::to_string(value);
-    }
-    if (name == feedbackVar_) {
-        isActive = (value != 0);
-    }
-    UpdateImage();
-}
-
 void ButtonAction::UpdateImage() {
+    int headerOffset = 0, headerFontSize = 0, dataOffset = 0, dataFontSize = 0;
+    std::wstring backgroundImageInactive, backgroundImageActive;
+    Gdiplus::Color header_color, data_color;
+
+    if (skin_ == "skin1") {
+        backgroundImageInactive = b_Inactive;
+        backgroundImageActive = b_Active;
+        headerOffset = 4;
+        headerFontSize = 16;
+        dataOffset = 25;
+        dataFontSize = 20;
+        header_color = COLOR_WHITE;
+        data_color = COLOR_OFF_WHITE;
+    } else {
+        backgroundImageInactive = ab_Inactive;
+        backgroundImageActive = ab_Active;
+        headerOffset = 44;
+        headerFontSize = 16;
+        dataOffset = 25;
+        dataFontSize = 20;
+        header_color = COLOR_BRIGHT_ORANGE;
+        data_color = COLOR_OFF_WHITE;
+    }
+
     std::wstring img_path = (isActive) ? backgroundImageActive : backgroundImageInactive;
     std::string val = (displayVar_.empty()) ? "" : std::to_string(static_cast<int>(displayVarDef_.value));
-    std::string base64Image = DrawButtonImage(img_path, header_, val);
+    std::string base64Image = DrawButtonImage(img_path, header_, header_color, val, data_color, "",
+        headerOffset, headerFontSize, dataOffset, dataFontSize);
     SetImage(base64Image, kESDSDKTarget_HardwareAndSoftware, -1);
 }
