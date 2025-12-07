@@ -31,10 +31,6 @@ public:
 private:
     void UpdateVariablesAndEvents(const nlohmann::json& payload);
     void ClearSettings();
-    void OnSimVarUpdated(const std::string& name, double value);
-
-    const std::wstring backgroundImageInactive = L"images/button.png";
-    const std::wstring backgroundImageActive = L"images/button_active.png";
 
     // parsed settings
     std::string displayVar_;
@@ -42,6 +38,12 @@ private:
     std::string toggleEvent_;
     std::string header_;
     bool isActive = false;
+    std::string skin_;
+
+    const std::wstring b_Inactive = L"images/button.png";
+    const std::wstring b_Active = L"images/button_active.png";
+    const std::wstring ab_Inactive = L"images/button_ab.png";
+    const std::wstring ab_Active = L"images/button_ab_active.png";
 
     SimVarDefinition displayVarDef_;
     SimVarDefinition feedbackVarDef_;

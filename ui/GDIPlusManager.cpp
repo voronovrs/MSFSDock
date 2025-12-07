@@ -11,6 +11,10 @@
 static ULONG_PTR g_gdiplusToken = 0;
 
 using namespace Gdiplus;
+const Color COLOR_WHITE(255, 255, 255, 255);
+const Color COLOR_OFF_WHITE(255, 235, 235, 235);
+const Color COLOR_ORANGE(255, 204, 85, 0);
+const Color COLOR_BRIGHT_ORANGE(255, 255, 165, 0);
 
 void InitGDIPlus() {
     if (g_gdiplusToken != 0)
@@ -79,8 +83,8 @@ static std::string BitmapToBase64(Gdiplus::Bitmap* bmp) {
 
 // Draw text over the loaded PNG and return base64
 std::string DrawButtonImage(const std::wstring& imagePath,
-                      const std::string& header, const std::string& data, const std::string& data2,
-                      int headerOffset, int headerFontSize, int dataOffset, int dataFontSize,
+                      const std::string& header, Color header_color, const std::string& data, Color data_color,
+                      const std::string& data2, int headerOffset, int headerFontSize, int dataOffset, int dataFontSize,
                       int data2Offset, int data2FontSize) {
     Gdiplus::Bitmap* bmp = LoadPNGImage(imagePath);
     if (!bmp || bmp->GetLastStatus() != Ok) {
@@ -96,7 +100,7 @@ std::string DrawButtonImage(const std::wstring& imagePath,
         // FontFamily fontFamily(L"Digital-7");
         FontFamily fontFamily(L"Segoe UI Semibold");
         Font font(&fontFamily, TO_REAL(headerFontSize), FontStyleRegular, UnitPixel);
-        SolidBrush brush(Color(255, 255, 255, 255)); // White
+        SolidBrush brush(header_color);
 
         RectF rect(0, TO_REAL(headerOffset), TO_REAL(bmp->GetWidth()), TO_REAL(headerFontSize + 4));
         StringFormat format;
@@ -108,8 +112,7 @@ std::string DrawButtonImage(const std::wstring& imagePath,
     }
 
     if (!data.empty()) {
-        SolidBrush brush(Color(255, 235, 235, 235)); // White
-        // SolidBrush brush(Color(255, 255, 165, 0)); // Orange
+        SolidBrush brush(data_color);
 
         RectF rect(0, TO_REAL(dataOffset), TO_REAL(bmp->GetWidth()), TO_REAL(dataFontSize + 4));
         StringFormat format;

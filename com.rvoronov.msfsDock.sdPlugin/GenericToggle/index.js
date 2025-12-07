@@ -4,7 +4,8 @@ const $local = false, $back = false,
         header: $("#header"),
         toggleEvent: $("#toggleEvent"),
         feedbackVar: $("#feedbackVar"),
-        displayVar: $("#displayVar")
+        displayVar: $("#displayVar"),
+        skin: $("#skin")
     },
     $propEvent = {
         didReceiveSettings() {
@@ -21,6 +22,9 @@ const $local = false, $back = false,
             if ($settings.displayVar) {
                 $dom.displayVar.value = $settings.displayVar;
             }
+            if ($settings.skin) {
+                $dom.skin.value = $settings.skin;
+            }
         },
         sendToPropertyInspector(data) { }
     };
@@ -31,7 +35,8 @@ function updateSettings() {
         header: $dom.header.value,
         toggleEvent: $dom.toggleEvent.value,
         feedbackVar: $dom.feedbackVar.value,
-        displayVar: $dom.displayVar.value
+        displayVar: $dom.displayVar.value,
+        skin: $dom.skin.value
     };
     $websocket.saveData(data);
 }
@@ -41,6 +46,7 @@ $dom.header.on("input", updateSettings);
 $dom.toggleEvent.on("change", updateSettings);
 $dom.feedbackVar.on("change", updateSettings);
 $dom.displayVar.on("change", updateSettings);
+$dom.skin.on("change", updateSettings);
 
 // $propEvent.sendToPropertyInspector = (data) => {
 //     console.log("From plugin:", data);

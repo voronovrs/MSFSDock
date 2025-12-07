@@ -1,8 +1,10 @@
 ![screenshot](com.rvoronov.msfsDock.sdPlugin/images/plugin_icon.png)
 # This is work in progress
 
-# Example configuration
-![screenshot](com.rvoronov.msfsDock.sdPlugin/images/example.jpg)
+# Example setup
+| ![](com.rvoronov.msfsDock.sdPlugin/images/boeing_example.png) | ![](com.rvoronov.msfsDock.sdPlugin/images/airbus_example.png) |
+|---------|---------|
+| Boeing style skin | Airbus style skin |
 
 # Description
 MSFSDock plugin for Ajazz AKP05, Mirabox N4 and other compatible devices. Plugin allows interaction with Microsoft Flight Simulartor 2020 and 2024, read sim variable, toggle actions, change values etc.
