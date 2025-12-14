@@ -28,6 +28,21 @@
       "Tooltip": "Use SimConnect or MobiFlight variables to dispaly dial and interract with them",
       "UUID": "com.rvoronov.msfsDock.generic.dial",
       "Controllers": [ "Knob" ]
+    },
+    {
+      "Icon": "images/dialIcon",
+      "Name": "Dual dial",
+      "States": [
+        {
+          "Image": "images/dial",
+          "ShowTitle": false
+        }
+      ],
+      "SupportedInMultiActions": true,
+      "PropertyInspectorPath": "DualDial/index.html",
+      "Tooltip": "Use SimConnect or MobiFlight variables to dispaly dual dial and interract with them",
+      "UUID": "com.rvoronov.msfsDock.generic.dualdial",
+      "Controllers": [ "Knob" ]
     }
   ],
   "SDKVersion": 1,

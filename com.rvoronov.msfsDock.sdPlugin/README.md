@@ -37,11 +37,21 @@ This action intended to implement plane dial on Stream Dock display. Dial can di
 - Knob event - event to be triggered by pushing a knob or screen.
 - Status variable - Variable used in displaying active status (bottom field of a dial)
 
+## Dual Dial
+This action intended to implement two separate dials on Stream Dock display. Dials can display values, change value of active dial (highlighted) by rotating a knob, active dial changes by pushing know or display. This could be usefull for pair values like Course, Radios etc, or just to save some space.
+### Dual Dial parameters:
+- Header - header to be displayed on a dial
+- Dial 1 variable - Variable to display on dial 1
+- Inc 1 event - event to be triggered by rotating knob clockwise when dial 1 is active
+- Dec 1 event - event to be triggered by rotating knob counterclockwise when dial 1 is active
+- Dial 2 variable - Variable to display on dial 2
+- Inc 2 event - event to be triggered by rotating knob clockwise when dial 2 is active
+- Dec 2 event - event to be triggered by rotating knob counterclockwise when dial 2 is active
+
 # Installation
 
 Copy `com.rvoronov.msfsDock.sdPlugin` folder into `%appdata%/Hotspot/StreamDock/plugins/`.
 
 # Known issues and limitations
 - No choice of variable type, only integer so far
-- No dual dials yet
 - Probably a lot of bugs with registering\deregistering variables and events

@@ -2,16 +2,19 @@ const $local = false, $back = false,
     $dom = {
         main: $('.sdpi-wrapper'),
         header: $("#header"),
+        skin: $("#skin"),
         toggleEvent: $("#toggleEvent"),
         feedbackVar: $("#feedbackVar"),
         displayVar: $("#displayVar"),
-        skin: $("#skin")
     },
     $propEvent = {
         didReceiveSettings() {
             console.log($settings);
             if ($settings.header) {
                 $dom.header.value = $settings.header;
+            }
+            if ($settings.skin) {
+                $dom.skin.value = $settings.skin;
             }
             if ($settings.toggleEvent) {
                 $dom.toggleEvent.value = $settings.toggleEvent;
@@ -22,9 +25,6 @@ const $local = false, $back = false,
             if ($settings.displayVar) {
                 $dom.displayVar.value = $settings.displayVar;
             }
-            if ($settings.skin) {
-                $dom.skin.value = $settings.skin;
-            }
         },
         sendToPropertyInspector(data) { }
     };
@@ -33,20 +33,20 @@ const $local = false, $back = false,
 function updateSettings() {
     const data = {
         header: $dom.header.value,
+        skin: $dom.skin.value,
         toggleEvent: $dom.toggleEvent.value,
         feedbackVar: $dom.feedbackVar.value,
         displayVar: $dom.displayVar.value,
-        skin: $dom.skin.value
     };
     $websocket.saveData(data);
 }
 
 // Listen to input events and send full payload
 $dom.header.on("input", updateSettings);
+$dom.skin.on("change", updateSettings);
 $dom.toggleEvent.on("change", updateSettings);
 $dom.feedbackVar.on("change", updateSettings);
 $dom.displayVar.on("change", updateSettings);
-$dom.skin.on("change", updateSettings);
 
 // $propEvent.sendToPropertyInspector = (data) => {
 //     console.log("From plugin:", data);
