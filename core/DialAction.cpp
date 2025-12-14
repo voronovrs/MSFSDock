@@ -16,9 +16,14 @@ void DialAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
     std::vector<SimEventDefinition> eventsToDeregister;
 
     std::string newDisplay = settings.value("displayVar", "");
-    std::string newFeedback = settings.value("feedbackVar", "");
     std::string newIncEvent = settings.value("incEvent", "");
     std::string newDecEvent = settings.value("decEvent", "");
+
+    std::string newDisplay2 = settings.value("display2Var", "");
+    std::string newInc2Event = settings.value("inc2Event", "");
+    std::string newDec2Event = settings.value("dec2Event", "");
+
+    std::string newFeedback = settings.value("feedbackVar", "");
     std::string newEvent = settings.value("toggleEvent", "");
 
     // Remove variables if necessary
@@ -27,6 +32,13 @@ void DialAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
             SimManager::Instance().UnsubscribeFromVariable(displayVar_, displaySubId_);
         }
         varsToDeregister.push_back({ displayVar_, LIVE_VARIABLE });
+    }
+
+    if (!display2Var_.empty() && display2Var_ != newDisplay2) {
+        if (display2SubId_) {
+            SimManager::Instance().UnsubscribeFromVariable(display2Var_, display2SubId_);
+        }
+        varsToDeregister.push_back({ display2Var_, LIVE_VARIABLE });
     }
 
     if (!feedbackVar_.empty() && feedbackVar_ != newFeedback) {
@@ -42,6 +54,12 @@ void DialAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
     if (!decEvent_.empty() && decEvent_ != newDecEvent) {
         eventsToDeregister.push_back({decEvent_});
     }
+    if (!inc2Event_.empty() && inc2Event_ != newInc2Event) {
+        eventsToDeregister.push_back({inc2Event_});
+    }
+    if (!dec2Event_.empty() && dec2Event_ != newDec2Event) {
+        eventsToDeregister.push_back({dec2Event_});
+    }
     if (!toggleEvent_.empty() && toggleEvent_ != newEvent) {
         eventsToDeregister.push_back({toggleEvent_});
     }
@@ -51,6 +69,12 @@ void DialAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
         displayVarDef_.name = newDisplay;
         displayVarDef_.group = LIVE_VARIABLE;
         varsToRegister.push_back(displayVarDef_);
+    }
+
+    if (!newDisplay2.empty() && newDisplay2 != display2Var_) {
+        display2VarDef_.name = newDisplay2;
+        display2VarDef_.group = LIVE_VARIABLE;
+        varsToRegister.push_back(display2VarDef_);
     }
 
     if (!newFeedback.empty() && newFeedback != feedbackVar_) {
@@ -66,6 +90,14 @@ void DialAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
     if (!newDecEvent.empty() && newDecEvent != decEvent_) {
         decEventDef_.name = newDecEvent;
         eventsToRegister.push_back(decEventDef_);
+    }
+    if (!newInc2Event.empty() && newInc2Event != inc2Event_) {
+        inc2EventDef_.name = newInc2Event;
+        eventsToRegister.push_back(inc2EventDef_);
+    }
+    if (!newDec2Event.empty() && newDec2Event != dec2Event_) {
+        dec2EventDef_.name = newDec2Event;
+        eventsToRegister.push_back(dec2EventDef_);
     }
     if (!newEvent.empty() && newEvent != toggleEvent_) {
         toggleEventDef_.name = newEvent;
@@ -85,14 +117,23 @@ void DialAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
 
     // Save new values
     displayVar_ = newDisplay;
+    display2Var_ = newDisplay2;
     feedbackVar_ = newFeedback;
     incEvent_ = newIncEvent;
     decEvent_ = newDecEvent;
+    inc2Event_ = newInc2Event;
+    dec2Event_ = newDec2Event;
     toggleEvent_ = newEvent;
 
     // Subscribe callbacks
     if (!newDisplay.empty()) {
         displaySubId_ = SimManager::Instance().SubscribeToVariable(newDisplay,
+            [this](const std::string& name, double value) {
+                this->OnVariableUpdated(name, value);
+            });
+    }
+    if (!newDisplay2.empty()) {
+        display2SubId_ = SimManager::Instance().SubscribeToVariable(newDisplay2,
             [this](const std::string& name, double value) {
                 this->OnVariableUpdated(name, value);
             });
@@ -108,6 +149,8 @@ void DialAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
 void DialAction::OnVariableUpdated(const std::string& name, double value) {
     if (name == displayVar_) {
         displayVarDef_.value = value;
+    } else if (name == display2Var_) {
+        display2VarDef_.value = value;
     } else if (name == feedbackVar_) {
         isActive = (value == 0) ? false : true;
     }
@@ -129,22 +172,35 @@ void DialAction::DialDown(const nlohmann::json& payload) {
 
 void DialAction::DialUp(const nlohmann::json& payload) {
     LogInfo("DialAction DialUp");
-    // if (!incEvent_.empty()) {
-        // SimManager::Instance().SendEvent(incEvent_);
-    // }
+    if (isDual) {
+        active_dial ^= 1;
+        UpdateImage();
+    }
 }
 
 void DialAction::RotateClockwise(const nlohmann::json& payload, const unsigned int ticks, const bool pressed){
     LogInfo("DialAction clockwise");
-    if (!incEvent_.empty()) {
-        SimManager::Instance().SendEvent(incEvent_);
+    if (!isDual || active_dial == 0) {
+        if (!incEvent_.empty()) {
+            SimManager::Instance().SendEvent(incEvent_);
+        }
+    } else {
+        if (!inc2Event_.empty()) {
+            SimManager::Instance().SendEvent(inc2Event_);
+        }
     }
 }
 
 void DialAction::RotateCounterClockwise(const nlohmann::json& payload, const unsigned int ticks, const bool pressed){
     LogInfo("DialAction Counterclockwise");
-    if (!decEvent_.empty()) {
-        SimManager::Instance().SendEvent(decEvent_);
+    if (!isDual || active_dial == 0) {
+        if (!decEvent_.empty()) {
+            SimManager::Instance().SendEvent(decEvent_);
+        }
+    } else {
+        if (!dec2Event_.empty()) {
+            SimManager::Instance().SendEvent(dec2Event_);
+        }
     }
 }
 
@@ -203,25 +259,51 @@ void DialAction::ClearSettings() {
 }
 
 void DialAction::UpdateImage() {
-    int headerOffset = -6, headerFontSize = 28, dataOffset = 32, dataFontSize = 46;
+    int headerOffset, headerFontSize, dataOffset, dataFontSize, data2Offset;
     std::wstring backgroundImageInactive, backgroundImageActive;
-    Gdiplus::Color header_color, data_color;
+    Gdiplus::Color header_color, active_data_color, inactive_data_color, data1_color, data2_color;
 
     if (skin_ == "skin1") {
-        backgroundImageInactive = b_Inactive;
+        backgroundImageInactive = (isDual) ? b_Dual : b_Inactive;
         backgroundImageActive = b_Active;
         header_color = COLOR_OFF_WHITE;
-        data_color = COLOR_WHITE;
+        active_data_color = COLOR_WHITE;
+        inactive_data_color = COLOR_GRAY;
     } else {
-        backgroundImageInactive = ab_Inactive;
+        backgroundImageInactive = (isDual) ? ab_Dual : ab_Inactive;
         backgroundImageActive = ab_Active;
-        header_color = COLOR_BRIGHT_ORANGE;
-        data_color = COLOR_BRIGHT_ORANGE;
+        header_color = COLOR_ORANGE;
+        active_data_color = COLOR_BRIGHT_ORANGE;
+        inactive_data_color = COLOR_ORANGE;
+    }
+
+    if (isDual) {
+        headerOffset = 36;
+        headerFontSize = 26;
+        dataOffset = 0;
+        dataFontSize = 46;
+        data2Offset = 66;
+        data1_color = (active_dial == 0) ? active_data_color : inactive_data_color;
+        data2_color = (active_dial == 1) ? active_data_color : inactive_data_color;
+    } else {
+        headerOffset = -6;
+        headerFontSize = 28;
+        dataOffset = 32;
+        dataFontSize = 46;
+        data2Offset = 170;
+        data1_color = active_data_color;
+        data2_color = active_data_color;
     }
 
     std::wstring img_path = (isActive) ? backgroundImageActive : backgroundImageInactive;
     std::string val = (displayVar_.empty()) ? "" : std::to_string(static_cast<int>(displayVarDef_.value));
-    std::string base64Image = DrawButtonImage(img_path, header_, header_color, val, data_color, "", headerOffset, headerFontSize, dataOffset, dataFontSize);
+    std::string val2 = (display2Var_.empty()) ? "" : std::to_string(static_cast<int>(display2VarDef_.value));
+    std::string base64Image = DrawButtonImage(img_path, header_, header_color,
+                                              val, data1_color,
+                                              val2, data2_color,
+                                              headerOffset, headerFontSize,
+                                              dataOffset, dataFontSize,
+                                              data2Offset, dataFontSize);
 
     SetImage(base64Image, kESDSDKTarget_HardwareAndSoftware, -1);
 }

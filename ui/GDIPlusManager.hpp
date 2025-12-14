@@ -8,6 +8,7 @@ extern const Gdiplus::Color COLOR_WHITE;
 extern const Gdiplus::Color COLOR_OFF_WHITE;
 extern const Gdiplus::Color COLOR_ORANGE;
 extern const Gdiplus::Color COLOR_BRIGHT_ORANGE;
+extern const Gdiplus::Color COLOR_GRAY;
 
 
 void InitGDIPlus();
@@ -15,6 +16,6 @@ void ShutdownGDIPlus();
 ULONG_PTR GetGdiPlusToken();
 std::string DrawButtonImage(const std::wstring& imagePath, const std::string& header = "",
                             Gdiplus::Color header_color = COLOR_WHITE, const std::string& data = "",
-                            Gdiplus::Color data_color = COLOR_WHITE, const std::string& data2 = "",
+                            Gdiplus::Color data_color = COLOR_WHITE, const std::string& data2 = "", Gdiplus::Color data2_color = COLOR_WHITE,
                             int headerOffset = 4, int headerFontSize = 16, int dataOffset = 25,
                             int dataFontSize = 20, int data2Offset = 25, int data2FontSize = 18);

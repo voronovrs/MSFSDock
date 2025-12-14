@@ -16,7 +16,14 @@
 
 class DialAction : public HSDAction {
 public:
-    using HSDAction::HSDAction;
+
+    DialAction(HSDConnectionManager* hsd_connection,
+               const std::string& action,
+               const std::string& context,
+               bool isDual)
+        : HSDAction(hsd_connection, action, context),
+          isDual(isDual)
+    {}
 
     virtual void DidReceiveSettings(const nlohmann::json& payload) override;
     virtual void DialDown(const nlohmann::json& payload) override;
@@ -36,25 +43,36 @@ private:
 
     const std::wstring b_Inactive = L"images/dial.png";
     const std::wstring b_Active = L"images/dial_active.png";
+    const std::wstring b_Dual = L"images/dualdial.png";
     const std::wstring ab_Inactive = L"images/dial_ab.png";
     const std::wstring ab_Active = L"images/dial_ab_active.png";
+    const std::wstring ab_Dual = L"images/dualdial_ab.png";
 
     // parsed settings
     std::string displayVar_;
+    std::string display2Var_;
     std::string feedbackVar_;
     std::string incEvent_;
     std::string decEvent_;
+    std::string inc2Event_;
+    std::string dec2Event_;
     std::string toggleEvent_;
     std::string header_;
     std::string skin_;
     bool isActive = false;
+    bool isDual = false;
+    int active_dial = 0;
 
     SimVarDefinition displayVarDef_;
+    SimVarDefinition display2VarDef_;
     SimVarDefinition feedbackVarDef_;
     SimEventDefinition incEventDef_;
     SimEventDefinition decEventDef_;
+    SimEventDefinition inc2EventDef_;
+    SimEventDefinition dec2EventDef_;
     SimEventDefinition toggleEventDef_;
 
     SubscriptionId displaySubId_ = 0;
+    SubscriptionId display2SubId_ = 0;
     SubscriptionId feedbackSubId_ = 0;
 };
