@@ -32,6 +32,7 @@ set(
   main.cpp
   core/ButtonAction.cpp
   core/DialAction.cpp
+  core/GaugeAction.cpp
 )
 
 if(USE_SIM_MOCK)

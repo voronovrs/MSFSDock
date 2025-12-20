@@ -3,6 +3,7 @@
 #include "Plugin.hpp"
 #include "core/ButtonAction.hpp"
 #include "core/DialAction.hpp"
+#include "core/GaugeAction.hpp"
 
 #include "StreamDockCPPSDK/StreamDockSDK/NlohmannJSONUtils.h"
 
@@ -16,6 +17,14 @@ std::shared_ptr<HSDAction> MSFSDockPlugin::GetOrCreateAction(const std::string& 
 
     if (action == "com.rvoronov.msfsDock.generic.toggle") {
         auto impl = std::make_shared<ButtonAction>(
+            mConnectionManager,
+            action,
+            context
+            );
+        mActions.emplace(context, impl);
+        return impl;
+    } else if (action == "com.rvoronov.msfsDock.generic.gauge") {
+        auto impl = std::make_shared<GaugeAction>(
             mConnectionManager,
             action,
             context

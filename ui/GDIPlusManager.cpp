@@ -11,11 +11,20 @@
 static ULONG_PTR g_gdiplusToken = 0;
 
 using namespace Gdiplus;
-const Color COLOR_WHITE(255, 255, 255, 255);
-const Color COLOR_OFF_WHITE(255, 235, 235, 235);
-const Color COLOR_ORANGE(255, 160, 95, 0);
-const Color COLOR_BRIGHT_ORANGE(255, 255, 165, 0);
-const Color COLOR_GRAY(255, 150, 150, 150);
+const Color COLOR_WHITE             (255, 255, 255, 255);
+const Color COLOR_OFF_WHITE         (255, 235, 235, 235);
+const Color COLOR_ORANGE            (255, 160, 95, 0);
+const Color COLOR_BRIGHT_ORANGE     (255, 255, 165, 0);
+const Color COLOR_GRAY              (255, 150, 150, 150);
+const Color COLOR_YELLOW            (255, 255, 255, 0);
+const Color COLOR_RED               (255, 139, 0, 0);
+const Color COLOR_GREEN             (255,   0, 180,   0);
+const Color COLOR_DARK_GREEN        (255,   0, 120,   0);
+const Color COLOR_CYAN              (255,   0, 200, 200);
+const Color COLOR_BLUE              (255,   0, 120, 220);
+const Color COLOR_NEAR_BLACK        (255,  20,  20,  20);
+const Color COLOR_DARK_BLUE         (255,  20,  40,  80);
+
 
 void InitGDIPlus() {
     if (g_gdiplusToken != 0)
@@ -84,9 +93,9 @@ static std::string BitmapToBase64(Gdiplus::Bitmap* bmp) {
 
 // Draw text over the loaded PNG and return base64
 std::string DrawButtonImage(const std::wstring& imagePath,
-                      const std::string& header, Color header_color,
-                      const std::string& data, Color data_color,
-                      const std::string& data2, Color data2_color,
+                      const std::string& header, Color headerColor,
+                      const std::string& data, Color dataColor,
+                      const std::string& data2, Color data2Color,
                       int headerOffset, int headerFontSize,
                       int dataOffset, int dataFontSize,
                       int data2Offset, int data2FontSize) {
@@ -104,7 +113,7 @@ std::string DrawButtonImage(const std::wstring& imagePath,
         // FontFamily fontFamily(L"Digital-7");
         FontFamily fontFamily(L"Segoe UI Semibold");
         Font font(&fontFamily, TO_REAL(headerFontSize), FontStyleRegular, UnitPixel);
-        SolidBrush brush(header_color);
+        SolidBrush brush(headerColor);
 
         RectF rect(0, TO_REAL(headerOffset), TO_REAL(bmp->GetWidth()), TO_REAL(headerFontSize + 4));
         StringFormat format;
@@ -116,7 +125,7 @@ std::string DrawButtonImage(const std::wstring& imagePath,
     }
 
     if (!data.empty()) {
-        SolidBrush brush(data_color);
+        SolidBrush brush(dataColor);
 
         RectF rect(0, TO_REAL(dataOffset), TO_REAL(bmp->GetWidth()), TO_REAL(dataFontSize + 4));
         StringFormat format;
@@ -138,7 +147,7 @@ std::string DrawButtonImage(const std::wstring& imagePath,
     }
 
     if (!data2.empty()) {
-        SolidBrush brush(data2_color);
+        SolidBrush brush(data2Color);
 
         RectF rect(0, TO_REAL(data2Offset), TO_REAL(bmp->GetWidth()), TO_REAL(data2FontSize + 4));
         StringFormat format;
@@ -157,6 +166,112 @@ std::string DrawButtonImage(const std::wstring& imagePath,
         } else {
             LogInfo("No font for drawing");
         }
+    }
+
+    std::string base64Image = BitmapToBase64(bmp);
+    delete bmp;
+    return base64Image;
+}
+
+// Draw arc with parameters
+void DrawGaugeArc(Gdiplus::Graphics& graphics, const Gdiplus::RectF& arcRect, float startAngle, float sweepAngle,
+    const Gdiplus::Color& color, float penWidth) {
+    using namespace Gdiplus;
+
+    Pen pen(color, penWidth);
+    graphics.DrawArc(&pen, arcRect, startAngle, sweepAngle);
+}
+
+// Calculate current indicator angle
+float computeIndicatorAngle(double val, float minVal, float maxVal, float baseAngle, float arcLength) {
+    if (val < minVal) val = minVal;
+    if (val > maxVal) val = maxVal;
+
+    float t = (val - minVal) / (maxVal - minVal);
+    return baseAngle + t * arcLength;
+}
+
+std::string DrawGaugeImage(const std::string& header, Color headerColor,
+                           double value, Color dataColor,
+                           int headerOffset, int headerFontSize,
+                           int dataOffset, int dataFontSize,
+                           int minVal, int maxVal, bool fill,
+                           Color scaleColor, Color indicatorColor, Color bgColor) {
+    float baseAngle = 135.0f, arcLength = 180.0f, arcWidth = 12.0f, pointerWidth = 16.0f, pointerLength = 9.0f;
+
+    Gdiplus::Bitmap* bmp = new Gdiplus::Bitmap(72, 72, PixelFormat32bppARGB);
+
+    if (!bmp || bmp->GetLastStatus() != Ok) {
+        LogError("Bitmap create error!");
+        ShutdownGDIPlus();
+        return {};
+    }
+
+    // Draw background
+    Graphics graphics(bmp);
+    graphics.Clear(bgColor);
+    graphics.SetTextRenderingHint(TextRenderingHintAntiAliasGridFit);
+    graphics.SetSmoothingMode(SmoothingModeAntiAlias);
+
+    // BG arc parameters
+    const int w = bmp->GetWidth();
+    const int h = bmp->GetHeight();
+
+    float cx = w * 0.5f - 1.0f;
+    float cy = h * 0.5f - 1.0f;
+    float radius = 28.0f;
+
+    RectF arcRect(
+        cx - radius,
+        cy - radius,
+        radius * 2.0f,
+        radius * 2.0f
+    );
+
+    // Draw BG indicator arc
+    DrawGaugeArc(graphics, arcRect, baseAngle, arcLength, scaleColor, arcWidth);
+
+    float angle = computeIndicatorAngle(value, minVal, maxVal, baseAngle, arcLength);
+
+    // Draw indicator arc
+    if (fill) {
+        float fillAngle =(angle - baseAngle) ? angle - baseAngle : 4.0f;
+        DrawGaugeArc(graphics, arcRect, baseAngle, fillAngle, indicatorColor, pointerWidth - 6.0f);
+    } else {
+        DrawGaugeArc(graphics, arcRect, angle, pointerLength, indicatorColor, pointerWidth);
+    }
+
+    // Draw header
+    if (!header.empty()) {
+        FontFamily fontFamily(L"Segoe UI Semibold");
+        Font font(&fontFamily, TO_REAL(headerFontSize), FontStyleRegular, UnitPixel);
+        SolidBrush brush(headerColor);
+
+        RectF rect(18, TO_REAL(headerOffset), TO_REAL(bmp->GetWidth()), TO_REAL(headerFontSize + 4));
+        StringFormat format;
+        format.SetAlignment(StringAlignmentNear);
+        format.SetLineAlignment(StringAlignmentNear);
+
+        std::wstring wheader = StringToWString(header);
+        graphics.DrawString(wheader.c_str(), -1, &font, rect, &format, &brush);
+    }
+
+    // Draw data
+    std::string data = std::to_string(static_cast<int>(value));
+
+    if (!data.empty()) {
+        SolidBrush brush(dataColor);
+
+        RectF rect(6, TO_REAL(dataOffset), TO_REAL(bmp->GetWidth()), TO_REAL(dataFontSize + 4));
+        StringFormat format;
+        format.SetAlignment(StringAlignmentCenter);
+        format.SetLineAlignment(StringAlignmentNear);
+
+        std::wstring wdata = StringToWString(data);
+
+        FontFamily fontFamily(L"Segoe UI Semibold");
+        Font font(&fontFamily, TO_REAL(dataFontSize), FontStyleRegular, UnitPixel);
+        graphics.DrawString(wdata.c_str(), -1, &font, rect, &format, &brush);
     }
 
     std::string base64Image = BitmapToBase64(bmp);
