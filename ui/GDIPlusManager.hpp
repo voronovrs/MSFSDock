@@ -1,4 +1,5 @@
 #pragma once
+#define NOMINMAX
 #include <windows.h>
 #include <gdiplus.h>
 #include <string>
@@ -9,13 +10,31 @@ extern const Gdiplus::Color COLOR_OFF_WHITE;
 extern const Gdiplus::Color COLOR_ORANGE;
 extern const Gdiplus::Color COLOR_BRIGHT_ORANGE;
 extern const Gdiplus::Color COLOR_GRAY;
+extern const Gdiplus::Color COLOR_YELLOW;
+extern const Gdiplus::Color COLOR_RED;
+extern const Gdiplus::Color COLOR_GREEN;
+extern const Gdiplus::Color COLOR_DARK_GREEN;
+extern const Gdiplus::Color COLOR_CYAN;
+extern const Gdiplus::Color COLOR_BLUE;
+extern const Gdiplus::Color COLOR_NEAR_BLACK;
+extern const Gdiplus::Color COLOR_DARK_BLUE;
 
 
 void InitGDIPlus();
 void ShutdownGDIPlus();
 ULONG_PTR GetGdiPlusToken();
-std::string DrawButtonImage(const std::wstring& imagePath, const std::string& header = "",
-                            Gdiplus::Color header_color = COLOR_WHITE, const std::string& data = "",
-                            Gdiplus::Color data_color = COLOR_WHITE, const std::string& data2 = "", Gdiplus::Color data2_color = COLOR_WHITE,
-                            int headerOffset = 4, int headerFontSize = 16, int dataOffset = 25,
-                            int dataFontSize = 20, int data2Offset = 25, int data2FontSize = 18);
+std::string DrawButtonImage(const std::wstring& imagePath,
+                            const std::string& header = "", Gdiplus::Color headerColor = COLOR_WHITE,
+                            const std::string& data = "", Gdiplus::Color dataColor = COLOR_WHITE,
+                            const std::string& data2 = "", Gdiplus::Color data2Color = COLOR_WHITE,
+                            int headerOffset = 4, int headerFontSize = 16,
+                            int dataOffset = 25, int dataFontSize = 20,
+                            int data2Offset = 25, int data2FontSize = 18);
+
+std::string DrawGaugeImage(const std::string& header = "", Gdiplus::Color headerColor = COLOR_WHITE,
+                           double value = 0, Gdiplus::Color dataColor = COLOR_WHITE,
+                           int headerOffset = 4, int headerFontSize = 16,
+                           int dataOffset = 25, int dataFontSize = 20,
+                           int minVal=0, int maxVal=10000, bool fill=false,
+                           Gdiplus::Color scaleColor = COLOR_YELLOW, Gdiplus::Color indicatorColor = COLOR_RED,
+                           Gdiplus::Color bgColor = COLOR_NEAR_BLACK);

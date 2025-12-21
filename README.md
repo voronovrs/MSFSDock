@@ -48,6 +48,18 @@ This action intended to implement two separate dials on Stream Dock display. Dia
 - Inc 2 event - event to be triggered by rotating knob clockwise when dial 2 is active
 - Dec 2 event - event to be triggered by rotating knob counterclockwise when dial 2 is active
 
+## Generic Gauge
+This action intended to display data from Sim on Stream Dock button with gauge like interface.
+### Generic Gauge parameters:
+- Header - header to be displayed on a button
+- Display variable - Variable used in displaying data
+- Min value - Minimum value of a gauge
+- Max value - Maximum value of a gauge
+- Style - Select gauge style, Indicator - display current value with indicator on a scale, Fill - fill scale up to current value
+- Scale - choose scale color (default - Yellow)
+- Indicator - choose indicator color (default - Red)
+- Background - choose background color (default - Black)
+
 # Installation
 
 Copy `com.rvoronov.msfsDock.sdPlugin` folder into `%appdata%/Hotspot/StreamDock/plugins/`.
