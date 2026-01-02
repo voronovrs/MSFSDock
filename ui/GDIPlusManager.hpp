@@ -32,7 +32,7 @@ std::string DrawButtonImage(const std::wstring& imagePath,
                             int data2Offset = 25, int data2FontSize = 18);
 
 std::string DrawGaugeImage(const std::string& header = "", Gdiplus::Color headerColor = COLOR_WHITE,
-                           double value = 0, Gdiplus::Color dataColor = COLOR_WHITE,
+                           double value = 0, const std::string& data = "", Gdiplus::Color dataColor = COLOR_WHITE,
                            int headerOffset = 4, int headerFontSize = 16,
                            int dataOffset = 25, int dataFontSize = 20,
                            int minVal=0, int maxVal=10000, bool fill=false,

@@ -192,12 +192,13 @@ float computeIndicatorAngle(double val, float minVal, float maxVal, float baseAn
 }
 
 std::string DrawGaugeImage(const std::string& header, Color headerColor,
-                           double value, Color dataColor,
+                           double value, const std::string& data, Color dataColor,
                            int headerOffset, int headerFontSize,
                            int dataOffset, int dataFontSize,
                            int minVal, int maxVal, bool fill,
                            Color scaleColor, Color indicatorColor, Color bgColor) {
-    float baseAngle = 135.0f, arcLength = 180.0f, arcWidth = 12.0f, pointerWidth = 16.0f, pointerLength = 9.0f;
+    float baseAngle = 135.0f, arcLength = 180.0f, arcWidth = 12.0f, zeroArcWidth = 2.0f, pointerWidth = 16.0f,
+        pointerLength = 9.0f;
 
     Gdiplus::Bitmap* bmp = new Gdiplus::Bitmap(72, 72, PixelFormat32bppARGB);
 
@@ -231,6 +232,12 @@ std::string DrawGaugeImage(const std::string& header, Color headerColor,
     // Draw BG indicator arc
     DrawGaugeArc(graphics, arcRect, baseAngle, arcLength, scaleColor, arcWidth);
 
+    // Draw Zero arc if needed
+    if (minVal < 0 && maxVal > 0) {
+        float zeroAngle = computeIndicatorAngle(0.0, minVal, maxVal, baseAngle, arcLength);
+        DrawGaugeArc(graphics, arcRect, zeroAngle, zeroArcWidth, COLOR_NEAR_BLACK, arcWidth);
+    }
+
     float angle = computeIndicatorAngle(value, minVal, maxVal, baseAngle, arcLength);
 
     // Draw indicator arc
@@ -257,8 +264,6 @@ std::string DrawGaugeImage(const std::string& header, Color headerColor,
     }
 
     // Draw data
-    std::string data = std::to_string(static_cast<int>(value));
-
     if (!data.empty()) {
         SolidBrush brush(dataColor);
 
@@ -269,7 +274,7 @@ std::string DrawGaugeImage(const std::string& header, Color headerColor,
 
         std::wstring wdata = StringToWString(data);
 
-        FontFamily fontFamily(L"Segoe UI Semibold");
+        FontFamily fontFamily(L"Consolas");
         Font font(&fontFamily, TO_REAL(dataFontSize), FontStyleRegular, UnitPixel);
         graphics.DrawString(wdata.c_str(), -1, &font, rect, &format, &brush);
     }

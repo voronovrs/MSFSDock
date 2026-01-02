@@ -3,6 +3,7 @@ const $local = false, $back = false,
         main: $('.sdpi-wrapper'),
         header: $("#header"),
         displayVar: $("#displayVar"),
+        dataFormat: $("#dataFormat"),
         minVal: $("#minVal"),
         maxVal: $("#maxVal"),
         style: $("#style"),
@@ -18,6 +19,9 @@ const $local = false, $back = false,
             }
             if ($settings.displayVar) {
                 $dom.displayVar.value = $settings.displayVar;
+            }
+            if ($settings.dataFormat) {
+                $dom.dataFormat.value = $settings.dataFormat;
             }
             if ($settings.minVal) {
                 $dom.minVal.value = $settings.minVal;
@@ -51,6 +55,7 @@ function updateSettings() {
     const data = {
         header: $dom.header.value,
         displayVar: $dom.displayVar.value,
+        dataFormat: $dom.dataFormat.value,
         minVal: toInt($dom.minVal.value, 0),
         maxVal: toInt($dom.maxVal.value, 10000),
         style: $dom.style.value,
@@ -64,12 +69,13 @@ function updateSettings() {
 // Listen to input events and send full payload
 $dom.header.on("input", updateSettings);
 $dom.displayVar.on("change", updateSettings);
+$dom.dataFormat.on("change", updateSettings);
 $dom.minVal.on("change", updateSettings);
 $dom.maxVal.on("change", updateSettings);
-$dom.style.on("input", updateSettings);
-$dom.scaleColor.on("input", updateSettings);
-$dom.indicatorColor.on("input", updateSettings);
-$dom.bgColor.on("input", updateSettings);
+$dom.style.on("change", updateSettings);
+$dom.scaleColor.on("change", updateSettings);
+$dom.indicatorColor.on("change", updateSettings);
+$dom.bgColor.on("change", updateSettings);
 
 // $propEvent.sendToPropertyInspector = (data) => {
 //     console.log("From plugin:", data);
