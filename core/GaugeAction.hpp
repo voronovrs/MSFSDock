@@ -15,6 +15,11 @@
 #include "sim/SimManager.hpp"
 #endif
 
+enum DataFormat {
+    DATA_FMT_INT = 0,
+    DATA_FMT_PERCENT,
+};
+
 class GaugeAction : public HSDAction {
 public:
     using HSDAction::HSDAction;
@@ -35,6 +40,7 @@ private:
 
     // parsed settings
     std::string header_;
+    DataFormat dataFormat = DATA_FMT_INT;
     std::string displayVar_;
     int maxVal_;
     int minVal_;

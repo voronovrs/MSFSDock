@@ -53,6 +53,7 @@ This action intended to display data from Sim on Stream Dock button with gauge l
 ### Generic Gauge parameters:
 - Header - header to be displayed on a button
 - Display variable - Variable used in displaying data
+- Format - Format of displayed data, integer or percent value.
 - Min value - Minimum value of a gauge
 - Max value - Maximum value of a gauge
 - Style - Select gauge style, Indicator - display current value with indicator on a scale, Fill - fill scale up to current value

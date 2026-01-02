@@ -32,6 +32,7 @@ void GaugeAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
     minVal_ = settings.value("minVal", 0);
     maxVal_ = settings.value("maxVal", 10000);
     fill_ = (settings.value("style", "") == "fill") ? true : false;
+    dataFormat = (settings.value("dataFormat", "") == "percent") ? DATA_FMT_PERCENT : DATA_FMT_INT;
     GetColor(scaleColor_, settings.value("scaleColor", std::string{}));
     GetColor(indicatorColor_, settings.value("indicatorColor", std::string{}));
     GetColor(bgColor_, settings.value("bgColor", std::string{}));
@@ -126,12 +127,33 @@ void GaugeAction::ClearSettings() {
 }
 
 void GaugeAction::UpdateImage() {
-    int headerOffset = 44, headerFontSize = 14, dataOffset = 20, dataFontSize = 20;
+    int headerOffset = 44, headerFontSize = 14, dataOffset = 22, dataFontSize = 20;
     Gdiplus::Color header_color, data_color;
     header_color = COLOR_OFF_WHITE;
     data_color = COLOR_WHITE;
 
-    std::string base64Image = DrawGaugeImage(header_, header_color, displayVarDef_.value, data_color,
+    std::string data;
+    double value;
+    switch (dataFormat) {
+        case DATA_FMT_INT:
+            data = std::to_string(static_cast<int>(displayVarDef_.value));
+            value = displayVarDef_.value;
+            break;
+
+        case DATA_FMT_PERCENT: {
+            int percent = static_cast<int>(std::round(displayVarDef_.value * 100.0));
+            data = std::to_string(percent) + "%";
+            value = std::round(displayVarDef_.value * 100.0);
+            break;
+        }
+
+        default:
+            data = "0";
+            value = 0.0;
+            break;
+    }
+
+    std::string base64Image = DrawGaugeImage(header_, header_color, value, data, data_color,
         headerOffset, headerFontSize, dataOffset, dataFontSize, minVal_, maxVal_, fill_,
         scaleColor_, indicatorColor_, bgColor_);
     SetImage(base64Image, kESDSDKTarget_HardwareAndSoftware, -1);
