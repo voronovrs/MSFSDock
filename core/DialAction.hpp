@@ -20,9 +20,9 @@ public:
     DialAction(HSDConnectionManager* hsd_connection,
                const std::string& action,
                const std::string& context,
-               bool isDual)
+               bool isDual, bool isRadio)
         : HSDAction(hsd_connection, action, context),
-          isDual(isDual)
+          isDual(isDual), isRadio(isRadio)
     {}
 
     virtual void DidReceiveSettings(const nlohmann::json& payload) override;
@@ -43,10 +43,12 @@ private:
 
     const std::wstring b_Inactive = L"images/dial.png";
     const std::wstring b_Active = L"images/dial_active.png";
-    const std::wstring b_Dual = L"images/dualdial.png";
     const std::wstring ab_Inactive = L"images/dial_ab.png";
     const std::wstring ab_Active = L"images/dial_ab_active.png";
-    const std::wstring ab_Dual = L"images/dualdial_ab.png";
+    const std::wstring b_Dual_1 = L"images/dualdial_1.png";
+    const std::wstring b_Dual_2 = L"images/dualdial_2.png";
+    const std::wstring ab_Dual_1 = L"images/dualdial_ab_1.png";
+    const std::wstring ab_Dual_2 = L"images/dualdial_ab_2.png";
 
     // parsed settings
     std::string displayVar_;
@@ -61,7 +63,12 @@ private:
     std::string skin_;
     bool isActive = false;
     bool isDual = false;
+    bool isRadio = false;
     int active_dial = 0;
+    int active_radio_part = 0;
+
+    std::chrono::steady_clock::time_point lastClickTs_;
+    bool clickPending_ = false;
 
     SimVarDefinition displayVarDef_;
     SimVarDefinition display2VarDef_;

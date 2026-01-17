@@ -26,7 +26,23 @@ ULONG_PTR GetGdiPlusToken();
 std::string DrawButtonImage(const std::wstring& imagePath,
                             const std::string& header = "", Gdiplus::Color headerColor = COLOR_WHITE,
                             const std::string& data = "", Gdiplus::Color dataColor = COLOR_WHITE,
+                            int headerOffset = 4, int headerFontSize = 16,
+                            int dataOffset = 25, int dataFontSize = 20);
+
+std::string DrawDialImage(const std::wstring& imagePath,
+                            const std::string& header = "", Gdiplus::Color headerColor = COLOR_WHITE,
+                            const std::string& data = "", Gdiplus::Color dataColor = COLOR_WHITE,
                             const std::string& data2 = "", Gdiplus::Color data2Color = COLOR_WHITE,
+                            int headerOffset = 4, int headerFontSize = 16,
+                            int dataOffset = 25, int dataFontSize = 20,
+                            int data2Offset = 25, int data2FontSize = 18);
+
+std::string DrawRadioImage(const std::wstring& imagePath,
+                            const std::string& header = "", Gdiplus::Color headerColor = COLOR_WHITE,
+                            int int_val = 0, int frac_val = 0, int stdb_val = 0, int stdb_frac_val = 0,
+                            Gdiplus::Color mainColor = COLOR_WHITE,
+                            Gdiplus::Color stdbColorInt = COLOR_WHITE,
+                            Gdiplus::Color stdbColorFrac = COLOR_WHITE,
                             int headerOffset = 4, int headerFontSize = 16,
                             int dataOffset = 25, int dataFontSize = 20,
                             int data2Offset = 25, int data2FontSize = 18);

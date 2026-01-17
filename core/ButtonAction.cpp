@@ -185,7 +185,7 @@ void ButtonAction::UpdateImage() {
 
     std::wstring img_path = (isActive) ? backgroundImageActive : backgroundImageInactive;
     std::string val = (displayVar_.empty()) ? "" : std::to_string(static_cast<int>(displayVarDef_.value));
-    std::string base64Image = DrawButtonImage(img_path, header_, header_color, val, data_color, "", data_color,
+    std::string base64Image = DrawButtonImage(img_path, header_, header_color, val, data_color,
         headerOffset, headerFontSize, dataOffset, dataFontSize);
     SetImage(base64Image, kESDSDKTarget_HardwareAndSoftware, -1);
 }

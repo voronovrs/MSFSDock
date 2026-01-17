@@ -36,6 +36,7 @@ std::shared_ptr<HSDAction> MSFSDockPlugin::GetOrCreateAction(const std::string& 
             mConnectionManager,
             action,
             context,
+            false,
             false
             );
         mActions.emplace(context, impl);
@@ -45,6 +46,17 @@ std::shared_ptr<HSDAction> MSFSDockPlugin::GetOrCreateAction(const std::string& 
             mConnectionManager,
             action,
             context,
+            true,
+            false
+            );
+        mActions.emplace(context, impl);
+        return impl;
+    } else if (action == "com.rvoronov.msfsDock.generic.radio") {
+        auto impl = std::make_shared<DialAction>(
+            mConnectionManager,
+            action,
+            context,
+            true,
             true
             );
         mActions.emplace(context, impl);

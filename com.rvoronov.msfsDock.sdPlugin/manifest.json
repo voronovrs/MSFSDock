@@ -57,6 +57,21 @@
       "Tooltip": "Use SimConnect or MobiFlight variables to dispaly dual dial and interract with them",
       "UUID": "com.rvoronov.msfsDock.generic.dualdial",
       "Controllers": [ "Knob" ]
+    },
+    {
+      "Icon": "images/dialIcon",
+      "Name": "Generic Radio",
+      "States": [
+        {
+          "Image": "images/dial",
+          "ShowTitle": false
+        }
+      ],
+      "SupportedInMultiActions": true,
+      "PropertyInspectorPath": "GenericRadio/index.html",
+      "Tooltip": "Use SimConnect or MobiFlight variables to dispaly radio and interract with them",
+      "UUID": "com.rvoronov.msfsDock.generic.radio",
+      "Controllers": [ "Knob" ]
     }
   ],
   "SDKVersion": 1,
@@ -67,7 +82,7 @@
   "Description": "Interact with Microsoft Flight Simulator right from your Stream Dock!",
   "Name": "MSFS Dock",
   "Icon": "images/plugin_icon",
-  "Version": "0.4.1",
+  "Version": "0.5.0",
   "OS": [
     {
       "Platform": "windows",

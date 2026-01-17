@@ -3,12 +3,26 @@
 #include "plugin/Logger.hpp"
 #include <memory>
 #include <vector>
+#include <sstream>
+#include <iomanip>
 
 #pragma comment(lib, "Gdiplus.lib")
 #pragma comment(lib, "Crypt32.lib")
 #pragma comment(lib, "Ole32.lib")
 
 static ULONG_PTR g_gdiplusToken = 0;
+
+static float dialCharWidth      = 0;
+static float dialCharHeight     = 0;
+static float dialFieldWidth     = 0;
+static float dialFieldX         = 0;
+
+static float radioCharHeight    = 0;
+static float radioGap           = 0;
+static float radioIntWidth      = 0;
+static float radioFracWidth     = 0;
+static float radioTotalWidth    = 0;
+static float radioStartX        = 0;
 
 using namespace Gdiplus;
 const Color COLOR_WHITE             (255, 255, 255, 255);
@@ -43,6 +57,12 @@ void ShutdownGDIPlus() {
 
 ULONG_PTR GetGdiPlusToken() {
     return g_gdiplusToken;
+}
+
+std::wstring ToFixedWidth(int value, int width) {
+    std::wstringstream ss;
+    ss << std::setw(width) << std::setfill(L'0') << value;
+    return ss.str();
 }
 
 // string to wstring
@@ -91,14 +111,34 @@ static std::string BitmapToBase64(Gdiplus::Bitmap* bmp) {
     return "data:image/png;base64," + base64;
 }
 
+
+
+// Draw header text
+void DrawHeader(Gdiplus::Graphics& graphics, int frameWidth, const std::string& header, const Gdiplus::Color& headerColor,
+    int headerFontSize, int headerOffset, int startX = 0, StringAlignment strAlign = StringAlignmentCenter) {
+    using namespace Gdiplus;
+
+    if (!header.empty()) {
+        FontFamily fontFamily(L"Segoe UI Semibold");
+        Font font(&fontFamily, TO_REAL(headerFontSize), FontStyleRegular, UnitPixel);
+        SolidBrush brush(headerColor);
+
+        RectF rect(startX, TO_REAL(headerOffset), TO_REAL(frameWidth), TO_REAL(headerFontSize + 4));
+        StringFormat format;
+        format.SetAlignment(strAlign);
+        format.SetLineAlignment(StringAlignmentNear);
+
+        std::wstring wheader = StringToWString(header);
+        graphics.DrawString(wheader.c_str(), -1, &font, rect, &format, &brush);
+    }
+}
+
 // Draw text over the loaded PNG and return base64
 std::string DrawButtonImage(const std::wstring& imagePath,
                       const std::string& header, Color headerColor,
                       const std::string& data, Color dataColor,
-                      const std::string& data2, Color data2Color,
                       int headerOffset, int headerFontSize,
-                      int dataOffset, int dataFontSize,
-                      int data2Offset, int data2FontSize) {
+                      int dataOffset, int dataFontSize) {
     Gdiplus::Bitmap* bmp = LoadPNGImage(imagePath);
     if (!bmp || bmp->GetLastStatus() != Ok) {
         LogError("DrawTextOverImage LoadPNGImage error!");
@@ -109,20 +149,7 @@ std::string DrawButtonImage(const std::wstring& imagePath,
     Graphics graphics(bmp);
     graphics.SetTextRenderingHint(TextRenderingHintAntiAliasGridFit);
 
-    if (!header.empty()) {
-        // FontFamily fontFamily(L"Digital-7");
-        FontFamily fontFamily(L"Segoe UI Semibold");
-        Font font(&fontFamily, TO_REAL(headerFontSize), FontStyleRegular, UnitPixel);
-        SolidBrush brush(headerColor);
-
-        RectF rect(0, TO_REAL(headerOffset), TO_REAL(bmp->GetWidth()), TO_REAL(headerFontSize + 4));
-        StringFormat format;
-        format.SetAlignment(StringAlignmentCenter);
-        format.SetLineAlignment(StringAlignmentNear);
-
-        std::wstring wheader = StringToWString(header);
-        graphics.DrawString(wheader.c_str(), -1, &font, rect, &format, &brush);
-    }
+    DrawHeader(graphics, bmp->GetWidth(), header, headerColor, headerFontSize, headerOffset);
 
     if (!data.empty()) {
         SolidBrush brush(dataColor);
@@ -146,27 +173,192 @@ std::string DrawButtonImage(const std::wstring& imagePath,
         }
     }
 
-    if (!data2.empty()) {
-        SolidBrush brush(data2Color);
+    std::string base64Image = BitmapToBase64(bmp);
+    delete bmp;
+    return base64Image;
+}
 
-        RectF rect(0, TO_REAL(data2Offset), TO_REAL(bmp->GetWidth()), TO_REAL(data2FontSize + 4));
-        StringFormat format;
-        format.SetAlignment(StringAlignmentCenter);
-        format.SetLineAlignment(StringAlignmentNear);
+// Draw dial data
+void DrawDialData(Gdiplus::Graphics& graphics, int frameWidth, int dataFontSize, int dataOffset,
+    const Gdiplus::Color& dataColor, const std::string& data) {
+    using namespace Gdiplus;
 
-        std::wstring wdata = StringToWString(data2);
+    constexpr int MAX_DIGITS = 6;
 
-        Font* font = GDIFonts::GetFont(TO_REAL(data2FontSize));
-        // Font fallbackFont(L"Arial", 20, FontStyleRegular, UnitPixel);
-        if (font) {
-            if (font->GetLastStatus() != Ok) {
-                LogError("Font is invalid or not loaded properly.");
-            }
-            graphics.DrawString(wdata.c_str(), -1, font, rect, &format, &brush);
-        } else {
-            LogInfo("No font for drawing");
-        }
+    Font* font = GDIFonts::GetFont(TO_REAL(dataFontSize));
+    if (!font || font->GetLastStatus() != Ok) {
+        LogError("Font is invalid or not loaded properly.");
+        return;
     }
+
+    if (dialCharWidth == 0) {
+        // measure char witdh and calculate field space once
+        CharacterRange range(0, 1);
+        StringFormat measureFmt(StringFormat::GenericTypographic());
+        measureFmt.SetMeasurableCharacterRanges(1, &range);
+
+        Region region;
+        graphics.MeasureCharacterRanges(L"8", 1, font, RectF(0, 0, 1000, 1000), &measureFmt, 1, &region);
+
+        RectF charRect;
+        region.GetBounds(&charRect, &graphics);
+
+        dialCharWidth  = charRect.Width;
+        dialCharHeight = charRect.Height;
+        dialFieldWidth = dialCharWidth * MAX_DIGITS;
+        dialFieldX = (frameWidth - dialFieldWidth) * 0.5f + 2;
+    }
+
+    RectF fieldRect(dialFieldX, TO_REAL(dataOffset), dialFieldWidth, dialCharHeight);
+
+    // Pen debugPen(Color(180, 255, 0, 0), 1.0f); // debug
+    // graphics.DrawRectangle(&debugPen, fieldRect.X, fieldRect.Y, fieldRect.Width, fieldRect.Height);
+
+    StringFormat drawFmt(StringFormat::GenericTypographic());
+    drawFmt.SetAlignment(StringAlignmentNear);
+    drawFmt.SetLineAlignment(StringAlignmentNear);
+
+    // Draw display background
+    {
+        Color bgColor(25, dataColor.GetRed(), dataColor.GetGreen(), dataColor.GetBlue());
+        SolidBrush bgBrush(bgColor);
+        std::wstring bg(MAX_DIGITS, L'B');
+        graphics.DrawString(bg.c_str(), -1, font, fieldRect, &drawFmt, &bgBrush);
+    }
+
+    // Data
+    if (!data.empty()) {
+        SolidBrush dataBrush(dataColor);
+        std::wstring wdata = StringToWString(data);
+
+        RectF dataBounds;
+        graphics.MeasureString(wdata.c_str(), -1, font, RectF(0, 0, 1000, 1000), &drawFmt, &dataBounds);
+
+        float xData = fieldRect.X + fieldRect.Width - dataBounds.Width;
+
+        graphics.DrawString(wdata.c_str(), -1, font, PointF(xData, fieldRect.Y), &drawFmt, &dataBrush);
+    }
+}
+
+// Draw text over the loaded PNG and return base64
+std::string DrawDialImage(const std::wstring& imagePath,
+                      const std::string& header, Color headerColor,
+                      const std::string& data, Color dataColor,
+                      const std::string& data2, Color data2Color,
+                      int headerOffset, int headerFontSize,
+                      int dataOffset, int dataFontSize,
+                      int data2Offset, int data2FontSize) {
+    Gdiplus::Bitmap* bmp = LoadPNGImage(imagePath);
+    if (!bmp || bmp->GetLastStatus() != Ok) {
+        LogError("DrawTextOverImage LoadPNGImage error!");
+        ShutdownGDIPlus();
+        return {};
+    }
+
+    constexpr int MAX_DIGITS = 6;
+    Graphics graphics(bmp);
+    graphics.SetTextRenderingHint(TextRenderingHintAntiAliasGridFit);
+
+    DrawHeader(graphics, bmp->GetWidth(), header, headerColor, headerFontSize, headerOffset);
+
+    DrawDialData(graphics, bmp->GetWidth(), dataFontSize, dataOffset, dataColor, data);
+    DrawDialData(graphics, bmp->GetWidth(), data2FontSize, data2Offset, data2Color, data2);
+
+    std::string base64Image = BitmapToBase64(bmp);
+    delete bmp;
+    return base64Image;
+}
+
+// Draw radio data
+void DrawRadioData(Gdiplus::Graphics& graphics, int frameWidth, int dataFontSize, int dataOffset,
+    const Gdiplus::Color& dataColor, const Gdiplus::Color& data2Color, int int_val, int frac_val) {
+    using namespace Gdiplus;
+
+    Font* font = GDIFonts::GetFont(TO_REAL(dataFontSize));
+    if (!font || font->GetLastStatus() != Ok) {
+        LogError("Font is invalid or not loaded properly.");
+        return;
+    }
+
+    if (radioStartX == 0) {
+        constexpr int INT_DIGITS  = 3;
+        constexpr int FRAC_DIGITS = 3;
+
+        CharacterRange range(0, 1);
+        StringFormat measureFmt(StringFormat::GenericTypographic());
+        measureFmt.SetMeasurableCharacterRanges(1, &range);
+
+        Region region;
+        graphics.MeasureCharacterRanges(L"8", 1, font, RectF(0, 0, 1000, 1000), &measureFmt, 1, &region);
+
+        RectF charRect;
+        region.GetBounds(&charRect, &graphics);
+
+        float charWidth  = charRect.Width;
+        radioCharHeight = charRect.Height;
+        radioGap = charWidth * 0.3f;
+        radioIntWidth  = charWidth * INT_DIGITS;
+        radioFracWidth = charWidth * FRAC_DIGITS;
+        radioTotalWidth = radioIntWidth + radioGap + radioFracWidth;
+        radioStartX = (frameWidth - radioTotalWidth) * 0.5f + 2;
+    }
+
+    RectF fieldRect(radioStartX, TO_REAL(dataOffset), radioTotalWidth, radioCharHeight);
+
+    // Pen debugPen(Color(180, 255, 0, 0), 1.0f); // debug
+    // graphics.DrawRectangle(&debugPen, fieldRect.X, fieldRect.Y, fieldRect.Width, fieldRect.Height);
+
+    StringFormat drawFmt(StringFormat::GenericTypographic());
+    drawFmt.SetAlignment(StringAlignmentFar);
+    drawFmt.SetLineAlignment(StringAlignmentNear);
+
+    SolidBrush dataBrush(dataColor);
+    SolidBrush data2Brush(data2Color);
+    Color bgColor(25, dataColor.GetRed(), dataColor.GetGreen(), dataColor.GetBlue());
+    SolidBrush bgBrush(bgColor);
+
+    RectF intRect(radioStartX, fieldRect.Y, radioIntWidth, radioCharHeight);
+    // graphics.DrawRectangle(&debugPen, intRect.X, intRect.Y, intRect.Width, intRect.Height);
+
+    RectF fracRect(radioStartX + radioIntWidth + radioGap, fieldRect.Y, radioFracWidth, radioCharHeight);
+    // graphics.DrawRectangle(&debugPen, fracRect.X, fracRect.Y, fracRect.Width, fracRect.Height);
+
+    std::wstring intPart  = ToFixedWidth(int_val, 3);
+    std::wstring fracPart = ToFixedWidth(frac_val, 3);
+
+    graphics.DrawString(L"BBB", -1, font, intRect,  &drawFmt, &bgBrush);
+    graphics.DrawString(L"BBB", -1, font, fracRect, &drawFmt, &bgBrush);
+
+    graphics.DrawString(L".", -1, font, PointF(radioStartX + radioIntWidth + radioGap, fieldRect.Y + radioCharHeight * 0.05f), &drawFmt, &dataBrush);
+
+    graphics.DrawString(intPart.c_str(), -1, font, intRect, &drawFmt, &dataBrush);
+
+    graphics.DrawString(fracPart.c_str(), -1, font, fracRect, &drawFmt, &data2Brush);
+}
+
+// Draw text over the loaded PNG and return base64
+std::string DrawRadioImage(const std::wstring& imagePath,
+                      const std::string& header, Color headerColor,
+                      int int_val, int frac_val, int stdb_val, int stdb_frac_val,
+                      Color mainColor, Color stdbColorInt, Color stdbColorFrac,
+                      int headerOffset, int headerFontSize,
+                      int dataOffset, int dataFontSize,
+                      int data2Offset, int data2FontSize) {
+    Gdiplus::Bitmap* bmp = LoadPNGImage(imagePath);
+    if (!bmp || bmp->GetLastStatus() != Ok) {
+        LogError("DrawTextOverImage LoadPNGImage error!");
+        ShutdownGDIPlus();
+        return {};
+    }
+
+    constexpr int MAX_DIGITS = 6;
+    Graphics graphics(bmp);
+    graphics.SetTextRenderingHint(TextRenderingHintAntiAliasGridFit);
+
+    DrawHeader(graphics, bmp->GetWidth(), header, headerColor, headerFontSize, headerOffset);
+
+    DrawRadioData(graphics, bmp->GetWidth(), dataFontSize, dataOffset, mainColor, mainColor, int_val, frac_val);
+    DrawRadioData(graphics, bmp->GetWidth(), data2FontSize, data2Offset, stdbColorInt, stdbColorFrac, stdb_val, stdb_frac_val);
 
     std::string base64Image = BitmapToBase64(bmp);
     delete bmp;
@@ -248,20 +440,7 @@ std::string DrawGaugeImage(const std::string& header, Color headerColor,
         DrawGaugeArc(graphics, arcRect, angle, pointerLength, indicatorColor, pointerWidth);
     }
 
-    // Draw header
-    if (!header.empty()) {
-        FontFamily fontFamily(L"Segoe UI Semibold");
-        Font font(&fontFamily, TO_REAL(headerFontSize), FontStyleRegular, UnitPixel);
-        SolidBrush brush(headerColor);
-
-        RectF rect(18, TO_REAL(headerOffset), TO_REAL(bmp->GetWidth()), TO_REAL(headerFontSize + 4));
-        StringFormat format;
-        format.SetAlignment(StringAlignmentNear);
-        format.SetLineAlignment(StringAlignmentNear);
-
-        std::wstring wheader = StringToWString(header);
-        graphics.DrawString(wheader.c_str(), -1, &font, rect, &format, &brush);
-    }
+    DrawHeader(graphics, bmp->GetWidth(), header, headerColor, headerFontSize, headerOffset, 18, StringAlignmentNear);
 
     // Draw data
     if (!data.empty()) {
