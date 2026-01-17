@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>MSFS Dock Radio PI</title>
+  <link rel="stylesheet" href="../static/css/sdpi.css" />
+  <style>
+    .sdpi-item {
+      margin: 2px auto;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="sdpi-wrapper" style="display: none">
+    <div class="sdpi-item">
+      <div class="sdpi-item-label">Header</div>
+      <input class="sdpi-item-value" id="header" value="" placeholder="">
+    </div>
+    <div class="sdpi-item">
+      <div class="sdpi-item-label" title="Dial style selection">Skin</div>
+      <select class="sdpi-item-value" id="skin">
+        <option value="skin1">Boeing</option>
+        <option value="skin2">Airbus</option>
+      </select>
+    </div>
+    <div class="sdpi-item">
+        <div class="sdpi-item-label" title="Sim active radio variable to be displayed ">Active Radio var</div>
+        <input class="sdpi-item-value" id="displayVar" value="" placeholder="ACTIVE RADIO VAR" pattern="[A-Z0-9:_ ]*">
+    </div>
+    <div class="sdpi-item">
+        <div class="sdpi-item-label" title="Sim standby radio variable to be displayed ">Stdby Radio var</div>
+        <input class="sdpi-item-value" id="display2Var" value="" placeholder="STANDBY RADIO VAR" pattern="[A-Z0-9:_ ]*">
+    </div>
+    <div class="sdpi-item">
+        <div class="sdpi-item-label" title="Sim event to increment integer part">Inc event</div>
+        <input class="sdpi-item-value" id="incEvent" value="" placeholder="INC EVENT" pattern="[A-Z0-9:_ ]*">
+    </div>
+    <div class="sdpi-item">
+        <div class="sdpi-item-label" title="Sim event to decrement integer part">Dec event</div>
+        <input class="sdpi-item-value" id="decEvent" value="" placeholder="DEC EVENT" pattern="[A-Z0-9:_ ]*">
+    </div>
+    <div class="sdpi-item">
+        <div class="sdpi-item-label" title="Sim event to increment fractionl part">Inc frac event</div>
+        <input class="sdpi-item-value" id="inc2Event" value="" placeholder="INC FRAC EVENT" pattern="[A-Z0-9:_ ]*">
+    </div>
+    <div class="sdpi-item">
+        <div class="sdpi-item-label" title="Sim event to decrement fractional part">Dec frac event</div>
+        <input class="sdpi-item-value" id="dec2Event" value="" placeholder="DEC FRAC EVENT" pattern="[A-Z0-9:_ ]*">
+    </div>
+    <div class="sdpi-item">
+        <div class="sdpi-item-label" title="Sim event to swap active and standby radio (on doubleclick)">Swap event</div>
+        <input class="sdpi-item-value" id="toggleEvent" value="" placeholder="SWAP RADIO EVENT" pattern="[A-Za-z0-9:_. ]*">
+    </div>
+
+  </div>
+  <script src="../static/utils/common.js"></script>
+  <script src="../static/action.js"></script>
+  <script src="index.js"></script>
+</body>
+</html>

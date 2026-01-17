@@ -15,22 +15,26 @@ This plugin supports regular variables along with L-vars and MobiFligtht\WASM ev
 - AUTOPILOT NAV1 LOCK - regular variable, could pick it from MSFS-SDK
 - MobiFlight.FCC_ALTITUDE_SEL_Inc - event from MobiFlight WASM module
 - MobiFlight.FCC_VERTICAL_SPEED_SEL_Dec - event from MobiFlight WASM module
-- L:AS01B_AUTO_THROTTLE_ARM_STATE - L-value variable, you should google them or use Devmode to find them
-- L:AP_VS_ACTIVE - L-value variable, you should google them or use Devmode to find them
+- L:AS01B_AUTO_THROTTLE_ARM_STATE - L-var variable, you should google them or use Devmode to find them
+- L:AP_VS_ACTIVE - L-var variable, you should google them or use Devmode to find them
 
 # Plugin Actions
 ## Generic Button
 This action intended to implement plane button on Stream Dock button. Button can display header, active state and value if necessary.
+Controller - button.
 ### Generic Button parameters:
 - Header - header to be displayed on a button
+- Skin - select button skin, either Boeing-like or Airbus-like
 - Button event - event to be triggered by button press
 - Display variable - Variable used in displaying additional data on a button if necessary
 - Status variable - Variable used in displaying active status (green light in the button bottom)
 
 ## Generic Dial (single)
 This action intended to implement plane dial on Stream Dock display. Dial can display value, change value by rotating a knob, call event by pressing a knob/screen.
+Controller - Knob/Display.
 ### Generic Dial parameters:
 - Header - header to be displayed on a dial
+- Skin - select dial skin, either Boeing-like or Airbus-like
 - Display variable - Variable to display on a dial
 - Inc event - event to be triggered by rotating knob clockwise
 - Dec event - event to be triggered by rotating knob counterclockwise
@@ -39,8 +43,10 @@ This action intended to implement plane dial on Stream Dock display. Dial can di
 
 ## Dual Dial
 This action intended to implement two separate dials on Stream Dock display. Dials can display values, change value of active dial (highlighted) by rotating a knob, active dial changes by pushing know or display. This could be usefull for pair values like Course, Radios etc, or just to save some space.
+Controller - Knob/Display.
 ### Dual Dial parameters:
 - Header - header to be displayed on a dial
+- Skin - select dial skin, either Boeing-like or Airbus-like
 - Dial 1 variable - Variable to display on dial 1
 - Inc 1 event - event to be triggered by rotating knob clockwise when dial 1 is active
 - Dec 1 event - event to be triggered by rotating knob counterclockwise when dial 1 is active
@@ -50,8 +56,9 @@ This action intended to implement two separate dials on Stream Dock display. Dia
 
 ## Generic Gauge
 This action intended to display data from Sim on Stream Dock button with gauge like interface.
+Controller - Button.
 ### Generic Gauge parameters:
-- Header - header to be displayed on a button
+- Header - header to be displayed on a gauge
 - Display variable - Variable used in displaying data
 - Format - Format of displayed data, integer or percent value.
 - Min value - Minimum value of a gauge
@@ -61,10 +68,40 @@ This action intended to display data from Sim on Stream Dock button with gauge l
 - Indicator - choose indicator color (default - Red)
 - Background - choose background color (default - Black)
 
-# Installation
+## Generic Radio
+This action intended to display active and standby radios (NAV, COM etc), change whole and fractional part and swap between them.
+Controller - Knob/Display.
+### Generic Radio parameters:
+- Header - header to be displayed on a button
+- Skin - select radio skin, either Boeing-like or Airbus-like
+- Active Radio var - Variable used to display active radio frequency
+- Stdby Radio var - Variable used to display standby radio frequency
+
+- Inc event - event to increase standby frequency whole part
+- Dec event - event to dencrease standby frequency whole part
+- Inc frac event - event to increase standby frequency fractional part
+- Dec frac event - event to dencrease standby frequency fractional part
+- Swap event - event to swap standby and active frequency (called by screen doubletap or knob doublepress).
+
+#### Changing frequency
+Since we have only 1 knob then only whole part either fractional part could be changed at once.
+Part of the frequency modifiable now is highlighted. To switch between parts tap the screen or press the knob once.
+
+#### Notes on frequency Swap event
+If you configure Swap event then you can swap between frequencies by double tapping a screen or double pressing a knob.
+Since it could be finiky for someone then there is always an option to assign Swap event to separate button.
+
+# Installation and configuration
 
 Copy `com.rvoronov.msfsDock.sdPlugin` folder into `%appdata%/Hotspot/StreamDock/plugins/`.
+Create new action, configure appropriate variables and events for action, run sim.
+
+Standart event IDs could be found here https://docs.flightsimulator.com/html/Programming_Tools/Event_IDs/Event_IDs.htm
+
+Standart variables could be found here https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Aircraft_SimVars/Aircraft_AutopilotAssistant_Variables.htm
+
+You may need to do some research to find L-vars for specific plane, configure WASM variables and events, this is not part of this document.
 
 # Known issues and limitations
-- No choice of variable type, only integer so far
+- Most actions display only INT values, except RADIO and GAUGE (could display percents as well)
 - Probably a lot of bugs with registering\deregistering variables and events

@@ -2,6 +2,7 @@
 #include "plugin/Logger.hpp"
 #include "ui/GDIPlusManager.hpp"
 
+constexpr int DOUBLE_CLICK_MS = 400;
 
 void DialAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
     if (!payload.contains("settings")) return;
@@ -165,14 +166,46 @@ void DialAction::DidReceiveSettings(const nlohmann::json& payload) {
 
 void DialAction::DialDown(const nlohmann::json& payload) {
     LogInfo("DialAction DialDown");
-    if (!toggleEvent_.empty()) {
-        SimManager::Instance().SendEvent(toggleEvent_);
+    if (!isRadio) {
+        if (!toggleEvent_.empty()) {
+            SimManager::Instance().SendEvent(toggleEvent_);
+        }
     }
 }
 
 void DialAction::DialUp(const nlohmann::json& payload) {
     LogInfo("DialAction DialUp");
-    if (isDual) {
+
+    auto now = std::chrono::steady_clock::now();
+
+    // Double click support
+    if (isRadio) {
+        if (clickPending_) {
+            auto dt = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastClickTs_).count();
+
+            if (dt <= DOUBLE_CLICK_MS) {
+                LogInfo("DialAction Double click");
+
+                clickPending_ = false;
+
+                if (!toggleEvent_.empty()) {
+                    SimManager::Instance().SendEvent(toggleEvent_);
+                }
+
+                UpdateImage();
+                return;
+            }
+        }
+
+        // First click
+        active_radio_part ^= 1;
+        UpdateImage();
+        clickPending_ = true;
+        lastClickTs_ = now;
+        return;
+    }
+
+    if (isDual && !isRadio) {
         active_dial ^= 1;
         UpdateImage();
     }
@@ -180,26 +213,26 @@ void DialAction::DialUp(const nlohmann::json& payload) {
 
 void DialAction::RotateClockwise(const nlohmann::json& payload, const unsigned int ticks, const bool pressed){
     LogInfo("DialAction clockwise");
-    if (!isDual || active_dial == 0) {
-        if (!incEvent_.empty()) {
-            SimManager::Instance().SendEvent(incEvent_);
-        }
-    } else {
+    if ((isDual && active_dial == 1) || (isRadio && active_radio_part == 1)) {
         if (!inc2Event_.empty()) {
             SimManager::Instance().SendEvent(inc2Event_);
+        }
+    } else {
+        if (!incEvent_.empty()) {
+            SimManager::Instance().SendEvent(incEvent_);
         }
     }
 }
 
 void DialAction::RotateCounterClockwise(const nlohmann::json& payload, const unsigned int ticks, const bool pressed){
     LogInfo("DialAction Counterclockwise");
-    if (!isDual || active_dial == 0) {
-        if (!decEvent_.empty()) {
-            SimManager::Instance().SendEvent(decEvent_);
-        }
-    } else {
+    if ((isDual && active_dial == 1) || (isRadio && active_radio_part == 1)) {
         if (!dec2Event_.empty()) {
             SimManager::Instance().SendEvent(dec2Event_);
+        }
+    } else {
+        if (!decEvent_.empty()) {
+            SimManager::Instance().SendEvent(decEvent_);
         }
     }
 }
@@ -221,6 +254,12 @@ void DialAction::WillDisappear(const nlohmann::json& /*payload*/) {
         }
         vars.push_back({displayVar_, LIVE_VARIABLE});
     }
+    if (!display2Var_.empty()) {
+        if (display2SubId_) {
+            SimManager::Instance().UnsubscribeFromVariable(display2Var_, display2SubId_);
+        }
+        vars.push_back({display2Var_, LIVE_VARIABLE});
+    }
     if (!feedbackVar_.empty()) {
         if (feedbackSubId_) {
             SimManager::Instance().UnsubscribeFromVariable(feedbackVar_, feedbackSubId_);
@@ -237,6 +276,12 @@ void DialAction::WillDisappear(const nlohmann::json& /*payload*/) {
     if (!decEvent_.empty()) {
         events.push_back({decEvent_});
     }
+    if (!inc2Event_.empty()) {
+        events.push_back({inc2Event_});
+    }
+    if (!dec2Event_.empty()) {
+        events.push_back({dec2Event_});
+    }
     if (!toggleEvent_.empty()) {
         events.push_back({toggleEvent_});
     }
@@ -249,9 +294,12 @@ void DialAction::WillDisappear(const nlohmann::json& /*payload*/) {
 void DialAction::ClearSettings() {
     header_.clear();
     displayVar_.clear();
+    display2Var_.clear();
     feedbackVar_.clear();
     incEvent_.clear();
     decEvent_.clear();
+    inc2Event_.clear();
+    dec2Event_.clear();
     toggleEvent_.clear();
 
     displaySubId_ = 0;
@@ -264,13 +312,13 @@ void DialAction::UpdateImage() {
     Gdiplus::Color header_color, active_data_color, inactive_data_color, data1_color, data2_color;
 
     if (skin_ == "skin1") {
-        backgroundImageInactive = (isDual) ? b_Dual : b_Inactive;
+        backgroundImageInactive = (isDual) ? ((active_dial == 0) ? b_Dual_1 : b_Dual_2) : b_Inactive;
         backgroundImageActive = b_Active;
         header_color = COLOR_OFF_WHITE;
         active_data_color = COLOR_WHITE;
         inactive_data_color = COLOR_GRAY;
     } else {
-        backgroundImageInactive = (isDual) ? ab_Dual : ab_Inactive;
+        backgroundImageInactive = (isDual) ? ((active_dial == 0) ? ab_Dual_1 : ab_Dual_2) : ab_Inactive;
         backgroundImageActive = ab_Active;
         header_color = COLOR_ORANGE;
         active_data_color = COLOR_BRIGHT_ORANGE;
@@ -295,15 +343,36 @@ void DialAction::UpdateImage() {
         data2_color = active_data_color;
     }
 
+    std::string base64Image;
     std::wstring img_path = (isActive) ? backgroundImageActive : backgroundImageInactive;
-    std::string val = (displayVar_.empty()) ? "" : std::to_string(static_cast<int>(displayVarDef_.value));
-    std::string val2 = (display2Var_.empty()) ? "" : std::to_string(static_cast<int>(display2VarDef_.value));
-    std::string base64Image = DrawButtonImage(img_path, header_, header_color,
-                                              val, data1_color,
-                                              val2, data2_color,
-                                              headerOffset, headerFontSize,
-                                              dataOffset, dataFontSize,
-                                              data2Offset, dataFontSize);
+
+    if (!isRadio) {
+        std::string val = (displayVar_.empty()) ? "" : std::to_string(static_cast<int>(displayVarDef_.value));
+        std::string val2 = (display2Var_.empty()) ? "" : std::to_string(static_cast<int>(display2VarDef_.value));
+        base64Image = DrawDialImage(img_path, header_, header_color,
+                                    val, data1_color,
+                                    val2, data2_color,
+                                    headerOffset, headerFontSize,
+                                    dataOffset, dataFontSize,
+                                    data2Offset, dataFontSize);
+    } else {
+        double v = displayVar_.empty() ? 0.0 : displayVarDef_.value;
+        int total = static_cast<int>(std::round(v * 1000.0));
+        int int_val  = total / 1000;
+        int frac_val = total % 1000;
+        double stdb_v = display2Var_.empty() ? 0.0 : display2VarDef_.value;
+        total = static_cast<int>(std::round(stdb_v * 1000.0));
+        int stdb_int_val  = total / 1000;
+        int stdb_frac_val = total % 1000;
+        data1_color = (active_radio_part == 0) ? active_data_color : inactive_data_color;
+        data2_color = (active_radio_part == 1) ? active_data_color : inactive_data_color;
+        base64Image = DrawRadioImage(img_path, header_, header_color,
+                                    int_val, frac_val, stdb_int_val, stdb_frac_val,
+                                    active_data_color, data1_color, data2_color,
+                                    headerOffset, headerFontSize,
+                                    dataOffset, dataFontSize,
+                                    data2Offset, dataFontSize);
+    }
 
     SetImage(base64Image, kESDSDKTarget_HardwareAndSoftware, -1);
 }
