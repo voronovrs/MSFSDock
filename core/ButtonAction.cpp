@@ -104,6 +104,11 @@ void ButtonAction::DidReceiveSettings(const nlohmann::json& payload) {
 
 void ButtonAction::KeyDown(const nlohmann::json& payload) {
     LogInfo("ButtonAction KeyDown");
+    if (!SimManager::Instance().IsConnected()) {
+        SimManager::Instance().EnsureConnected();
+        return;
+    }
+
     if (!toggleEvent_.empty()) {
         SimManager::Instance().SendEvent(toggleEvent_);
     }
@@ -115,6 +120,7 @@ void ButtonAction::KeyUp(const nlohmann::json& /*payload*/) {
 
 void ButtonAction::WillAppear(const nlohmann::json& payload) {
     LogInfo("ButtonAction WillAppear");
+    UIManager::Instance().Register(this);
     UpdateVariablesAndEvents(payload);
     UpdateImage();
 }
@@ -146,6 +152,7 @@ void ButtonAction::WillDisappear(const nlohmann::json& /*payload*/) {
     }
 
     ClearSettings();
+    UIManager::Instance().Unregister(this);
 }
 
 void ButtonAction::ClearSettings() {
@@ -186,6 +193,6 @@ void ButtonAction::UpdateImage() {
     std::wstring img_path = (isActive) ? backgroundImageActive : backgroundImageInactive;
     std::string val = (displayVar_.empty()) ? "" : std::to_string(static_cast<int>(displayVarDef_.value));
     std::string base64Image = DrawButtonImage(img_path, header_, header_color, val, data_color,
-        headerOffset, headerFontSize, dataOffset, dataFontSize);
+        headerOffset, headerFontSize, dataOffset, dataFontSize, SimManager::Instance().IsConnected());
     SetImage(base64Image, kESDSDKTarget_HardwareAndSoftware, -1);
 }

@@ -32,6 +32,7 @@ const Color COLOR_BRIGHT_ORANGE     (255, 255, 165, 0);
 const Color COLOR_GRAY              (255, 150, 150, 150);
 const Color COLOR_YELLOW            (255, 255, 255, 0);
 const Color COLOR_RED               (255, 139, 0, 0);
+const Color COLOR_BRIGHT_RED        (255, 255, 45, 45);
 const Color COLOR_GREEN             (255,   0, 180,   0);
 const Color COLOR_DARK_GREEN        (255,   0, 120,   0);
 const Color COLOR_CYAN              (255,   0, 200, 200);
@@ -111,7 +112,12 @@ static std::string BitmapToBase64(Gdiplus::Bitmap* bmp) {
     return "data:image/png;base64," + base64;
 }
 
-
+// Draw red border if sim not connected
+void DrawNotConnectedOutline(Gdiplus::Graphics& graphics, int width, int height) {
+    int penWidth = 2.0f;
+    Pen redPen(Color(255, 255, 0, 0), penWidth);
+    graphics.DrawRectangle(&redPen, penWidth/2, penWidth/2, width - penWidth, height - penWidth);
+}
 
 // Draw header text
 void DrawHeader(Gdiplus::Graphics& graphics, int frameWidth, const std::string& header, const Gdiplus::Color& headerColor,
@@ -138,7 +144,7 @@ std::string DrawButtonImage(const std::wstring& imagePath,
                       const std::string& header, Color headerColor,
                       const std::string& data, Color dataColor,
                       int headerOffset, int headerFontSize,
-                      int dataOffset, int dataFontSize) {
+                      int dataOffset, int dataFontSize, bool simConnected) {
     Gdiplus::Bitmap* bmp = LoadPNGImage(imagePath);
     if (!bmp || bmp->GetLastStatus() != Ok) {
         LogError("DrawTextOverImage LoadPNGImage error!");
@@ -151,26 +157,31 @@ std::string DrawButtonImage(const std::wstring& imagePath,
 
     DrawHeader(graphics, bmp->GetWidth(), header, headerColor, headerFontSize, headerOffset);
 
-    if (!data.empty()) {
-        SolidBrush brush(dataColor);
 
-        RectF rect(0, TO_REAL(dataOffset), TO_REAL(bmp->GetWidth()), TO_REAL(dataFontSize + 4));
-        StringFormat format;
-        format.SetAlignment(StringAlignmentCenter);
-        format.SetLineAlignment(StringAlignmentNear);
+    if (simConnected) {
+        if (!data.empty()) {
+            SolidBrush brush(dataColor);
 
-        std::wstring wdata = StringToWString(data);
+            RectF rect(0, TO_REAL(dataOffset), TO_REAL(bmp->GetWidth()), TO_REAL(dataFontSize + 4));
+            StringFormat format;
+            format.SetAlignment(StringAlignmentCenter);
+            format.SetLineAlignment(StringAlignmentNear);
 
-        Font* font = GDIFonts::GetFont(TO_REAL(dataFontSize));
-        // Font fallbackFont(L"Arial", 20, FontStyleRegular, UnitPixel);
-        if (font) {
-            if (font->GetLastStatus() != Ok) {
-                LogError("Font is invalid or not loaded properly.");
+            std::wstring wdata = StringToWString(data);
+
+            Font* font = GDIFonts::GetFont(TO_REAL(dataFontSize));
+            // Font fallbackFont(L"Arial", 20, FontStyleRegular, UnitPixel);
+            if (font) {
+                if (font->GetLastStatus() != Ok) {
+                    LogError("Font is invalid or not loaded properly.");
+                }
+                graphics.DrawString(wdata.c_str(), -1, font, rect, &format, &brush);
+            } else {
+                LogInfo("No font for drawing");
             }
-            graphics.DrawString(wdata.c_str(), -1, font, rect, &format, &brush);
-        } else {
-            LogInfo("No font for drawing");
         }
+    } else {
+        DrawHeader(graphics, bmp->GetWidth(), "NO SIM", COLOR_BRIGHT_RED, headerFontSize, bmp->GetHeight()/2 - headerFontSize/2);
     }
 
     std::string base64Image = BitmapToBase64(bmp);
@@ -247,7 +258,7 @@ std::string DrawDialImage(const std::wstring& imagePath,
                       const std::string& data2, Color data2Color,
                       int headerOffset, int headerFontSize,
                       int dataOffset, int dataFontSize,
-                      int data2Offset, int data2FontSize) {
+                      int data2Offset, int data2FontSize, bool simConnected) {
     Gdiplus::Bitmap* bmp = LoadPNGImage(imagePath);
     if (!bmp || bmp->GetLastStatus() != Ok) {
         LogError("DrawTextOverImage LoadPNGImage error!");
@@ -263,6 +274,10 @@ std::string DrawDialImage(const std::wstring& imagePath,
 
     DrawDialData(graphics, bmp->GetWidth(), dataFontSize, dataOffset, dataColor, data);
     DrawDialData(graphics, bmp->GetWidth(), data2FontSize, data2Offset, data2Color, data2);
+
+    if (!simConnected) {
+        DrawNotConnectedOutline(graphics, bmp->GetWidth(), bmp->GetHeight());
+    }
 
     std::string base64Image = BitmapToBase64(bmp);
     delete bmp;
@@ -343,7 +358,7 @@ std::string DrawRadioImage(const std::wstring& imagePath,
                       Color mainColor, Color stdbColorInt, Color stdbColorFrac,
                       int headerOffset, int headerFontSize,
                       int dataOffset, int dataFontSize,
-                      int data2Offset, int data2FontSize) {
+                      int data2Offset, int data2FontSize, bool simConnected) {
     Gdiplus::Bitmap* bmp = LoadPNGImage(imagePath);
     if (!bmp || bmp->GetLastStatus() != Ok) {
         LogError("DrawTextOverImage LoadPNGImage error!");
@@ -359,6 +374,10 @@ std::string DrawRadioImage(const std::wstring& imagePath,
 
     DrawRadioData(graphics, bmp->GetWidth(), dataFontSize, dataOffset, mainColor, mainColor, int_val, frac_val);
     DrawRadioData(graphics, bmp->GetWidth(), data2FontSize, data2Offset, stdbColorInt, stdbColorFrac, stdb_val, stdb_frac_val);
+
+    if (!simConnected) {
+        DrawNotConnectedOutline(graphics, bmp->GetWidth(), bmp->GetHeight());
+    }
 
     std::string base64Image = BitmapToBase64(bmp);
     delete bmp;
@@ -388,7 +407,7 @@ std::string DrawGaugeImage(const std::string& header, Color headerColor,
                            int headerOffset, int headerFontSize,
                            int dataOffset, int dataFontSize,
                            int minVal, int maxVal, bool fill,
-                           Color scaleColor, Color indicatorColor, Color bgColor) {
+                           Color scaleColor, Color indicatorColor, Color bgColor, bool simConnected) {
     float baseAngle = 135.0f, arcLength = 180.0f, arcWidth = 12.0f, zeroArcWidth = 2.0f, pointerWidth = 16.0f,
         pointerLength = 9.0f;
 
@@ -456,6 +475,10 @@ std::string DrawGaugeImage(const std::string& header, Color headerColor,
         FontFamily fontFamily(L"Consolas");
         Font font(&fontFamily, TO_REAL(dataFontSize), FontStyleRegular, UnitPixel);
         graphics.DrawString(wdata.c_str(), -1, &font, rect, &format, &brush);
+    }
+
+    if (!simConnected) {
+        DrawNotConnectedOutline(graphics, bmp->GetWidth(), bmp->GetHeight());
     }
 
     std::string base64Image = BitmapToBase64(bmp);

@@ -12,6 +12,7 @@ extern const Gdiplus::Color COLOR_BRIGHT_ORANGE;
 extern const Gdiplus::Color COLOR_GRAY;
 extern const Gdiplus::Color COLOR_YELLOW;
 extern const Gdiplus::Color COLOR_RED;
+extern const Gdiplus::Color COLOR_BRIGHT_RED;
 extern const Gdiplus::Color COLOR_GREEN;
 extern const Gdiplus::Color COLOR_DARK_GREEN;
 extern const Gdiplus::Color COLOR_CYAN;
@@ -27,7 +28,7 @@ std::string DrawButtonImage(const std::wstring& imagePath,
                             const std::string& header = "", Gdiplus::Color headerColor = COLOR_WHITE,
                             const std::string& data = "", Gdiplus::Color dataColor = COLOR_WHITE,
                             int headerOffset = 4, int headerFontSize = 16,
-                            int dataOffset = 25, int dataFontSize = 20);
+                            int dataOffset = 25, int dataFontSize = 20, bool simConnected = false);
 
 std::string DrawDialImage(const std::wstring& imagePath,
                             const std::string& header = "", Gdiplus::Color headerColor = COLOR_WHITE,
@@ -35,7 +36,7 @@ std::string DrawDialImage(const std::wstring& imagePath,
                             const std::string& data2 = "", Gdiplus::Color data2Color = COLOR_WHITE,
                             int headerOffset = 4, int headerFontSize = 16,
                             int dataOffset = 25, int dataFontSize = 20,
-                            int data2Offset = 25, int data2FontSize = 18);
+                            int data2Offset = 25, int data2FontSize = 18, bool simConnected = false);
 
 std::string DrawRadioImage(const std::wstring& imagePath,
                             const std::string& header = "", Gdiplus::Color headerColor = COLOR_WHITE,
@@ -45,7 +46,7 @@ std::string DrawRadioImage(const std::wstring& imagePath,
                             Gdiplus::Color stdbColorFrac = COLOR_WHITE,
                             int headerOffset = 4, int headerFontSize = 16,
                             int dataOffset = 25, int dataFontSize = 20,
-                            int data2Offset = 25, int data2FontSize = 18);
+                            int data2Offset = 25, int data2FontSize = 18, bool simConnected = false);
 
 std::string DrawGaugeImage(const std::string& header = "", Gdiplus::Color headerColor = COLOR_WHITE,
                            double value = 0, const std::string& data = "", Gdiplus::Color dataColor = COLOR_WHITE,
@@ -53,4 +54,4 @@ std::string DrawGaugeImage(const std::string& header = "", Gdiplus::Color header
                            int dataOffset = 25, int dataFontSize = 20,
                            int minVal=0, int maxVal=10000, bool fill=false,
                            Gdiplus::Color scaleColor = COLOR_YELLOW, Gdiplus::Color indicatorColor = COLOR_RED,
-                           Gdiplus::Color bgColor = COLOR_NEAR_BLACK);
+                           Gdiplus::Color bgColor = COLOR_NEAR_BLACK, bool simConnected = false);

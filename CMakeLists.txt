@@ -21,28 +21,19 @@ include_directories("${CMAKE_SOURCE_DIR}")
 add_subdirectory(StreamDockCPPSDK/Vendor)
 add_subdirectory(StreamDockCPPSDK/StreamDockSDK)
 
-option(USE_SIM_MOCK "Use SimManager mock instead of real SimManager" OFF)
-
 set(
   SOURCES
   ui/GDIFonts.cpp
   ui/GDIPlusManager.cpp
+  ui/UIManager.cpp
   plugin/Logger.cpp
   plugin/Plugin.cpp
   main.cpp
   core/ButtonAction.cpp
   core/DialAction.cpp
   core/GaugeAction.cpp
+  sim/SimManager.cpp
 )
-
-if(USE_SIM_MOCK)
-    message(STATUS "Building with SimManagerMock")
-    list(APPEND SOURCES sim/SimManagerMock.cpp)
-    add_compile_definitions(SIM_MOCK)
-else()
-    message(STATUS "Building with real SimManager")
-    list(APPEND SOURCES sim/SimManager.cpp)
-endif()
 
 add_executable(
   msfsDock

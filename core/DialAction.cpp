@@ -166,6 +166,10 @@ void DialAction::DidReceiveSettings(const nlohmann::json& payload) {
 
 void DialAction::DialDown(const nlohmann::json& payload) {
     LogInfo("DialAction DialDown");
+    if (!SimManager::Instance().IsConnected()) {
+        SimManager::Instance().EnsureConnected();
+        return;
+    }
     if (!isRadio) {
         if (!toggleEvent_.empty()) {
             SimManager::Instance().SendEvent(toggleEvent_);
@@ -239,6 +243,7 @@ void DialAction::RotateCounterClockwise(const nlohmann::json& payload, const uns
 
 void DialAction::WillAppear(const nlohmann::json& payload) {
     LogInfo("DialAction WillAppear");
+    UIManager::Instance().Register(this);
     UpdateVariablesAndEvents(payload);
     UpdateImage();
 }
@@ -289,6 +294,7 @@ void DialAction::WillDisappear(const nlohmann::json& /*payload*/) {
         SimManager::Instance().RemoveSimEvents(events);
 
     ClearSettings();
+    UIManager::Instance().Unregister(this);
 }
 
 void DialAction::ClearSettings() {
@@ -354,7 +360,7 @@ void DialAction::UpdateImage() {
                                     val2, data2_color,
                                     headerOffset, headerFontSize,
                                     dataOffset, dataFontSize,
-                                    data2Offset, dataFontSize);
+                                    data2Offset, dataFontSize, SimManager::Instance().IsConnected());
     } else {
         double v = displayVar_.empty() ? 0.0 : displayVarDef_.value;
         int total = static_cast<int>(std::round(v * 1000.0));
@@ -371,7 +377,7 @@ void DialAction::UpdateImage() {
                                     active_data_color, data1_color, data2_color,
                                     headerOffset, headerFontSize,
                                     dataOffset, dataFontSize,
-                                    data2Offset, dataFontSize);
+                                    data2Offset, dataFontSize, SimManager::Instance().IsConnected());
     }
 
     SetImage(base64Image, kESDSDKTarget_HardwareAndSoftware, -1);
