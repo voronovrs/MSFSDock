@@ -90,7 +90,10 @@ void GaugeAction::DidReceiveSettings(const nlohmann::json& payload) {
 }
 
 void GaugeAction::KeyDown(const nlohmann::json& payload) {
-    // not used for now
+    LogInfo("GaugeAction KeyDown");
+    if (!SimManager::Instance().IsConnected()) {
+        SimManager::Instance().EnsureConnected();
+    }
 }
 
 void GaugeAction::KeyUp(const nlohmann::json& /*payload*/) {
@@ -98,6 +101,8 @@ void GaugeAction::KeyUp(const nlohmann::json& /*payload*/) {
 }
 
 void GaugeAction::WillAppear(const nlohmann::json& payload) {
+    LogInfo("GaugeAction WillAppear");
+    UIManager::Instance().Register(this);
     UpdateVariablesAndEvents(payload);
     UpdateImage();
 }
@@ -117,6 +122,7 @@ void GaugeAction::WillDisappear(const nlohmann::json& /*payload*/) {
     }
 
     ClearSettings();
+    UIManager::Instance().Unregister(this);
 }
 
 void GaugeAction::ClearSettings() {
@@ -155,6 +161,6 @@ void GaugeAction::UpdateImage() {
 
     std::string base64Image = DrawGaugeImage(header_, header_color, value, data, data_color,
         headerOffset, headerFontSize, dataOffset, dataFontSize, minVal_, maxVal_, fill_,
-        scaleColor_, indicatorColor_, bgColor_);
+        scaleColor_, indicatorColor_, bgColor_, SimManager::Instance().IsConnected());
     SetImage(base64Image, kESDSDKTarget_HardwareAndSoftware, -1);
 }

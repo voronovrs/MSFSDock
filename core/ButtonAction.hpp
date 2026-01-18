@@ -7,14 +7,10 @@
 #include "StreamDockCPPSDK/StreamDockSDK/HSDAction.h"
 #include "StreamDockCPPSDK/StreamDockSDK/NlohmannJSONUtils.h"
 #include "SimVar.hpp"
-
-#ifdef SIM_MOCK
-#include "sim/SimManagerMock.hpp"
-#else
 #include "sim/SimManager.hpp"
-#endif
+#include "ui/UIManager.hpp"
 
-class ButtonAction : public HSDAction {
+class ButtonAction : public HSDAction, public IUIUpdatable {
 public:
     using HSDAction::HSDAction;
 

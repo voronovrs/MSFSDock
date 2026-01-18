@@ -1,13 +1,30 @@
 ![screenshot](com.rvoronov.msfsDock.sdPlugin/images/plugin_icon.png)
-# This is work in progress
+# MSFSDock - plugin for MSFS2024 for Mirabox\Ajazz streamdocks (v0.6.0)
 
-# Example setup
+# Usage example
 | ![](com.rvoronov.msfsDock.sdPlugin/images/boeing_example.png) | ![](com.rvoronov.msfsDock.sdPlugin/images/airbus_example.png) |
 |---------|---------|
 | Boeing style skin | Airbus style skin |
 
 # Description
 MSFSDock plugin for Ajazz AKP05, Mirabox N4 and other compatible devices. Plugin allows interaction with Microsoft Flight Simulartor 2020 and 2024, read sim variable, toggle actions, change values etc.
+
+# Startup procedure
+![](com.rvoronov.msfsDock.sdPlugin/images/no_sim_connection.png)
+
+Since v0.6.0 no autoconnect to sim is available. By default plugin will be in disconnected state.
+
+You will see NO SIM text on a buttons and red border on another actions in that state.
+
+This was done to prevent excessive memory allocation when constantly trying to connect to sim (known SimConnect behavior).
+
+Plugin will attempt to connect to sim on any Button\Knob\Display press if in disconnect state.
+
+So correct procedure would be:
+- Start sim
+- After sim loaded atleast to menu press any button\knob\screen on streamdock.
+- If you see NO SIM text and red borders gone then you good to go.
+- Plugin will remain connected until sim closed (or crashed, as usual), in that case start from first step again.
 
 # Supported vars and events
 This plugin supports regular variables along with L-vars and MobiFligtht\WASM events. For example:
@@ -42,7 +59,7 @@ Controller - Knob/Display.
 - Status variable - Variable used in displaying active status (bottom field of a dial)
 
 ## Dual Dial
-This action intended to implement two separate dials on Stream Dock display. Dials can display values, change value of active dial (highlighted) by rotating a knob, active dial changes by pushing know or display. This could be usefull for pair values like Course, Radios etc, or just to save some space.
+This action intended to implement two separate dials on Stream Dock display. Dials can display values, change value of active dial (highlighted) by rotating a knob, active dial changes by pushing knob or display. This could be usefull for pair values like Course, Radios etc, or just to save some space.
 Controller - Knob/Display.
 ### Dual Dial parameters:
 - Header - header to be displayed on a dial
@@ -100,7 +117,7 @@ Standart event IDs could be found here https://docs.flightsimulator.com/html/Pro
 
 Standart variables could be found here https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Aircraft_SimVars/Aircraft_AutopilotAssistant_Variables.htm
 
-You may need to do some research to find L-vars for specific plane, configure WASM variables and events, this is not part of this document.
+You may need to do some research to find L-vars for specific plane, configure WASM/Mobiflight variables and events, this is not part of this document.
 
 # Known issues and limitations
 - Most actions display only INT values, except RADIO and GAUGE (could display percents as well)

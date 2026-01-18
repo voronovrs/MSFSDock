@@ -8,19 +8,15 @@
 #include "StreamDockCPPSDK/StreamDockSDK/NlohmannJSONUtils.h"
 #include "SimVar.hpp"
 #include "ui/GDIPlusManager.hpp"
-
-#ifdef SIM_MOCK
-#include "sim/SimManagerMock.hpp"
-#else
 #include "sim/SimManager.hpp"
-#endif
+#include "ui/UIManager.hpp"
 
 enum DataFormat {
     DATA_FMT_INT = 0,
     DATA_FMT_PERCENT,
 };
 
-class GaugeAction : public HSDAction {
+class GaugeAction : public HSDAction, public IUIUpdatable {
 public:
     using HSDAction::HSDAction;
 

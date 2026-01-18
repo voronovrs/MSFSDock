@@ -1,5 +1,6 @@
 #include "SimManager.hpp"
 #include "plugin/Logger.hpp"
+#include "ui/UIManager.hpp"
 #include <sstream>
 #include <iomanip>
 
@@ -171,35 +172,9 @@ void SimManager::QueueTask(std::function<void()> task) {
 }
 
 void SimManager::Run() {
-    LogInfo("SimManager: run loop started, waiting for SimConnect.");
+    LogMessage("SimManager: run loop started, waiting for SimConnect.");
 
     while (running) {
-        if (!hSimConnect) {
-            HRESULT hr = SimConnect_Open(&hSimConnect, "MSFSDock Plugin", nullptr, 0, 0, 0);
-            if (FAILED(hr)) {
-                std::this_thread::sleep_for(std::chrono::seconds(5));
-                continue;
-            }
-            LogInfo("SimManager: SimConnect connected.");
-            OnSimConnected();
-        }
-
-        if (!simReady) {
-            HRESULT checkHr = SimConnect_RequestDataOnSimObject(
-                hSimConnect,
-                LIVE_VARIABLE,
-                LIVE_VARIABLE,
-                SIMCONNECT_OBJECT_ID_USER_AIRCRAFT,
-                SIMCONNECT_PERIOD_NEVER
-            );
-            if (SUCCEEDED(checkHr)) {
-                LogInfo("SimManager: simReady = true (sim already running).");
-                if (!simReady) {
-                    OnSimStart();
-                }
-            }
-        }
-
         {
             std::unique_lock lock(simTaskMutex);
             simTaskCV.wait_for(lock, std::chrono::milliseconds(10));
@@ -221,83 +196,80 @@ void SimManager::Run() {
             }
         }
 
-        if (hSimConnect) {
+        if (IsConnected()) {
+
             ProcessPendingChanges();
-        }
-        if (hSimConnect) {
+
             HRESULT hr = SimConnect_CallDispatch(hSimConnect, DispatchProc, this);
             if (FAILED(hr)) {
-                LogWarn("SimManager: SimConnect_CallDispatch failed -> safe disconnect");
-                SafeDisconnect();
+                LogError("SimManager: SimConnect_CallDispatch failed -> safe disconnect");
+                HandleSimDisconnect();
             }
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
 
-    SafeDisconnect();
-    LogInfo("SimManager: run loop exited.");
+    HandleSimDisconnect();
+    LogMessage("SimManager: run loop exited.");
 }
 
+// Try to connect to sim
+void SimManager::EnsureConnected() {
+    SimState expected = SimState::Disconnected;
+    if (!simState.compare_exchange_strong(expected, SimState::Connecting)) {
+        return;
+    }
+
+    simTasks.push([this]() {
+        LogMessage("SimManager: trying to connect");
+
+        HRESULT hr = SimConnect_Open(
+            &hSimConnect,
+            "MSFSDock Plugin",
+            nullptr, 0, 0, 0);
+
+        if (FAILED(hr)) {
+            LogError("SimManager: SimConnect not available");
+            hSimConnect = nullptr;
+            simState = SimState::Disconnected;
+            return;
+        }
+
+        simState = SimState::Connected;
+        LogMessage("SimManager: SimConnect connected");
+        OnSimConnected();
+    });
+
+    simTaskCV.notify_one();
+}
+
+bool SimManager::IsConnected() const {
+    return simState == SimState::Connected
+        && hSimConnect != nullptr
+        && simReady;
+}
+
+// Update UI indicating sim is connected and ready
 void SimManager::OnSimConnected() {
-    constexpr DWORD EVENT_FLIGHT_LOADED = 1;
-    constexpr DWORD EVENT_SIM_START = 2;
-
-    // HRESULT hr;
-    // hr = SimConnect_SubscribeToSystemEvent(hSimConnect, EVENT_FLIGHT_LOADED, "FlightLoaded");
-    // if (FAILED(hr)) {
-    //     LogWarn("SimManager: failed to subscribe FlightLoaded event");
-    // }
-    // hr = SimConnect_SubscribeToSystemEvent(hSimConnect, EVENT_SIM_START, "SimStart");
-    // if (FAILED(hr)) {
-    //     LogWarn("SimManager: failed to subscribe SimStart event");
-    // }
-
-    // clear simReady until we receive the event
-    simReady = false;
-}
-
-void SimManager::OnSimStart() {
-    if (simReady) return;
-
     simReady = true;
-
-    // Run pending tasks
-    // {
-    //     std::lock_guard lock(pendingMutex_);
-    //     std::lock_guard lock2(simTaskMutex);
-
-    //     while (!pendingTasks_.empty()) {
-    //         simTasks.push(std::move(pendingTasks_.front()));
-    //         pendingTasks_.pop();
-    //     }
-    // }
-
-    // simTaskCV.notify_one();
-
-    // DeregisterVariables();
-    // RegisterVariables();
-    // RegisterEventsInSim();
-
-    // LogInfo("All pending tasks flushed to main SimConnect queue");
+    UIManager::Instance().UpdateAll();
 }
 
-void SimManager::SafeDisconnect() {
+void SimManager::HandleSimDisconnect() {
     if (hSimConnect) {
-        LogInfo("SimManager: closing SimConnect connection.");
+        LogMessage("SimManager: closing SimConnect connection.");
         SimConnect_Close(hSimConnect);
         hSimConnect = nullptr;
     }
 
     simReady = false;
+    simState = SimState::Disconnected;
 
     NotifyAndClearAllVariables();
+    UIManager::Instance().UpdateAll();
 
-    LogInfo("SimManager: disconnected, will attempt reconnect.");
-}
-
-void SimManager::HandleSimDisconnect() {
-    SafeDisconnect();
+    LogMessage("SimManager: SimConnect disconnected.");
 }
 
 void SimManager::NotifyAndClearAllVariables() {
@@ -324,23 +296,19 @@ void SimManager::NotifyAndClearAllVariables() {
         }
     }
 
-    // 3. Now safe to clear callbacks
-    {
-        std::unique_lock cbLock(callbackMutex_);
-        updateCallbacks_.clear();
-    }
-
-    // 4. Mark all vars/events unregistered
-    for (auto& [name, var] : vars_)
+    // 3. Mark all vars/events unregistered and reset vars values
+    for (auto& [name, var] : vars_) {
         var.registered = false;
+        var.value = 0.0;
+    }
 
     for (auto& [name, evt] : events_)
         evt.registered = false;
 
-    // 5. Clear registered groups
+    // 4. Clear registered groups
     registeredGroups_.clear();
 
-    // 6. Reset event ID
+    // 5. Reset event ID
     m_nextEventId = 1000;
 }
 
@@ -364,21 +332,6 @@ void CALLBACK SimManager::DispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, voi
         {
             auto* ex = reinterpret_cast<SIMCONNECT_RECV_EXCEPTION*>(pData);
             LogError("SimConnect exception received: " + std::to_string(ex->dwException) + " " + std::to_string(ex->dwIndex));
-            break;
-        }
-        case SIMCONNECT_RECV_ID_EVENT:
-        {
-            auto* evt = reinterpret_cast<SIMCONNECT_RECV_EVENT*>(pData);
-            LogInfo(std::string("SimManager: received event id ") + std::to_string(evt->uEventID));
-            constexpr DWORD EVENT_FLIGHT_LOADED = 1;
-            constexpr DWORD EVENT_SIM_START = 2;
-
-            if (evt->uEventID == EVENT_SIM_START) {
-                LogInfo("SIM READY: EVENT_SIM_START received");
-                if (!manager->simReady) {
-                    manager->OnSimStart();
-                }
-            }
             break;
         }
         case SIMCONNECT_RECV_ID_SIMOBJECT_DATA: {

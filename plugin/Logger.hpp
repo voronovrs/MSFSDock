@@ -10,4 +10,5 @@ inline void LogWarn(const std::string& line) {}
 #endif
 
 void LogInit();
+void LogMessage(const std::string& line);
 void LogError(const std::string& line);
