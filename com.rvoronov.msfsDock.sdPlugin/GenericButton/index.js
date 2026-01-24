@@ -48,6 +48,33 @@ $dom.toggleEvent.on("change", updateSettings);
 $dom.feedbackVar.on("change", updateSettings);
 $dom.displayVar.on("change", updateSettings);
 
-// $propEvent.sendToPropertyInspector = (data) => {
-//     console.log("From plugin:", data);
-// };
+// Autocomplete helper
+let commonEvents = [];
+let commonVars = [];
+let autocompleteInitialized = false;
+
+$propEvent.sendToPropertyInspector = (data) => {
+    if (data.type === "evt_var_list" && !autocompleteInitialized) {
+        autocompleteInitialized = true;
+        commonEvents = data.common_events || [];
+        commonVars = data.common_variables || [];
+
+        new SDPIAutocomplete(
+            $dom.toggleEvent,
+            () => commonEvents,
+            updateSettings
+        );
+
+        new SDPIAutocomplete(
+            $dom.displayVar,
+            () => commonVars,
+            updateSettings
+        );
+
+        new SDPIAutocomplete(
+            $dom.feedbackVar,
+            () => commonVars,
+            updateSettings
+        );
+    }
+};

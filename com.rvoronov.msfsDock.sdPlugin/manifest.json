@@ -10,8 +10,8 @@
         }
       ],
       "SupportedInMultiActions": true,
-      "PropertyInspectorPath": "GenericToggle/index.html",
-      "Tooltip": "Use SimConnect or MobiFlight variables to define the toggle button action",
+      "PropertyInspectorPath": "GenericButton/index.html",
+      "Tooltip": "Use SimConnect or MobiFlight variables to define the button action",
       "UUID": "com.rvoronov.msfsDock.generic.toggle"
     },
     {
