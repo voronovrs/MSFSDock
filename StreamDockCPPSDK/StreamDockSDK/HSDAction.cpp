@@ -81,3 +81,7 @@ void HSDAction::SetSettings(const nlohmann::json& inSettings) {
 void HSDAction::SendToPropertyInspector(const nlohmann::json& payload) {
   GetHSDConnection()->SendToPropertyInspector(mAction, mContext, payload);
 }
+
+void HSDAction::SendToPI(const nlohmann::json& payload) {
+  SendToPropertyInspector(payload);
+}

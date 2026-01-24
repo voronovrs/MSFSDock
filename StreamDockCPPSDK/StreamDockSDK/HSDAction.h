@@ -36,6 +36,7 @@ class HSDAction {
   std::string GetContext() const;
 
   virtual void DidReceiveSettings(const nlohmann::json& payload);
+  virtual void SendToPI(const nlohmann::json& payload);
   virtual void KeyDown(const nlohmann::json& payload);
   virtual void KeyUp(const nlohmann::json& payload);
   virtual void DialUp(const nlohmann::json& payload);

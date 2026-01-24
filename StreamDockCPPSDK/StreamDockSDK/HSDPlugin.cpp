@@ -20,6 +20,19 @@ HSDPlugin::HSDPlugin() : HSDBasePlugin() {
 HSDPlugin::~HSDPlugin() {
 }
 
+void HSDPlugin::PIAppearForAction(
+  const std::string& inAction,
+  const std::string& inContext,
+  const json& inPayload,
+  const std::string& inDeviceID) {
+  auto action = GetOrCreateAction(inAction, inContext);
+  if (!action) {
+      HSDLogger::LogMessage("No action for PI appear - " + inAction + " " + inContext);
+    return;
+  }
+  action->SendToPI(inPayload);
+}
+
 void HSDPlugin::KeyDownForAction(
   const std::string& inAction,
   const std::string& inContext,
