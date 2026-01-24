@@ -8,7 +8,7 @@
 #include "StreamDockCPPSDK/StreamDockSDK/NlohmannJSONUtils.h"
 #include "SimVar.hpp"
 #include "ui/GDIPlusManager.hpp"
-#include "sim/SimManager.hpp"
+#include "SimManager/SimManager.hpp"
 #include "ui/UIManager.hpp"
 
 enum DataFormat {

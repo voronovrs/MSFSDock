@@ -7,7 +7,7 @@
 #include "StreamDockCPPSDK/StreamDockSDK/HSDAction.h"
 #include "StreamDockCPPSDK/StreamDockSDK/NlohmannJSONUtils.h"
 #include "SimVar.hpp"
-#include "sim/SimManager.hpp"
+#include "SimManager/SimManager.hpp"
 #include "ui/UIManager.hpp"
 
 class ButtonAction : public HSDAction, public IUIUpdatable {

@@ -32,7 +32,8 @@ set(
   core/ButtonAction.cpp
   core/DialAction.cpp
   core/GaugeAction.cpp
-  sim/SimManager.cpp
+  SimManager/SimManager.cpp
+  SimData/SimData.cpp
 )
 
 add_executable(

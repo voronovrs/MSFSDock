@@ -1,6 +1,7 @@
 #include "ButtonAction.hpp"
 #include "plugin/Logger.hpp"
 #include "ui/GDIPlusManager.hpp"
+#include "SimData/SimData.hpp"
 
 
 void ButtonAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
