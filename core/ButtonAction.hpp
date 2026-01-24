@@ -14,6 +14,7 @@ class ButtonAction : public HSDAction, public IUIUpdatable {
 public:
     using HSDAction::HSDAction;
 
+    virtual void SendToPI(const nlohmann::json& payload) override;
     virtual void DidReceiveSettings(const nlohmann::json& payload) override;
     virtual void KeyDown(const nlohmann::json& payload) override;
     virtual void KeyUp(const nlohmann::json& payload) override;

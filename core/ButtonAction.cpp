@@ -119,6 +119,23 @@ void ButtonAction::KeyUp(const nlohmann::json& /*payload*/) {
     // not used for now
 }
 
+void ButtonAction::SendToPI(const nlohmann::json& payload) {
+    nlohmann::json out_payload;
+    out_payload["type"] = "evt_var_list";
+    out_payload["common_events"] = nlohmann::json::array();
+    out_payload["common_variables"] = nlohmann::json::array();
+
+    for (const auto& evt : GetKnownVariables()) {
+        out_payload["common_variables"].push_back(evt);
+    }
+
+    for (const auto& evt : GetKnownEvents()) {
+        out_payload["common_events"].push_back(evt);
+    }
+
+    SendToPropertyInspector(out_payload);
+}
+
 void ButtonAction::WillAppear(const nlohmann::json& payload) {
     LogInfo("ButtonAction WillAppear");
     UIManager::Instance().Register(this);

@@ -21,6 +21,7 @@ public:
           isDual(isDual), isRadio(isRadio)
     {}
 
+    virtual void SendToPI(const nlohmann::json& payload) override;
     virtual void DidReceiveSettings(const nlohmann::json& payload) override;
     virtual void DialDown(const nlohmann::json& payload) override;
     virtual void DialUp(const nlohmann::json& payload) override;
