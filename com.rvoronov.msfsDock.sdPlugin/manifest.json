@@ -10,8 +10,8 @@
         }
       ],
       "SupportedInMultiActions": true,
-      "PropertyInspectorPath": "GenericToggle/index.html",
-      "Tooltip": "Use SimConnect or MobiFlight variables to define the toggle button action",
+      "PropertyInspectorPath": "GenericButton/index.html",
+      "Tooltip": "Use SimConnect or MobiFlight variables to define the button action",
       "UUID": "com.rvoronov.msfsDock.generic.toggle"
     },
     {
@@ -82,7 +82,7 @@
   "Description": "Interact with Microsoft Flight Simulator right from your Stream Dock!",
   "Name": "MSFS Dock",
   "Icon": "images/plugin_icon",
-  "Version": "0.6.0",
+  "Version": "0.7.0",
   "OS": [
     {
       "Platform": "windows",

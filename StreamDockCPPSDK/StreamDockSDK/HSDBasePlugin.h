@@ -38,6 +38,13 @@ class HSDBasePlugin {
     const std::string& inDeviceID) {
   }
 
+  virtual void PIAppearForAction(
+    const std::string& inAction,
+    const std::string& inContext,
+    const nlohmann::json& inPayload,
+    const std::string& inDeviceID) {
+  }
+
   virtual void KeyDownForAction(
     const std::string& inAction,
     const std::string& inContext,
@@ -94,7 +101,7 @@ class HSDBasePlugin {
 
   virtual void DeviceDidDisconnect(const std::string& inDeviceID) {
   }
-  
+
   virtual void SystemDidWakeUp() {
   }
 

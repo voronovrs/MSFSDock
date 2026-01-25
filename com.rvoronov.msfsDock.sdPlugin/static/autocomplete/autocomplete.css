@@ -1,0 +1,40 @@
+.sdpi-autocomplete {
+  position: relative;
+  width: 100%;
+}
+
+.sdpi-autocomplete > input.sdpi-item-value {
+  width: 100%;
+  box-sizing: border-box;
+
+  height: 28px;
+  line-height: 28px;
+
+  padding: 0 6px;
+}
+
+.sdpi-autocomplete-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+
+  background: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 3px;
+
+  max-height: 160px;
+  overflow-y: auto;
+  display: none;
+}
+
+.sdpi-autocomplete-item {
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.sdpi-autocomplete-item:hover {
+  background: #3a3a3a;
+}

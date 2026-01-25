@@ -5,6 +5,7 @@
   <meta charset="utf-8" />
   <title>MSFS Dock Generic Gauge PI</title>
   <link rel="stylesheet" href="../static/css/sdpi.css" />
+  <link rel="stylesheet" href="../static/autocomplete/autocomplete.css" />
   <style>
     .sdpi-item {
       margin: 2px auto;
@@ -20,7 +21,8 @@
     </div>
     <div class="sdpi-item">
         <div class="sdpi-item-label" title="Sim variable to be displayed on a gauge">Display variable</div>
-        <input class="sdpi-item-value" id="displayVar" value="" placeholder="DISPLAY VARIABLE" pattern="[A-Za-z0-9:_. ]*">
+        <input class="sdpi-item-value" id="displayVar" list="displayVarList" value="" placeholder="DISPLAY VARIABLE" pattern="[A-Za-z0-9:_. ]*">
+        <datalist id="displayVarList"></datalist>
     </div>
     <div class="sdpi-item">
       <div class="sdpi-item-label" title="Data format">Format</div>
@@ -91,6 +93,7 @@
   </div>
   <script src="../static/utils/common.js"></script>
   <script src="../static/action.js"></script>
+  <script src="../static/autocomplete/autocomplete.js"></script>
   <script src="index.js"></script>
 </body>
 </html>

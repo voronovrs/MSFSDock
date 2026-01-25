@@ -2,7 +2,7 @@
 
 #include "plugin/Logger.hpp"
 #include "plugin/Plugin.hpp"
-#include "sim/SimManager.hpp"
+#include "SimManager/SimManager.hpp"
 #include "ui/GDIFonts.hpp"
 #include "ui/GDIPlusManager.hpp"
 #include <thread>

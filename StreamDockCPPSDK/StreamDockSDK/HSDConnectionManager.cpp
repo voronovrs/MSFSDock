@@ -80,6 +80,9 @@ void HSDConnectionManager::OnMessage(websocketpp::connection_hdl, WebsocketClien
             // std::ofstream log("log.txt", std::ios::app);
             // log << "GENERAL_EVENT " << event << " ACTION " << action << " PAYLOAD " << payload << std::endl;
 
+            if (event == kESDSDKEventPropertyInspectorDidAppear) {
+                mPlugin->PIAppearForAction(action, context, payload, deviceID);
+            }
             if (event == kESDSDKEventKeyDown) {
                 mPlugin->KeyDownForAction(action, context, payload, deviceID);
             }

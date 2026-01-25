@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.19)
 
-project(com.mirabox.msfsDock VERSION 0.6.0)
+project(com.mirabox.msfsDock VERSION 0.7.0)
 
 # set the C++ standard to C++ 20
 set(CMAKE_CXX_STANDARD 20)
@@ -32,7 +32,8 @@ set(
   core/ButtonAction.cpp
   core/DialAction.cpp
   core/GaugeAction.cpp
-  sim/SimManager.cpp
+  SimManager/SimManager.cpp
+  SimData/SimData.cpp
 )
 
 add_executable(

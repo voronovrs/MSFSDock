@@ -5,6 +5,7 @@
   <meta charset="utf-8" />
   <title>MSFS Dock Dual Dial PI</title>
   <link rel="stylesheet" href="../static/css/sdpi.css" />
+  <link rel="stylesheet" href="../static/autocomplete/autocomplete.css" />
   <style>
     .sdpi-item {
       margin: 2px auto;
@@ -27,32 +28,39 @@
     </div>
     <div class="sdpi-item">
         <div class="sdpi-item-label" title="Sim variable to be displayed on dial 1">Dial 1 variable</div>
-        <input class="sdpi-item-value" id="displayVar" value="" placeholder="DISPLAY 1 VARIABLE" pattern="[A-Z0-9:_ ]*">
+        <input class="sdpi-item-value" id="displayVar" list="displayVarList" value="" placeholder="DISPLAY 1 VARIABLE" pattern="[A-Z0-9:_ ]*">
+        <datalist id="displayVarList"></datalist>
     </div>
     <div class="sdpi-item">
         <div class="sdpi-item-label" title="Sim event to be called when rotating knob CW">Inc 1 event</div>
-        <input class="sdpi-item-value" id="incEvent" value="" placeholder="INCREMENT EVENT" pattern="[A-Z0-9:_ ]*">
+        <input class="sdpi-item-value" id="incEvent" list="incEventList" value="" placeholder="INCREMENT EVENT" pattern="[A-Z0-9:_ ]*">
+        <datalist id="incEventList"></datalist>
     </div>
     <div class="sdpi-item">
         <div class="sdpi-item-label" title="Sim event to be called when rotating knob CCW">Dec 1 event</div>
-        <input class="sdpi-item-value" id="decEvent" value="" placeholder="DECREMENT EVENT" pattern="[A-Z0-9:_ ]*">
+        <input class="sdpi-item-value" id="decEvent" list="decEventList" value="" placeholder="DECREMENT EVENT" pattern="[A-Z0-9:_ ]*">
+        <datalist id="decEventList"></datalist>
     </div>
     <div class="sdpi-item">
         <div class="sdpi-item-label" title="Sim variable to be displayed on dial 2">Dial 2 variable</div>
-        <input class="sdpi-item-value" id="display2Var" value="" placeholder="DISPLAY VARIABLE" pattern="[A-Z0-9:_ ]*">
+        <input class="sdpi-item-value" id="display2Var" list="display2VarList" value="" placeholder="DISPLAY VARIABLE" pattern="[A-Z0-9:_ ]*">
+        <datalist id="display2VarList"></datalist>
     </div>
     <div class="sdpi-item">
         <div class="sdpi-item-label" title="Sim event to be called when rotating knob CW">Inc 2 event</div>
-        <input class="sdpi-item-value" id="inc2Event" value="" placeholder="INCREMENT EVENT" pattern="[A-Z0-9:_ ]*">
+        <input class="sdpi-item-value" id="inc2Event" list="inc2EventList" value="" placeholder="INCREMENT EVENT" pattern="[A-Z0-9:_ ]*">
+        <datalist id="inc2EventList"></datalist>
     </div>
     <div class="sdpi-item">
         <div class="sdpi-item-label" title="Sim event to be called when rotating knob CCW">Dec 2 event</div>
-        <input class="sdpi-item-value" id="dec2Event" value="" placeholder="DECREMENT EVENT" pattern="[A-Z0-9:_ ]*">
+        <input class="sdpi-item-value" id="dec2Event" list="dec2EventList" value="" placeholder="DECREMENT EVENT" pattern="[A-Z0-9:_ ]*">
+        <datalist id="dec2EventList"></datalist>
     </div>
 
   </div>
   <script src="../static/utils/common.js"></script>
   <script src="../static/action.js"></script>
+  <script src="../static/autocomplete/autocomplete.js"></script>
   <script src="index.js"></script>
 </body>
 </html>

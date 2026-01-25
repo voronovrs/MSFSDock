@@ -8,7 +8,7 @@
 #include "StreamDockCPPSDK/StreamDockSDK/NlohmannJSONUtils.h"
 #include "SimVar.hpp"
 #include "ui/GDIPlusManager.hpp"
-#include "sim/SimManager.hpp"
+#include "SimManager/SimManager.hpp"
 #include "ui/UIManager.hpp"
 
 enum DataFormat {
@@ -20,6 +20,7 @@ class GaugeAction : public HSDAction, public IUIUpdatable {
 public:
     using HSDAction::HSDAction;
 
+    virtual void SendToPI(const nlohmann::json& payload) override;
     virtual void DidReceiveSettings(const nlohmann::json& payload) override;
     virtual void KeyDown(const nlohmann::json& payload) override;
     virtual void KeyUp(const nlohmann::json& payload) override;

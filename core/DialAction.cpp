@@ -1,6 +1,7 @@
 #include "DialAction.hpp"
 #include "plugin/Logger.hpp"
 #include "ui/GDIPlusManager.hpp"
+#include "SimData/SimData.hpp"
 
 constexpr int DOUBLE_CLICK_MS = 400;
 
@@ -239,6 +240,23 @@ void DialAction::RotateCounterClockwise(const nlohmann::json& payload, const uns
             SimManager::Instance().SendEvent(decEvent_);
         }
     }
+}
+
+void DialAction::SendToPI(const nlohmann::json& payload) {
+    nlohmann::json out_payload;
+    out_payload["type"] = "evt_var_list";
+    out_payload["common_events"] = nlohmann::json::array();
+    out_payload["common_variables"] = nlohmann::json::array();
+
+    for (const auto& evt : GetKnownVariables()) {
+        out_payload["common_variables"].push_back(evt);
+    }
+
+    for (const auto& evt : GetKnownEvents()) {
+        out_payload["common_events"].push_back(evt);
+    }
+
+    SendToPropertyInspector(out_payload);
 }
 
 void DialAction::WillAppear(const nlohmann::json& payload) {

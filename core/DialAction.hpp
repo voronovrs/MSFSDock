@@ -7,7 +7,7 @@
 #include "StreamDockCPPSDK/StreamDockSDK/HSDAction.h"
 #include "StreamDockCPPSDK/StreamDockSDK/NlohmannJSONUtils.h"
 #include "SimVar.hpp"
-#include "sim/SimManager.hpp"
+#include "SimManager/SimManager.hpp"
 #include "ui/UIManager.hpp"
 
 class DialAction : public HSDAction, public IUIUpdatable {
@@ -21,6 +21,7 @@ public:
           isDual(isDual), isRadio(isRadio)
     {}
 
+    virtual void SendToPI(const nlohmann::json& payload) override;
     virtual void DidReceiveSettings(const nlohmann::json& payload) override;
     virtual void DialDown(const nlohmann::json& payload) override;
     virtual void DialUp(const nlohmann::json& payload) override;

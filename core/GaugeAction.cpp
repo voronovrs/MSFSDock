@@ -1,6 +1,7 @@
 #include "GaugeAction.hpp"
 #include "plugin/Logger.hpp"
 #include "ui/GDIPlusManager.hpp"
+#include "SimData/SimData.hpp"
 
 void GetColor(Gdiplus::Color& color, const std::string& cfg_val) {
     static const std::unordered_map<std::string, Gdiplus::Color> colorMap = {
@@ -98,6 +99,18 @@ void GaugeAction::KeyDown(const nlohmann::json& payload) {
 
 void GaugeAction::KeyUp(const nlohmann::json& /*payload*/) {
     // not used for now
+}
+
+void GaugeAction::SendToPI(const nlohmann::json& payload) {
+    nlohmann::json out_payload;
+    out_payload["type"] = "evt_var_list";
+    out_payload["common_variables"] = nlohmann::json::array();
+
+    for (const auto& evt : GetKnownVariables()) {
+        out_payload["common_variables"].push_back(evt);
+    }
+
+    SendToPropertyInspector(out_payload);
 }
 
 void GaugeAction::WillAppear(const nlohmann::json& payload) {

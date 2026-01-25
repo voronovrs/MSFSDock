@@ -5,6 +5,7 @@
   <meta charset="utf-8" />
   <title>MSFS Dock Single Dial PI</title>
   <link rel="stylesheet" href="../static/css/sdpi.css" />
+  <link rel="stylesheet" href="../static/autocomplete/autocomplete.css" />
   <style>
     .sdpi-item {
       margin: 2px auto;
@@ -27,27 +28,33 @@
     </div>
     <div class="sdpi-item">
         <div class="sdpi-item-label" title="Sim variable to be displayed on a dial">Display variable</div>
-        <input class="sdpi-item-value" id="displayVar" value="" placeholder="DISPLAY VARIABLE" pattern="[A-Za-z0-9:_. ]*">
+        <input class="sdpi-item-value" id="displayVar" list="displayVarList" value="" placeholder="DISPLAY VARIABLE" pattern="[A-Za-z0-9:_. ]*">
+        <datalist id="displayVarList"></datalist>
     </div>
     <div class="sdpi-item">
         <div class="sdpi-item-label" title="Sim event to be called when rotating knob CW">Inc event</div>
-        <input class="sdpi-item-value" id="incEvent" value="" placeholder="INCREMENT EVENT" pattern="[A-Za-z0-9:_. ]*">
+        <input class="sdpi-item-value" id="incEvent" list="incEventList" value="" placeholder="INCREMENT EVENT" pattern="[A-Za-z0-9:_. ]*">
+        <datalist id="incEventList"></datalist>
     </div>
     <div class="sdpi-item">
         <div class="sdpi-item-label" title="Sim event to be called when rotating knob CCW">Dec event</div>
-        <input class="sdpi-item-value" id="decEvent" value="" placeholder="DECREMENT EVENT" pattern="[A-Za-z0-9:_. ]*">
+        <input class="sdpi-item-value" id="decEvent" list="decEventList" value="" placeholder="DECREMENT EVENT" pattern="[A-Za-z0-9:_. ]*">
+        <datalist id="decEventList"></datalist>
     </div>
     <div class="sdpi-item">
         <div class="sdpi-item-label" title="Sim event to be called when knob pushed">Knob event</div>
-        <input class="sdpi-item-value" id="toggleEvent" value="" placeholder="KNOB EVENT" pattern="[A-Za-z0-9:_. ]*">
+        <input class="sdpi-item-value" id="toggleEvent" list="toggleEventList" value="" placeholder="KNOB EVENT" pattern="[A-Za-z0-9:_. ]*">
+        <datalist id="toggleEventList"></datalist>
     </div>
     <div class="sdpi-item">
         <div class="sdpi-item-label" title="Sim variable to be used to show active status on a dial (green light)">Status variable</div>
-        <input class="sdpi-item-value" id="feedbackVar" value="" placeholder="STATUS VARIABLE" pattern="[A-Za-z0-9:_. ]*">
+        <input class="sdpi-item-value" id="feedbackVar" list="feedbackVarList" value="" placeholder="STATUS VARIABLE" pattern="[A-Za-z0-9:_. ]*">
+        <datalist id="feedbackVarList"></datalist>
     </div>
   </div>
   <script src="../static/utils/common.js"></script>
   <script src="../static/action.js"></script>
+  <script src="../static/autocomplete/autocomplete.js"></script>
   <script src="index.js"></script>
 </body>
 </html>

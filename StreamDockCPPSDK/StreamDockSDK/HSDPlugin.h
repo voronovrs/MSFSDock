@@ -31,6 +31,12 @@ class HSDPlugin : public HSDBasePlugin {
   HSDPlugin();
   virtual ~HSDPlugin();
 
+  virtual void PIAppearForAction(
+    const std::string& inAction,
+    const std::string& inContext,
+    const nlohmann::json& inPayload,
+    const std::string& inDeviceID) override;
+
   virtual void KeyDownForAction(
     const std::string& inAction,
     const std::string& inContext,
