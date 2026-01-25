@@ -1,4 +1,4 @@
-![screenshot](images/plugin_icon.png)
+![screenshot](com.rvoronov.msfsDock.sdPlugin/images/plugin_icon.png)
 # MSFSDock - plugin for MSFS2024 for Mirabox\Ajazz streamdocks (v0.6.0)
 
 # Usage example
@@ -34,6 +34,24 @@ This plugin supports regular variables along with L-vars and MobiFligtht\WASM ev
 - MobiFlight.FCC_VERTICAL_SPEED_SEL_Dec - event from MobiFlight WASM module
 - L:AS01B_AUTO_THROTTLE_ARM_STATE - L-var variable, you should google them or use Devmode to find them
 - L:AP_VS_ACTIVE - L-var variable, you should google them or use Devmode to find them
+## Entering event\variable hints
+When entering any text into event\variable input field plugin will show known events\variables list, from which you can peek needed event\varible.
+Possibility to enter custom events\variables still remains (L-var or Mobiflight for example).
+NOTE: Inserted event\variable will only be set to plugin in next scenarios:
+1. Needed event\variable picked from list.
+2. Custom event\variable entered and focus changed to another field or out of current field.
+
+Examples:
+1. You want a button to trigger parking brakes. Steps would be:
+- Add MSFS Dock Generic button action to layout.
+- In Button event field start printing (for example) "brakes".
+- Click on "PARKING_BRAKES" from list.
+- Now pressing this button will trigger prking brakes on and off.
+2. You want to display light on a button when AP is active in your 737 Max. This is L-var ariable. Steps would be:
+- Add MSFS Dock Generic button action to layout.
+- In Status variable field print "L:AP_VS_ACTIVE".
+- Click on out of this field (but remain in button settings) or on any other field. This is essential!
+- Now light on this button wil display your 737 Max AP status.
 
 # Plugin Actions
 ## Generic Button
@@ -89,7 +107,7 @@ Controller - Button.
 This action intended to display active and standby radios (NAV, COM etc), change whole and fractional part and swap between them.
 Controller - Knob/Display.
 ### Generic Radio parameters:
-- Header - header to be displayed on a button
+- Header - header to be displayed on a radio card
 - Skin - select radio skin, either Boeing-like or Airbus-like
 - Active Radio var - Variable used to display active radio frequency
 - Stdby Radio var - Variable used to display standby radio frequency
@@ -122,3 +140,6 @@ You may need to do some research to find L-vars for specific plane, configure WA
 # Known issues and limitations
 - Most actions display only INT values, except RADIO and GAUGE (could display percents as well)
 - Probably a lot of bugs with registering\deregistering variables and events
+
+# Links
+Github page: https://github.com/voronovrs/MSFSDock
