@@ -5,6 +5,10 @@ class SDPIAutocomplete {
         this.onSelect = onSelect;
         this.minChars = minChars;
 
+        this.draftValue = "";
+        this.committing = false;
+        this.selecting = false;
+
         this.wrapper = document.createElement("div");
         this.wrapper.className = "sdpi-autocomplete";
 
@@ -18,24 +22,29 @@ class SDPIAutocomplete {
         this.bind();
     }
 
-    onFocus() {
-        const value = this.input.value.toLowerCase();
-        if (!value || value.length < this.minChars) return;
-
-        const matches = this.dataSource()
-            .filter(v => v.toLowerCase().includes(value));
-
-        if (matches.length === 1 && matches[0].toLowerCase() === value) {
-            return; // Do not show exact single match
-        }
-
-        this.update();
-    }
-
     bind() {
-        this.input.addEventListener("focus", () => this.onFocus());
-        this.input.addEventListener("input", () => this.update());
-        document.addEventListener("click", e => {
+        this.input.addEventListener("focus", () => {
+            this.draftValue = this.input.value;
+            this.update();
+        });
+
+        this.input.addEventListener("input", () => {
+            this.draftValue = this.input.value;
+            this.update();
+        });
+
+        this.input.addEventListener("blur", () => {
+            if (this.selecting || this.committing) return;
+
+            this.committing = true;
+            this.input.value = this.draftValue;
+            this.input.dispatchEvent(new Event("change", { bubbles: true }));
+            this.committing = false;
+
+            this.hide();
+        });
+
+        document.addEventListener("mousedown", e => {
             if (!this.wrapper.contains(e.target)) {
                 this.hide();
             }
@@ -52,19 +61,34 @@ class SDPIAutocomplete {
         }
 
         const matches = this.dataSource()
-            .filter(v => v.toLowerCase().includes(value))
-//            .slice(0, 20);
+            .filter(v => v.toLowerCase().includes(value));
+
+        if (matches.length === 1 && matches[0].toLowerCase() === value) {
+            this.hide();
+            return;
+        }
 
         matches.forEach(match => {
             const item = document.createElement("div");
             item.className = "sdpi-autocomplete-item";
             item.textContent = match;
 
-            item.onclick = () => {
+            item.addEventListener("mousedown", e => {
+                e.preventDefault();
+
+                this.selecting = true;
+                this.committing = true;
+
+                this.draftValue = match;
                 this.input.value = match;
+
                 this.hide();
-                if (this.onSelect) this.onSelect(match);
-            };
+
+                this.input.dispatchEvent(new Event("change", { bubbles: true }));
+
+                this.committing = false;
+                this.selecting = false;
+            });
 
             this.list.appendChild(item);
         });

@@ -37,6 +37,15 @@ const $local = false, $back = false,
         sendToPropertyInspector(data) { }
     };
 
+// --- Initialize lastSentValue for all fields ---
+$dom.header.lastSentValue = $dom.header.value;
+$dom.skin.lastSentValue = $dom.skin.value;
+$dom.displayVar.lastSentValue = $dom.displayVar.value;
+$dom.incEvent.lastSentValue = $dom.incEvent.value;
+$dom.decEvent.lastSentValue = $dom.decEvent.value;
+$dom.toggleEvent.lastSentValue = $dom.toggleEvent.value;
+$dom.feedbackVar.lastSentValue = $dom.feedbackVar.value;
+
 // Helper to send both values together
 function updateSettings() {
     const data = {
@@ -48,6 +57,28 @@ function updateSettings() {
         toggleEvent: $dom.toggleEvent.value,
         feedbackVar: $dom.feedbackVar.value,
     };
+
+    // --- Check if anything really changed ---
+    if (
+        data.header === $dom.header.lastSentValue &&
+        data.skin === $dom.skin.lastSentValue &&
+        data.displayVar === $dom.displayVar.lastSentValue &&
+        data.incEvent === $dom.incEvent.lastSentValue &&
+        data.decEvent === $dom.decEvent.lastSentValue &&
+        data.toggleEvent === $dom.toggleEvent.lastSentValue &&
+        data.feedbackVar === $dom.feedbackVar.lastSentValue
+    ) {
+        return; // Nothing changed, skip sending
+    }
+
+    $dom.header.lastSentValue = data.header;
+    $dom.skin.lastSentValue = data.skin;
+    $dom.displayVar.lastSentValue = data.displayVar;
+    $dom.incEvent.lastSentValue = data.incEvent;
+    $dom.decEvent.lastSentValue = data.decEvent;
+    $dom.toggleEvent.lastSentValue = data.toggleEvent;
+    $dom.feedbackVar.lastSentValue = data.feedbackVar;
+
     $websocket.saveData(data);
 }
 
@@ -60,6 +91,45 @@ $dom.decEvent.on("change", updateSettings);
 $dom.toggleEvent.on("change", updateSettings);
 $dom.feedbackVar.on("change", updateSettings);
 
-// $propEvent.sendToPropertyInspector = (data) => {
-//     console.log("From plugin:", data);
-// };
+// Autocomplete helper
+let commonEvents = [];
+let commonVars = [];
+let autocompleteInitialized = false;
+
+$propEvent.sendToPropertyInspector = (data) => {
+    if (data.type === "evt_var_list" && !autocompleteInitialized) {
+        autocompleteInitialized = true;
+        commonEvents = data.common_events || [];
+        commonVars = data.common_variables || [];
+
+        new SDPIAutocomplete(
+            $dom.displayVar,
+            () => commonVars,
+            updateSettings
+        );
+
+        new SDPIAutocomplete(
+            $dom.incEvent,
+            () => commonEvents,
+            updateSettings
+        );
+
+        new SDPIAutocomplete(
+            $dom.decEvent,
+            () => commonEvents,
+            updateSettings
+        );
+
+        new SDPIAutocomplete(
+            $dom.toggleEvent,
+            () => commonEvents,
+            updateSettings
+        );
+
+        new SDPIAutocomplete(
+            $dom.feedbackVar,
+            () => commonVars,
+            updateSettings
+        );
+    }
+};

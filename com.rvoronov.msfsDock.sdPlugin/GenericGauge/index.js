@@ -50,6 +50,17 @@ function toInt(value, def) {
     return Number.isFinite(v) ? v : def;
 }
 
+// --- Initialize lastSentValue for all fields ---
+$dom.header.lastSentValue = $dom.header.value;
+$dom.displayVar.lastSentValue = $dom.displayVar.value;
+$dom.dataFormat.lastSentValue = $dom.dataFormat.value;
+$dom.minVal.lastSentValue = $dom.minVal.value;
+$dom.maxVal.lastSentValue = $dom.maxVal.value;
+$dom.style.lastSentValue = $dom.style.value;
+$dom.scaleColor.lastSentValue = $dom.scaleColor.value;
+$dom.indicatorColor.lastSentValue = $dom.indicatorColor.value;
+$dom.bgColor.lastSentValue = $dom.bgColor.value;
+
 // Helper to send both values together
 function updateSettings() {
     const data = {
@@ -63,6 +74,32 @@ function updateSettings() {
         indicatorColor: $dom.indicatorColor.value,
         bgColor: $dom.bgColor.value,
     };
+
+    // --- Check if anything really changed ---
+    if (
+        data.header === $dom.header.lastSentValue &&
+        data.displayVar === $dom.displayVar.lastSentValue &&
+        data.dataFormat === $dom.dataFormat.lastSentValue &&
+        data.minVal === $dom.minVal.lastSentValue &&
+        data.maxVal === $dom.maxVal.lastSentValue &&
+        data.style === $dom.style.lastSentValue &&
+        data.scaleColor === $dom.scaleColor.lastSentValue &&
+        data.indicatorColor === $dom.indicatorColor.lastSentValue &&
+        data.bgColor === $dom.bgColor.lastSentValue
+    ) {
+        return; // Nothing changed, skip sending
+    }
+
+    $dom.header.lastSentValue = data.header;
+    $dom.displayVar.lastSentValue = data.displayVar;
+    $dom.dataFormat.lastSentValue = data.dataFormat;
+    $dom.minVal.lastSentValue = data.minVal;
+    $dom.maxVal.lastSentValue = data.maxVal;
+    $dom.style.lastSentValue = data.style;
+    $dom.scaleColor.lastSentValue = data.scaleColor;
+    $dom.indicatorColor.lastSentValue = data.indicatorColor;
+    $dom.bgColor.lastSentValue = data.bgColor;
+
     $websocket.saveData(data);
 }
 
@@ -77,6 +114,19 @@ $dom.scaleColor.on("change", updateSettings);
 $dom.indicatorColor.on("change", updateSettings);
 $dom.bgColor.on("change", updateSettings);
 
-// $propEvent.sendToPropertyInspector = (data) => {
-//     console.log("From plugin:", data);
-// };
+// Autocomplete helper
+let commonVars = [];
+let autocompleteInitialized = false;
+
+$propEvent.sendToPropertyInspector = (data) => {
+    if (data.type === "evt_var_list" && !autocompleteInitialized) {
+        autocompleteInitialized = true;
+        commonVars = data.common_variables || [];
+
+        new SDPIAutocomplete(
+            $dom.displayVar,
+            () => commonVars,
+            updateSettings
+        );
+    }
+};

@@ -29,7 +29,14 @@ const $local = false, $back = false,
         sendToPropertyInspector(data) { }
     };
 
-// Helper to send both values together
+// --- Initialize lastSentValue for all fields ---
+$dom.header.lastSentValue = $dom.header.value;
+$dom.skin.lastSentValue = $dom.skin.value;
+$dom.toggleEvent.lastSentValue = $dom.toggleEvent.value;
+$dom.feedbackVar.lastSentValue = $dom.feedbackVar.value;
+$dom.displayVar.lastSentValue = $dom.displayVar.value;
+
+// Helper to send both values together with real-change check
 function updateSettings() {
     const data = {
         header: $dom.header.value,
@@ -38,6 +45,25 @@ function updateSettings() {
         feedbackVar: $dom.feedbackVar.value,
         displayVar: $dom.displayVar.value,
     };
+
+    // --- Check if anything really changed ---
+    if (
+        data.header === $dom.header.lastSentValue &&
+        data.skin === $dom.skin.lastSentValue &&
+        data.toggleEvent === $dom.toggleEvent.lastSentValue &&
+        data.feedbackVar === $dom.feedbackVar.lastSentValue &&
+        data.displayVar === $dom.displayVar.lastSentValue
+    ) {
+        return; // Nothing changed, skip sending
+    }
+
+    // --- Save current values as last sent ---
+    $dom.header.lastSentValue = data.header;
+    $dom.skin.lastSentValue = data.skin;
+    $dom.toggleEvent.lastSentValue = data.toggleEvent;
+    $dom.feedbackVar.lastSentValue = data.feedbackVar;
+    $dom.displayVar.lastSentValue = data.displayVar;
+
     $websocket.saveData(data);
 }
 
