@@ -28,6 +28,7 @@ public:
 private:
     void UpdateVariablesAndEvents(const nlohmann::json& payload);
     void ClearSettings();
+    std::string GetEventToSend() const;
 
     // parsed settings
     std::string displayVar_;
@@ -37,6 +38,14 @@ private:
     bool isActive = false;
     std::string skin_;
 
+    // Conditional events support
+    bool useConditionalEvents_ = false;
+    std::string conditionalVar_;
+    std::string conditionOperator_;
+    double conditionValue_ = 0.0;
+    std::string eventWhenTrue_;
+    std::string eventWhenFalse_;
+
     const std::wstring b_Inactive = L"images/button.png";
     const std::wstring b_Active = L"images/button_active.png";
     const std::wstring ab_Inactive = L"images/button_ab.png";
@@ -44,8 +53,12 @@ private:
 
     SimVarDefinition displayVarDef_;
     SimVarDefinition feedbackVarDef_;
+    SimVarDefinition conditionalVarDef_;
     SimEventDefinition toggleEventDef_;
+    SimEventDefinition eventWhenTrueDef_;
+    SimEventDefinition eventWhenFalseDef_;
 
     SubscriptionId displaySubId_ = 0;
     SubscriptionId feedbackSubId_ = 0;
+    SubscriptionId conditionalSubId_ = 0;
 };
