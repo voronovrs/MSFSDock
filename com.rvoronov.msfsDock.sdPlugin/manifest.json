@@ -82,7 +82,7 @@
   "Description": "Interact with Microsoft Flight Simulator right from your Stream Dock!",
   "Name": "MSFS Dock",
   "Icon": "images/plugin_icon",
-  "Version": "0.7.0",
+  "Version": "0.7.1",
   "OS": [
     {
       "Platform": "windows",

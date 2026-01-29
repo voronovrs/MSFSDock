@@ -1,5 +1,5 @@
 ![screenshot](com.rvoronov.msfsDock.sdPlugin/images/plugin_icon.png)
-# MSFSDock - plugin for MSFS2024 for Mirabox\Ajazz streamdocks (v0.6.0)
+# MSFSDock - plugin for MSFS2024 for Mirabox\Ajazz streamdocks (v0.7.1)
 
 # Usage example
 | ![](com.rvoronov.msfsDock.sdPlugin/images/boeing_example.png) | ![](com.rvoronov.msfsDock.sdPlugin/images/airbus_example.png) |
@@ -93,7 +93,7 @@ Example configuration for smart Autopilot toggle:
 - Event When True: AP_MASTER (to turn off when AP is on)
 - Event When False: AP_MASTER (to turn on when AP is off)
 - Status variable: AUTOPILOT MASTER (to show green light when AP is active)
- 
+
 ## Generic Dial (single)
 This action intended to implement plane dial on Stream Dock display. Dial can display value, change value by rotating a knob, call event by pressing a knob/screen.
 Controller - Knob/Display.
