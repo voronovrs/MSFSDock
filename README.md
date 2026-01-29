@@ -60,10 +60,40 @@ Controller - button.
 ### Generic Button parameters:
 - Header - header to be displayed on a button
 - Skin - select button skin, either Boeing-like or Airbus-like
-- Button event - event to be triggered by button press
+- Event Mode - select between Simple or Conditional event mode
+  - **Simple mode**: Single event triggered by button press
+  - **Conditional mode**: Different events triggered based on variable value
+- Button event (Simple mode) - event to be triggered by button press
+- Conditional Variable (Conditional mode) - Variable to evaluate for condition
+- Operator (Conditional mode) - Comparison operator (==, !=, >, <, >=, <=)
+- Condition Value (Conditional mode) - Value to compare against
+- Event When True (Conditional mode) - Event to send when condition is true
+- Event When False (Conditional mode) - Event to send when condition is false
 - Display variable - Variable used in displaying additional data on a button if necessary
 - Status variable - Variable used in displaying active status (green light in the button bottom)
 
+#### Conditional Events
+Now Generic Button supports conditional events. This allows button to send different events based on SimConnect variable value.
+For example, you could configure Autopilot button to send AP_MASTER event to turn AP on when it's off, and same AP_MASTER event to turn it off when it's on.
+Or configure Landing Gear button to send GEAR_UP when gear is extended and GEAR_DOWN when gear is retracted, based on GEAR TOTAL PCT EXTENDED variable value.
+
+Conditional mode supports 6 comparison operators:
+- == (Equal) - condition is true when variable equals specified value
+- != (Not Equal) - condition is true when variable differs from specified value
+- > (Greater Than) - condition is true when variable is greater than specified value
+- < (Less Than) - condition is true when variable is less than specified value
+- >= (Greater or Equal) - condition is true when variable is greater than or equal to specified value
+- <= (Less or Equal) - condition is true when variable is less than or equal to specified value
+
+Example configuration for smart Autopilot toggle:
+- Event Mode: Conditional
+- Conditional Variable: AUTOPILOT MASTER
+- Operator: == (Equal)
+- Condition Value: 1
+- Event When True: AP_MASTER (to turn off when AP is on)
+- Event When False: AP_MASTER (to turn on when AP is off)
+- Status variable: AUTOPILOT MASTER (to show green light when AP is active)
+ 
 ## Generic Dial (single)
 This action intended to implement plane dial on Stream Dock display. Dial can display value, change value by rotating a knob, call event by pressing a knob/screen.
 Controller - Knob/Display.
