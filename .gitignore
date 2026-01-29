@@ -10,11 +10,6 @@
 #*.dll
 #*.dylib
 
-# Executable files
-*.exe
-msfsDock.exe
-com.rvoronov.msfsDock.sdPlugin/*.exe
-
 /.vs/*
 
 # Qt-es
