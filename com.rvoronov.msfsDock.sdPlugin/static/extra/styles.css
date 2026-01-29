@@ -38,3 +38,13 @@
 .sdpi-autocomplete-item:hover {
   background: #3a3a3a;
 }
+
+.position-row {
+  display: flex;
+  gap: 6px;
+}
+
+.position-row .sdpi-item-value {
+  flex: 0 0 25%;
+  min-width: 0;
+}

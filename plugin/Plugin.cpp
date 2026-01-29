@@ -2,6 +2,7 @@
 #include "Logger.hpp"
 #include "Plugin.hpp"
 #include "core/ButtonAction.hpp"
+#include "core/SwitchAction.hpp"
 #include "core/DialAction.hpp"
 #include "core/GaugeAction.hpp"
 
@@ -17,6 +18,14 @@ std::shared_ptr<HSDAction> MSFSDockPlugin::GetOrCreateAction(const std::string& 
 
     if (action == "com.rvoronov.msfsDock.generic.toggle") {
         auto impl = std::make_shared<ButtonAction>(
+            mConnectionManager,
+            action,
+            context
+            );
+        mActions.emplace(context, impl);
+        return impl;
+    } else if (action == "com.rvoronov.msfsdock.generic.switch") {
+        auto impl = std::make_shared<SwitchAction>(
             mConnectionManager,
             action,
             context
