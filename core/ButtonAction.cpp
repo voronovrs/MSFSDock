@@ -15,8 +15,6 @@ void ButtonAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
     useConditionalEvents_ = settings.value("useConditionalEvents", false);
     conditionOperator_ = settings.value("conditionOperator", "==");
     conditionValue_ = settings.value("conditionValue", 0.0);
-    eventWhenTrue_ = settings.value("eventWhenTrue", "");
-    eventWhenFalse_ = settings.value("eventWhenFalse", "");
 
     std::vector<SimVarDefinition> varsToRegister;
     std::vector<SimVarDefinition> varsToDeregister;
@@ -25,8 +23,10 @@ void ButtonAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
 
     std::string newDisplay = settings.value("displayVar", "");
     std::string newFeedback = settings.value("feedbackVar", "");
-    std::string newConditional = settings.value("conditionalVar", "");
+    std::string newConditionalVar = settings.value("conditionalVar", "");
     std::string newEvent = settings.value("toggleEvent", "");
+    std::string newEventWhenTrue = settings.value("eventWhenTrue", "");
+    std::string newEventWhenFalse = settings.value("eventWhenFalse", "");
 
     // Remove variables if necessary
     if (!displayVar_.empty() && displayVar_ != newDisplay) {
@@ -43,7 +43,7 @@ void ButtonAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
         varsToDeregister.push_back({ feedbackVar_, FEEDBACK_VARIABLE });
     }
 
-    if (!conditionalVar_.empty() && conditionalVar_ != newConditional) {
+    if (!conditionalVar_.empty() && conditionalVar_ != newConditionalVar) {
         if (conditionalSubId_) {
             SimManager::Instance().UnsubscribeFromVariable(conditionalVar_, conditionalSubId_);
         }
@@ -54,15 +54,11 @@ void ButtonAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
     if (!toggleEvent_.empty() && toggleEvent_ != newEvent) {
         eventsToDeregister.push_back({toggleEvent_});
     }
-
-    std::string oldEventWhenTrue = eventWhenTrue_;
-    std::string oldEventWhenFalse = eventWhenFalse_;
-    
-    if (!oldEventWhenTrue.empty() && oldEventWhenTrue != eventWhenTrue_) {
-        eventsToDeregister.push_back({oldEventWhenTrue});
+    if (!eventWhenTrue_.empty() && eventWhenTrue_ != newEventWhenTrue) {
+        eventsToDeregister.push_back({eventWhenTrue_});
     }
-    if (!oldEventWhenFalse.empty() && oldEventWhenFalse != eventWhenFalse_) {
-        eventsToDeregister.push_back({oldEventWhenFalse});
+    if (!eventWhenFalse_.empty() && eventWhenFalse_ != newEventWhenFalse) {
+        eventsToDeregister.push_back({eventWhenFalse_});
     }
 
     // Add new variables if necessary
@@ -79,20 +75,20 @@ void ButtonAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
     }
 
     // Register conditional variable if needed
-    if (useConditionalEvents_ && !newConditional.empty() && newConditional != conditionalVar_) {
-        conditionalVarDef_.name = newConditional;
+    if (useConditionalEvents_ && !newConditionalVar.empty() && newConditionalVar != conditionalVar_) {
+        conditionalVarDef_.name = newConditionalVar;
         conditionalVarDef_.group = FEEDBACK_VARIABLE;
         varsToRegister.push_back(conditionalVarDef_);
     }
 
     // Register events based on mode
     if (useConditionalEvents_) {
-        if (!eventWhenTrue_.empty()) {
-            eventWhenTrueDef_.name = eventWhenTrue_;
+        if (!newEventWhenTrue.empty() && newEventWhenTrue != eventWhenTrue_) {
+            eventWhenTrueDef_.name = newEventWhenTrue;
             eventsToRegister.push_back(eventWhenTrueDef_);
         }
-        if (!eventWhenFalse_.empty()) {
-            eventWhenFalseDef_.name = eventWhenFalse_;
+        if (!newEventWhenFalse.empty() && newEventWhenFalse != eventWhenFalse_) {
+            eventWhenFalseDef_.name = newEventWhenFalse;
             eventsToRegister.push_back(eventWhenFalseDef_);
         }
     } else {
@@ -116,8 +112,10 @@ void ButtonAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
     // Save new values
     displayVar_ = newDisplay;
     feedbackVar_ = newFeedback;
-    conditionalVar_ = newConditional;
+    conditionalVar_ = newConditionalVar;
     toggleEvent_ = newEvent;
+    eventWhenTrue_ = newEventWhenTrue;
+    eventWhenFalse_ = newEventWhenFalse;
 
     // Subscribe callbacks
     if (!displayVar_.empty()) {
@@ -202,12 +200,12 @@ std::string ButtonAction::GetEventToSend() const {
     }
 
     std::string result = conditionMet ? eventWhenTrue_ : eventWhenFalse_;
-    LogInfo("Condition evaluation: varValue=" + std::to_string(varValue) + 
-            " conditionValue=" + std::to_string(conditionValue_) + 
-            " operator=" + conditionOperator_ + 
-            " result=" + (conditionMet ? "TRUE" : "FALSE") + 
+    LogInfo("Condition evaluation: varValue=" + std::to_string(varValue) +
+            " conditionValue=" + std::to_string(conditionValue_) +
+            " operator=" + conditionOperator_ +
+            " result=" + (conditionMet ? "TRUE" : "FALSE") +
             " event=" + result);
-    
+
     return result;
 }
 
@@ -241,28 +239,28 @@ void ButtonAction::WillDisappear(const nlohmann::json& /*payload*/) {
     LogInfo("ButtonAction WillDisappear");
     std::vector<SimVarDefinition> vars;
     std::vector<SimEventDefinition> events;
-    
+
     if (!displayVar_.empty()) {
         if (displaySubId_) {
             SimManager::Instance().UnsubscribeFromVariable(displayVar_, displaySubId_);
         }
         vars.push_back({displayVar_, LIVE_VARIABLE});
     }
-    
+
     if (!feedbackVar_.empty()) {
         if (feedbackSubId_) {
             SimManager::Instance().UnsubscribeFromVariable(feedbackVar_, feedbackSubId_);
         }
         vars.push_back({feedbackVar_, FEEDBACK_VARIABLE});
     }
-    
+
     if (!conditionalVar_.empty()) {
         if (conditionalSubId_) {
             SimManager::Instance().UnsubscribeFromVariable(conditionalVar_, conditionalSubId_);
         }
         vars.push_back({conditionalVar_, FEEDBACK_VARIABLE});
     }
-    
+
     if (!vars.empty()) {
         SimManager::Instance().RemoveSimVars(vars);
     }
@@ -276,7 +274,7 @@ void ButtonAction::WillDisappear(const nlohmann::json& /*payload*/) {
     if (!eventWhenFalse_.empty()) {
         events.push_back({eventWhenFalse_});
     }
-    
+
     if (!events.empty()) {
         SimManager::Instance().RemoveSimEvents(events);
     }
