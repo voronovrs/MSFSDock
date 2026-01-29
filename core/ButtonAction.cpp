@@ -13,7 +13,6 @@ void ButtonAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
 
     // Conditional events configuration
     useConditionalEvents_ = settings.value("useConditionalEvents", false);
-    conditionalVar_ = settings.value("conditionalVar", "");
     conditionOperator_ = settings.value("conditionOperator", "==");
     conditionValue_ = settings.value("conditionValue", 0.0);
     eventWhenTrue_ = settings.value("eventWhenTrue", "");
@@ -26,6 +25,7 @@ void ButtonAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
 
     std::string newDisplay = settings.value("displayVar", "");
     std::string newFeedback = settings.value("feedbackVar", "");
+    std::string newConditional = settings.value("conditionalVar", "");
     std::string newEvent = settings.value("toggleEvent", "");
 
     // Remove variables if necessary
@@ -43,7 +43,7 @@ void ButtonAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
         varsToDeregister.push_back({ feedbackVar_, FEEDBACK_VARIABLE });
     }
 
-    if (!conditionalVar_.empty() && !settings.contains("conditionalVar")) {
+    if (!conditionalVar_.empty() && conditionalVar_ != newConditional) {
         if (conditionalSubId_) {
             SimManager::Instance().UnsubscribeFromVariable(conditionalVar_, conditionalSubId_);
         }
@@ -79,8 +79,7 @@ void ButtonAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
     }
 
     // Register conditional variable if needed
-    std::string newConditional = settings.value("conditionalVar", "");
-    if (useConditionalEvents_ && !newConditional.empty()) {
+    if (useConditionalEvents_ && !newConditional.empty() && newConditional != conditionalVar_) {
         conditionalVarDef_.name = newConditional;
         conditionalVarDef_.group = FEEDBACK_VARIABLE;
         varsToRegister.push_back(conditionalVarDef_);
@@ -117,6 +116,7 @@ void ButtonAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
     // Save new values
     displayVar_ = newDisplay;
     feedbackVar_ = newFeedback;
+    conditionalVar_ = newConditional;
     toggleEvent_ = newEvent;
 
     // Subscribe callbacks
