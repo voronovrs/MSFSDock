@@ -1,5 +1,5 @@
 ![screenshot](images/plugin_icon.png)
-# MSFSDock - plugin for MSFS2024 for Mirabox\Ajazz streamdocks (v0.7.1)
+# MSFSDock - plugin for MSFS2024 for Mirabox\Ajazz streamdocks (v0.7.2)
 
 # Usage example
 | ![](images/boeing_example.png) | ![](images/airbus_example.png) |
@@ -93,6 +93,16 @@ Example configuration for smart Autopilot toggle:
 - Event When True: AP_MASTER (to turn off when AP is on)
 - Event When False: AP_MASTER (to turn on when AP is off)
 - Status variable: AUTOPILOT MASTER (to show green light when AP is active)
+
+## Generic Switch
+This action intended to implement plane switch on Stream Dock button. Switch can have either 2 or 3 position, positions could be labled.
+Controller - button.
+### Generic Switch parameters:
+- Header - header to be displayed on a switch.
+- Switch event - event to be triggered by button press, usually switch toggle event.
+- Switch variable - Variable used in displaying switch position.
+- Num positions - Select 2 or 3 position switch mode.
+- Positions - Define mapping on switch position value in sim (left field) and displayed text (right field, 5 characters max).
 
 ## Generic Dial (single)
 This action intended to implement plane dial on Stream Dock display. Dial can display value, change value by rotating a knob, call event by pressing a knob/screen.
