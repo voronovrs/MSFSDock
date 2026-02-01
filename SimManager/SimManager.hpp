@@ -3,6 +3,7 @@
 #include <Windows.h>
 #include <SimConnect.h>
 #include "core/SimVar.hpp"
+#include <atomic>
 #include <condition_variable>
 #include <functional>
 #include <mutex>
@@ -76,6 +77,11 @@ private:
     std::map<std::string, SimEventDefinition> events_;
     std::unordered_set<int> registeredGroups_;
 
+    // Vectors that maintain the exact registration order in SimConnect per group
+    // This is critical because SimConnect sends data in registration order
+    std::vector<std::string> liveVarOrder_;
+    std::vector<std::string> feedbackVarOrder_;
+
     void Run();
     static void CALLBACK DispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, void* pContext);
     void QueueTask(std::function<void()> task);
@@ -95,7 +101,8 @@ private:
     static inline bool IsValueValid(double v) {
         if (std::isnan(v)) return false;
         if (std::isinf(v)) return false;
-        if (v < -1e6 || v > 1e6) return false;
+        // Extended range to support GPS coordinates, altitudes and other large values
+        if (v < -1e12 || v > 1e12) return false;
         return true;
     }
 };

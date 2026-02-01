@@ -56,6 +56,9 @@ compile_commands.json
 #macOS
 .DS_Store
 
+# Dev Notes Folder
+priv_folder/
+
 # Visual Studio Code
 build/
 .vscode

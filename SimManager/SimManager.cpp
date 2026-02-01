@@ -307,8 +307,12 @@ void SimManager::NotifyAndClearAllVariables() {
 
     // 4. Clear registered groups
     registeredGroups_.clear();
+    
+    // 5. Clear order vectors
+    liveVarOrder_.clear();
+    feedbackVarOrder_.clear();
 
-    // 5. Reset event ID
+    // 6. Reset event ID
     m_nextEventId = 1000;
 }
 
@@ -381,6 +385,13 @@ void SimManager::RegisterVariablesToSim() {
             } else {
                 LogInfo("SimManager: Added data definition for variable: " + var.name);
                 var.registered = true;
+                
+                // Add to the corresponding group order vector
+                if (var.group == LIVE_VARIABLE) {
+                    liveVarOrder_.push_back(var.name);
+                } else if (var.group == FEEDBACK_VARIABLE) {
+                    feedbackVarOrder_.push_back(var.name);
+                }
             }
         }
 
@@ -458,6 +469,10 @@ void SimManager::DeregisterVariablesFromSim() {
             it->second.registered = false;
             ++it;
         }
+        
+        // Clear order vectors because ClearDataDefinition removes everything
+        liveVarOrder_.clear();
+        feedbackVarOrder_.clear();
     });
 }
 
@@ -540,17 +555,34 @@ void SimManager::ParseGroupValues(const SIMCONNECT_RECV_SIMOBJECT_DATA* data, co
 
     {
         std::unique_lock lock(mutex_);
-        for (auto& [name, var] : vars_) {
-            if (var.group != group)
-                continue;
-
-            if (!var.registered || !var.IsInUse()) {
-                LogWarn("SimManager: Ignoring stale SimConnect value for variable: " + name);
+        
+        // Select the correct order vector based on the group
+        const std::vector<std::string>& orderVec = 
+            (group == LIVE_VARIABLE) ? liveVarOrder_ : feedbackVarOrder_;
+        
+        // Iterate in the exact order in which variables were registered in SimConnect
+        // This is CRITICAL because SimConnect sends data in registration order
+        for (const std::string& varName : orderVec) {
+            auto it = vars_.find(varName);
+            if (it == vars_.end()) {
+                // Variable was removed from map but still exists in order vector
+                // Advance pointer to maintain synchronization
+                LogWarn("SimManager: Variable in order vector but not in map: " + varName);
+                raw += sizeof(double);
                 continue;
             }
-
+            
+            SimVarDefinition& var = it->second;
+            
+            // Read value even if not in use, to keep pointer synchronized
             double newVal = *reinterpret_cast<const double*>(raw);
             raw += sizeof(double);
+            
+            if (!var.registered || !var.IsInUse()) {
+                // Variable is no longer in use, ignore value but we already advanced the pointer
+                LogWarn("SimManager: Ignoring stale SimConnect value for variable: " + varName);
+                continue;
+            }
 
             if (!IsValueValid(newVal)) {
                 LogWarn("SimManager: Rejected invalid value for variable: " + var.name + " = " + std::to_string(newVal));
@@ -563,7 +595,7 @@ void SimManager::ParseGroupValues(const SIMCONNECT_RECV_SIMOBJECT_DATA* data, co
             if (var.value != roundedVal) {
                 // LogInfo("SimManager: Got new value for variable: " + var.name + " = " + std::to_string(roundedVal));
                 var.value = roundedVal;
-                updatedVars.emplace_back(name, roundedVal);
+                updatedVars.emplace_back(varName, roundedVal);
             }
         }
     }

@@ -327,6 +327,7 @@ void DialAction::ClearSettings() {
     toggleEvent_.clear();
 
     displaySubId_ = 0;
+    display2SubId_ = 0;
     feedbackSubId_ = 0;
 }
 
