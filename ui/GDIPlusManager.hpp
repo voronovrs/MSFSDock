@@ -3,6 +3,7 @@
 #include <windows.h>
 #include <gdiplus.h>
 #include <string>
+#include <vector>
 
 #define TO_REAL(x) static_cast<Gdiplus::REAL>(x)
 extern const Gdiplus::Color COLOR_WHITE;
@@ -55,3 +56,6 @@ std::string DrawGaugeImage(const std::string& header = "", Gdiplus::Color header
                            int minVal=0, int maxVal=10000, bool fill=false,
                            Gdiplus::Color scaleColor = COLOR_YELLOW, Gdiplus::Color indicatorColor = COLOR_RED,
                            Gdiplus::Color bgColor = COLOR_NEAR_BLACK, bool simConnected = false);
+
+std::string DrawSwitchImage(const std::vector<std::string>& labels, int currentPosition,
+                            const std::string& header = "", bool simConnected = false);

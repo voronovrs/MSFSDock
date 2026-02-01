@@ -485,3 +485,135 @@ std::string DrawGaugeImage(const std::string& header, Color headerColor,
     delete bmp;
     return base64Image;
 }
+
+// Draw rounded rectangle for switch background
+void AddRoundedRect(Gdiplus::GraphicsPath& path, Gdiplus::RectF rect, float radius) {
+    float d = radius * 2;
+
+    path.AddArc(rect.X, rect.Y, d, d, 180, 90);
+    path.AddArc(rect.X + rect.Width - d, rect.Y, d, d, 270, 90);
+    path.AddArc(rect.X + rect.Width - d, rect.Y + rect.Height - d, d, d, 0, 90);
+    path.AddArc(rect.X, rect.Y + rect.Height - d, d, d, 90, 90);
+    path.CloseFigure();
+}
+
+std::string DrawSwitchImage(const std::vector<std::string>& labels, int currentPosition, const std::string& header,
+    bool simConnected) {
+    const float pointerDiameter = 20.0f;
+    const float outlineRadius   = 2.0f;
+    const float bgXoffset       = 6.0f;
+    const float bgYoffset       = 2.0f;
+    const float bgWidth         = 12.0f;
+
+    const int bmpW = 72;
+    const int bmpH = 72;
+
+    int numPositions = static_cast<int>(labels.size());
+
+    auto* bmp = new Gdiplus::Bitmap(bmpW, bmpH, PixelFormat32bppARGB);
+    if (!bmp || bmp->GetLastStatus() != Ok) {
+        LogError("Bitmap create error!");
+        ShutdownGDIPlus();
+        return {};
+    }
+
+    Graphics graphics(bmp);
+    graphics.Clear(COLOR_NEAR_BLACK);
+    graphics.SetTextRenderingHint(TextRenderingHintAntiAliasGridFit);
+    graphics.SetSmoothingMode(SmoothingModeAntiAlias);
+
+    // Switch background
+    RectF BG(
+        bgXoffset,
+        bgYoffset,
+        bgWidth,
+        bmpH - bgYoffset * 2 - 16
+    );
+
+    SolidBrush bgBrush(COLOR_NEAR_BLACK);
+    Pen bgPen(COLOR_OFF_WHITE, outlineRadius);
+
+    GraphicsPath path;
+    AddRoundedRect(path, BG, bgWidth * 0.5f);
+
+    graphics.FillPath(&bgBrush, &path);
+    graphics.DrawPath(&bgPen, &path);
+
+    // Layout
+    const float slotHeight = BG.Height / numPositions;
+
+    // Pointerposition
+    const float pointerCX = BG.X + BG.Width * 0.5f;
+    const float pointerCY = BG.Y + slotHeight * (currentPosition + 0.5f);
+
+    RectF pointerRect(
+        pointerCX - pointerDiameter * 0.5f,
+        pointerCY - pointerDiameter * 0.5f,
+        pointerDiameter,
+        pointerDiameter
+    );
+
+    SolidBrush pointerBrush(COLOR_DARK_GREEN);
+    Pen pointerPen(COLOR_WHITE, outlineRadius);
+
+    graphics.FillEllipse(&pointerBrush, pointerRect);
+    graphics.DrawEllipse(&pointerPen, pointerRect);
+
+    SolidBrush highlight(Color(80, 255, 255, 255));
+    graphics.FillEllipse(
+        &highlight,
+        RectF(
+            pointerRect.X + 2,
+            pointerRect.Y + 2,
+            pointerRect.Width - 4,
+            pointerRect.Height - 4
+        )
+    );
+
+    // Data
+    const float dataRectX =
+        std::max(pointerRect.GetRight(), BG.GetRight()) + 2.0f;
+
+    float dataRectY = BG.Y + 2.0f;
+
+    FontFamily fontFamily(L"Consolas");
+    Font font(&fontFamily, 15.0f, FontStyleRegular, UnitPixel);
+    SolidBrush textBrush(COLOR_OFF_WHITE);
+
+    StringFormat format;
+    format.SetAlignment(StringAlignmentCenter);
+    format.SetLineAlignment(StringAlignmentCenter);
+
+    for (int pos = 0; pos < numPositions; pos++) {
+        RectF dataRect(dataRectX, dataRectY, bmpW - dataRectX, slotHeight);
+
+        const std::string& text = labels[pos];
+
+        std::wstring wdata = StringToWString(text);
+
+        graphics.DrawString(
+            wdata.c_str(),
+            -1,
+            &font,
+            dataRect,
+            &format,
+            &textBrush
+        );
+
+        dataRectY += slotHeight;
+    }
+
+    if (!simConnected) {
+        DrawNotConnectedOutline(graphics, bmp->GetWidth(), bmp->GetHeight());
+    }
+
+    if (!header.empty()) {
+        Pen bottomPen(COLOR_OFF_WHITE, 1);
+        graphics.DrawLine(&bottomPen, Point(0, BG.Height + bgYoffset * 2), Point(bmpW, BG.Height + bgYoffset * 2));
+        DrawHeader(graphics, bmp->GetWidth(), header, COLOR_OFF_WHITE, 15.0f, BG.Height + bgYoffset);
+    }
+
+    std::string base64Image = BitmapToBase64(bmp);
+    delete bmp;
+    return base64Image;
+}
