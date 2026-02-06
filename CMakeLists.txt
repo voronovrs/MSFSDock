@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.19)
 
-project(com.mirabox.msfsDock VERSION 0.7.2)
+project(com.mirabox.msfsDock VERSION 0.7.3)
 
 # set the C++ standard to C++ 20
 set(CMAKE_CXX_STANDARD 20)
