@@ -12,7 +12,14 @@
 
 class ButtonAction : public HSDAction, public IUIUpdatable {
 public:
-    using HSDAction::HSDAction;
+
+    ButtonAction(HSDConnectionManager* hsd_connection,
+                const std::string& action,
+                const std::string& context,
+                bool isConditional)
+        : HSDAction(hsd_connection, action, context),
+          isConditional(isConditional)
+    {}
 
     virtual void SendToPI(const nlohmann::json& payload) override;
     virtual void DidReceiveSettings(const nlohmann::json& payload) override;
@@ -39,7 +46,7 @@ private:
     std::string skin_;
 
     // Conditional events support
-    bool useConditionalEvents_ = false;
+    bool isConditional = false;
     std::string conditionalVar_;
     std::string conditionOperator_;
     double conditionValue_ = 0.0;

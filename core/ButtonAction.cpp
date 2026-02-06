@@ -11,8 +11,6 @@ void ButtonAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
     header_ = settings.value("header", "");
     skin_ = settings.value("skin", "skin1");
 
-    // Conditional events configuration
-    useConditionalEvents_ = settings.value("useConditionalEvents", false);
     conditionOperator_ = settings.value("conditionOperator", "==");
     conditionValue_ = settings.value("conditionValue", 0.0);
 
@@ -75,14 +73,14 @@ void ButtonAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
     }
 
     // Register conditional variable if needed
-    if (useConditionalEvents_ && !newConditionalVar.empty() && newConditionalVar != conditionalVar_) {
+    if (isConditional && !newConditionalVar.empty() && newConditionalVar != conditionalVar_) {
         conditionalVarDef_.name = newConditionalVar;
         conditionalVarDef_.group = FEEDBACK_VARIABLE;
         varsToRegister.push_back(conditionalVarDef_);
     }
 
     // Register events based on mode
-    if (useConditionalEvents_) {
+    if (isConditional) {
         if (!newEventWhenTrue.empty() && newEventWhenTrue != eventWhenTrue_) {
             eventWhenTrueDef_.name = newEventWhenTrue;
             eventsToRegister.push_back(eventWhenTrueDef_);
@@ -130,7 +128,7 @@ void ButtonAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
                 this->OnVariableUpdated(name, value);
             });
     }
-    if (useConditionalEvents_ && !conditionalVar_.empty()) {
+    if (isConditional && !conditionalVar_.empty()) {
         conditionalSubId_ = SimManager::Instance().SubscribeToVariable(conditionalVar_,
             [this](const std::string& name, double value) {
                 this->OnVariableUpdated(name, value);
@@ -178,7 +176,7 @@ void ButtonAction::KeyUp(const nlohmann::json& /*payload*/) {
 }
 
 std::string ButtonAction::GetEventToSend() const {
-    if (!useConditionalEvents_) {
+    if (!isConditional) {
         return toggleEvent_;
     }
 
@@ -214,7 +212,6 @@ void ButtonAction::SendToPI(const nlohmann::json& payload) {
     out_payload["type"] = "evt_var_list";
     out_payload["common_events"] = nlohmann::json::array();
     out_payload["common_variables"] = nlohmann::json::array();
-    out_payload["operators"] = nlohmann::json::array({"==", "!=", ">", "<", ">=", "<="});
 
     for (const auto& evt : GetKnownVariables()) {
         out_payload["common_variables"].push_back(evt);
@@ -295,7 +292,6 @@ void ButtonAction::ClearSettings() {
     displaySubId_ = 0;
     feedbackSubId_ = 0;
     conditionalSubId_ = 0;
-    useConditionalEvents_ = false;
     conditionValue_ = 0.0;
     conditionOperator_ = "==";
 }

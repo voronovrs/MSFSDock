@@ -10,18 +10,6 @@
     .sdpi-item {
       margin: 2px auto;
     }
-
-    #conditionalSection {
-      background-color: rgba(255, 255, 255, 0.05);
-      padding: 10px;
-      border-radius: 5px;
-      margin-top: 10px;
-      margin-bottom: 10px;
-    }
-
-    #conditionalSection .sdpi-item {
-      margin-bottom: 8px;
-    }
   </style>
 </head>
 
@@ -39,60 +27,10 @@
       </select>
     </div>
 
-    <!-- Conditional Events Toggle -->
     <div class="sdpi-item">
-      <div class="sdpi-item-label" title="Enable conditional events based on variable value">Event Mode</div>
-      <select class="sdpi-item-value" id="useConditionalEvents">
-        <option value="false">Simple</option>
-        <option value="true">Conditional</option>
-      </select>
-    </div>
-
-    <!-- Legacy Mode (shown when conditional is disabled) -->
-    <div id="legacySection">
-      <div class="sdpi-item">
-          <div class="sdpi-item-label" title="Sim event to be called when button pressed">Button event</div>
-          <input class="sdpi-item-value" id="toggleEvent" list="toggleEventList" value="" placeholder="EVENT" pattern="[A-Za-z0-9:_. ]*">
-          <datalist id="toggleEventList"></datalist>
-      </div>
-    </div>
-
-    <!-- Conditional Mode (hidden by default) -->
-    <div id="conditionalSection" style="display: none;">
-      <div class="sdpi-item">
-        <div class="sdpi-item-label" title="Variable to evaluate for condition">Conditional Variable</div>
-        <input class="sdpi-item-value" id="conditionalVar" list="conditionalVarList" value="" placeholder="CONDITIONAL VARIABLE" pattern="[A-Za-z0-9:_. ]*">
-        <datalist id="conditionalVarList"></datalist>
-      </div>
-
-      <div class="sdpi-item">
-        <div class="sdpi-item-label" title="Comparison operator">Operator</div>
-        <select class="sdpi-item-value" id="conditionOperator">
-          <option value="==">== (Equal)</option>
-          <option value="!=">!= (Not Equal)</option>
-          <option value=">">> (Greater Than)</option>
-          <option value="<">< (Less Than)</option>
-          <option value=">=">>= (Greater or Equal)</option>
-          <option value="<="><= (Less or Equal)</option>
-        </select>
-      </div>
-
-      <div class="sdpi-item">
-        <div class="sdpi-item-label" title="Value to compare against">Condition Value</div>
-        <input class="sdpi-item-value" type="number" id="conditionValue" value="0" placeholder="0" step="any">
-      </div>
-
-      <div class="sdpi-item">
-        <div class="sdpi-item-label" title="Event to send when condition is true">Event When True</div>
-        <input class="sdpi-item-value" id="eventWhenTrue" list="eventWhenTrueList" value="" placeholder="EVENT WHEN TRUE" pattern="[A-Za-z0-9:_. ]*">
-        <datalist id="eventWhenTrueList"></datalist>
-      </div>
-
-      <div class="sdpi-item">
-        <div class="sdpi-item-label" title="Event to send when condition is false">Event When False</div>
-        <input class="sdpi-item-value" id="eventWhenFalse" list="eventWhenFalseList" value="" placeholder="EVENT WHEN FALSE" pattern="[A-Za-z0-9:_. ]*">
-        <datalist id="eventWhenFalseList"></datalist>
-      </div>
+        <div class="sdpi-item-label" title="Sim event to be called when button pressed">Button event</div>
+        <input class="sdpi-item-value" id="toggleEvent" list="toggleEventList" value="" placeholder="EVENT" pattern="[A-Za-z0-9:_. ]*">
+        <datalist id="toggleEventList"></datalist>
     </div>
 
     <div class="sdpi-item">

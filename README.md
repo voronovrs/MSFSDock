@@ -1,5 +1,5 @@
 ![screenshot](com.rvoronov.msfsDock.sdPlugin/images/plugin_icon.png)
-# MSFSDock - plugin for MSFS2024 for Mirabox\Ajazz streamdocks (v0.7.2)
+# MSFSDock - plugin for MSFS2024 for Mirabox\Ajazz streamdocks (v0.7.3)
 
 # Usage example
 | ![](com.rvoronov.msfsDock.sdPlugin/images/boeing_example.png) | ![](com.rvoronov.msfsDock.sdPlugin/images/airbus_example.png) |
@@ -60,39 +60,41 @@ Controller - button.
 ### Generic Button parameters:
 - Header - header to be displayed on a button
 - Skin - select button skin, either Boeing-like or Airbus-like
-- Event Mode - select between Simple or Conditional event mode
-  - **Simple mode**: Single event triggered by button press
-  - **Conditional mode**: Different events triggered based on variable value
-- Button event (Simple mode) - event to be triggered by button press
-- Conditional Variable (Conditional mode) - Variable to evaluate for condition
-- Operator (Conditional mode) - Comparison operator (==, !=, >, <, >=, <=)
-- Condition Value (Conditional mode) - Value to compare against
-- Event When True (Conditional mode) - Event to send when condition is true
-- Event When False (Conditional mode) - Event to send when condition is false
+- Button event - event to be triggered by button press
+- Display variable - Variable used in displaying additional data on a button if necessary
+- Status variable - Variable used in displaying active status (green light in the button bottom)
+
+## Conditional Button
+This action intended to implement plane events depending on conditions. This allows button to send different events based on SimConnect variable value.
+For example, you could configure Autopilot button to send AP_MASTER event to turn AP on when it's off, and same AP_MASTER event to turn it off when it's on.
+Or configure Landing Gear button to send GEAR_UP when gear is extended and GEAR_DOWN when gear is retracted, based on GEAR TOTAL PCT EXTENDED variable value.
+### Conditional Button parameters:
+- Header - header to be displayed on a button
+- Skin - select button skin, either Boeing-like or Airbus-like
+- Conditional Variable - Variable to evaluate for condition
+- Operator - Comparison operator (==, !=, >, <, >=, <=)
+- Condition Value - Value to compare against
+- Event When True - Event to send when condition is true
+- Event When False - Event to send when condition is false
 - Display variable - Variable used in displaying additional data on a button if necessary
 - Status variable - Variable used in displaying active status (green light in the button bottom)
 
 #### Conditional Events
-Now Generic Button supports conditional events. This allows button to send different events based on SimConnect variable value.
-For example, you could configure Autopilot button to send AP_MASTER event to turn AP on when it's off, and same AP_MASTER event to turn it off when it's on.
-Or configure Landing Gear button to send GEAR_UP when gear is extended and GEAR_DOWN when gear is retracted, based on GEAR TOTAL PCT EXTENDED variable value.
-
 Conditional mode supports 6 comparison operators:
 - == (Equal) - condition is true when variable equals specified value
 - != (Not Equal) - condition is true when variable differs from specified value
-- > (Greater Than) - condition is true when variable is greater than specified value
+- \> (Greater Than) - condition is true when variable is greater than specified value
 - < (Less Than) - condition is true when variable is less than specified value
-- >= (Greater or Equal) - condition is true when variable is greater than or equal to specified value
+- \>= (Greater or Equal) - condition is true when variable is greater than or equal to specified value
 - <= (Less or Equal) - condition is true when variable is less than or equal to specified value
 
-Example configuration for smart Autopilot toggle:
-- Event Mode: Conditional
-- Conditional Variable: AUTOPILOT MASTER
+Suggested configuration for smart Autopilot altitude lock toggle:
+- Conditional Variable: AUTOPILOT ALTITUDE LOCK
 - Operator: == (Equal)
 - Condition Value: 1
-- Event When True: AP_MASTER (to turn off when AP is on)
-- Event When False: AP_MASTER (to turn on when AP is off)
-- Status variable: AUTOPILOT MASTER (to show green light when AP is active)
+- Event When True: AP_ALT_HOLD_OFF (to turn off AP ALTITUDE LOCK when it is on)
+- Event When False: AP_ALT_HOLD_ON (to turn on AP ALTITUDE LOCK when it is off)
+- Status variable: AUTOPILOT ALTITUDE LOCK (to show green light when ALTITUDE LOCK is active)
 
 ## Generic Switch
 This action intended to implement plane switch on Stream Dock button. Switch can have either 2 or 3 position, positions could be labled.
@@ -102,7 +104,7 @@ Controller - button.
 - Switch event - event to be triggered by button press, usually switch toggle event.
 - Switch variable - Variable used in displaying switch position.
 - Num positions - Select 2 or 3 position switch mode.
-- Positions - Define mapping on switch position value in sim (left field) and displayed text (right field, 5 characters max).
+- Positions - Define mapping of switch position value in sim (left field) and displayed text (right field, 5 characters max).
 
 ## Generic Dial (single)
 This action intended to implement plane dial on Stream Dock display. Dial can display value, change value by rotating a knob, call event by pressing a knob/screen.
