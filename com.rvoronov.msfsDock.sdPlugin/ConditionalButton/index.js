@@ -3,7 +3,11 @@ const $local = false, $back = false,
         main: $('.sdpi-wrapper'),
         header: $("#header"),
         skin: $("#skin"),
-        toggleEvent: $("#toggleEvent"),
+        conditionalVar: $("#conditionalVar"),
+        conditionOperator: $("#conditionOperator"),
+        conditionValue: $("#conditionValue"),
+        eventWhenTrue: $("#eventWhenTrue"),
+        eventWhenFalse: $("#eventWhenFalse"),
         feedbackVar: $("#feedbackVar"),
         displayVar: $("#displayVar"),
     },
@@ -16,8 +20,20 @@ const $local = false, $back = false,
             if ($settings.skin) {
                 $dom.skin.value = $settings.skin;
             }
-            if ($settings.toggleEvent) {
-                $dom.toggleEvent.value = $settings.toggleEvent;
+            if ($settings.conditionalVar) {
+                $dom.conditionalVar.value = $settings.conditionalVar;
+            }
+            if ($settings.conditionOperator) {
+                $dom.conditionOperator.value = $settings.conditionOperator;
+            }
+            if ($settings.conditionValue !== undefined) {
+                $dom.conditionValue.value = $settings.conditionValue;
+            }
+            if ($settings.eventWhenTrue) {
+                $dom.eventWhenTrue.value = $settings.eventWhenTrue;
+            }
+            if ($settings.eventWhenFalse) {
+                $dom.eventWhenFalse.value = $settings.eventWhenFalse;
             }
             if ($settings.feedbackVar) {
                 $dom.feedbackVar.value = $settings.feedbackVar;
@@ -32,7 +48,11 @@ const $local = false, $back = false,
 // --- Initialize lastSentValue for all fields ---
 $dom.header.lastSentValue = $dom.header.value;
 $dom.skin.lastSentValue = $dom.skin.value;
-$dom.toggleEvent.lastSentValue = $dom.toggleEvent.value;
+$dom.conditionalVar.lastSentValue = $dom.conditionalVar.value;
+$dom.conditionOperator.lastSentValue = $dom.conditionOperator.value;
+$dom.conditionValue.lastSentValue = $dom.conditionValue.value;
+$dom.eventWhenTrue.lastSentValue = $dom.eventWhenTrue.value;
+$dom.eventWhenFalse.lastSentValue = $dom.eventWhenFalse.value;
 $dom.feedbackVar.lastSentValue = $dom.feedbackVar.value;
 $dom.displayVar.lastSentValue = $dom.displayVar.value;
 
@@ -41,7 +61,11 @@ function updateSettings() {
     const data = {
         header: $dom.header.value,
         skin: $dom.skin.value,
-        toggleEvent: $dom.toggleEvent.value,
+        conditionalVar: $dom.conditionalVar.value,
+        conditionOperator: $dom.conditionOperator.value,
+        conditionValue: parseFloat($dom.conditionValue.value) || 0,
+        eventWhenTrue: $dom.eventWhenTrue.value,
+        eventWhenFalse: $dom.eventWhenFalse.value,
         feedbackVar: $dom.feedbackVar.value,
         displayVar: $dom.displayVar.value,
     };
@@ -50,7 +74,11 @@ function updateSettings() {
     if (
         data.header === $dom.header.lastSentValue &&
         data.skin === $dom.skin.lastSentValue &&
-        data.toggleEvent === $dom.toggleEvent.lastSentValue &&
+        data.conditionalVar === $dom.conditionalVar.lastSentValue &&
+        data.conditionOperator === $dom.conditionOperator.lastSentValue &&
+        data.conditionValue === $dom.conditionValue.lastSentValue &&
+        data.eventWhenTrue === $dom.eventWhenTrue.lastSentValue &&
+        data.eventWhenFalse === $dom.eventWhenFalse.lastSentValue &&
         data.feedbackVar === $dom.feedbackVar.lastSentValue &&
         data.displayVar === $dom.displayVar.lastSentValue
     ) {
@@ -60,7 +88,11 @@ function updateSettings() {
     // --- Save current values as last sent ---
     $dom.header.lastSentValue = data.header;
     $dom.skin.lastSentValue = data.skin;
-    $dom.toggleEvent.lastSentValue = data.toggleEvent;
+    $dom.conditionalVar.lastSentValue = data.conditionalVar;
+    $dom.conditionOperator.lastSentValue = data.conditionOperator;
+    $dom.conditionValue.lastSentValue = data.conditionValue;
+    $dom.eventWhenTrue.lastSentValue = data.eventWhenTrue;
+    $dom.eventWhenFalse.lastSentValue = data.eventWhenFalse;
     $dom.feedbackVar.lastSentValue = data.feedbackVar;
     $dom.displayVar.lastSentValue = data.displayVar;
 
@@ -70,7 +102,11 @@ function updateSettings() {
 // Listen to input events and send full payload
 $dom.header.on("input", updateSettings);
 $dom.skin.on("change", updateSettings);
-$dom.toggleEvent.on("change", updateSettings);
+$dom.conditionalVar.on("change", updateSettings);
+$dom.conditionOperator.on("change", updateSettings);
+$dom.conditionValue.on("input", updateSettings);
+$dom.eventWhenTrue.on("change", updateSettings);
+$dom.eventWhenFalse.on("change", updateSettings);
 $dom.feedbackVar.on("change", updateSettings);
 $dom.displayVar.on("change", updateSettings);
 
@@ -86,8 +122,20 @@ $propEvent.sendToPropertyInspector = (data) => {
         commonVars = data.common_variables || [];
 
         new SDPIAutocomplete(
-            $dom.toggleEvent,
+            $dom.eventWhenTrue,
             () => commonEvents,
+            updateSettings
+        );
+
+        new SDPIAutocomplete(
+            $dom.eventWhenFalse,
+            () => commonEvents,
+            updateSettings
+        );
+
+        new SDPIAutocomplete(
+            $dom.conditionalVar,
+            () => commonVars,
             updateSettings
         );
 

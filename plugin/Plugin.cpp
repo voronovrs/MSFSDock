@@ -20,7 +20,17 @@ std::shared_ptr<HSDAction> MSFSDockPlugin::GetOrCreateAction(const std::string& 
         auto impl = std::make_shared<ButtonAction>(
             mConnectionManager,
             action,
-            context
+            context,
+            false
+            );
+        mActions.emplace(context, impl);
+        return impl;
+    } else if (action == "com.rvoronov.msfsDock.conditional.toggle") {
+        auto impl = std::make_shared<ButtonAction>(
+            mConnectionManager,
+            action,
+            context,
+            true
             );
         mActions.emplace(context, impl);
         return impl;

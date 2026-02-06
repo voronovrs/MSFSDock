@@ -15,6 +15,20 @@
       "UUID": "com.rvoronov.msfsDock.generic.toggle"
     },
     {
+      "Icon": "images/toggleIconcond",
+      "Name": "Conditional button",
+      "States": [
+        {
+          "Image": "images/button",
+          "ShowTitle": false
+        }
+      ],
+      "SupportedInMultiActions": true,
+      "PropertyInspectorPath": "ConditionalButton/index.html",
+      "Tooltip": "Use SimConnect or MobiFlight variables to define conditional button actions",
+      "UUID": "com.rvoronov.msfsDock.conditional.toggle"
+    },
+    {
       "Icon": "images/switchIcon",
       "Name": "Generic switch",
       "States": [
