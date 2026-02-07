@@ -12,7 +12,7 @@ void ButtonAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
     skin_ = settings.value("skin", "skin1");
 
     conditionOperator_ = settings.value("conditionOperator", "==");
-    conditionValue_ = settings.value("conditionValue", 0.0);
+    conditionValue_ = NlohmannJSONUtils::GetFloatByName(settings, "conditionValue", 0.0);
 
     std::vector<SimVarDefinition> varsToRegister;
     std::vector<SimVarDefinition> varsToDeregister;

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>MSFS Dock Generic Gauge PI</title>
+
+        <!-- SDPI -->
+        <script src="../CommonPi/sdpi-components.js"></script>
+        <!-- Common JS -->
+        <script src="../CommonPi/autocomplete.js"></script>
+        <script src="../CommonPi/piCore.js"></script>
+        <script src="../CommonPi/piAutocomplete.js"></script>
+        <script src="../CommonPi/piApply.js"></script>
+        <script src="../CommonPi/piInit.js"></script>
+        <!-- Action-specific -->
+        <script src="index.js"></script>
+
+        <link rel="stylesheet" href="../CommonPi/styles.css" />
+    </head>
+
+    <body>
+        <sdpi-item label="Header">
+            <sdpi-textfield setting="header"></sdpi-textfield>
+        </sdpi-item>
+
+        <sdpi-item label="Display variable" title="Sim variable to be displayed on a gauge">
+            <div class="position-row">
+                <div class="sdpi-autocomplete">
+                    <input
+                    id="displayVar"
+                    class="sdpi-item-value"
+                    data-setting="displayVar"
+                    placeholder="DISPLAY VARIABLE"
+                    pattern="[A-Za-z0-9:_. ]*"
+                    />
+                </div>
+                <sdpi-button id="applyVar" variant="primary">✓</sdpi-button>
+            </div>
+        </sdpi-item>
+
+        <sdpi-item label="Format">
+            <sdpi-radio setting="dataFormat" columns="2", default="int">
+                <option value="int">Integer</option>
+                <option value="percent">Percent</option>
+            </sdpi-radio>
+        </sdpi-item>
+
+        <sdpi-item label="Style">
+            <sdpi-radio setting="style" columns="2", default="indicator">
+                <option value="indicator">Indicator</option>
+                <option value="fill">Fill</option>
+            </sdpi-radio>
+        </sdpi-item>
+
+        <!-- Min / Max -->
+        <sdpi-item label="Min value" title="Minimum value for gauge">
+            <sdpi-textfield setting="minVal" pattern="[-0-9]*" placeholder="0" required></sdpi-textfield>
+        </sdpi-item>
+
+        <sdpi-item label="Max value" title="Maximum value for gauge">
+            <sdpi-textfield setting="maxVal" pattern="[-0-9]*" placeholder="10000" required></sdpi-textfield>
+        </sdpi-item>
+
+        <!-- Colors -->
+        <sdpi-item label="Scale color">
+            <sdpi-color setting="scaleColor" default="#ffff00"></sdpi-color>
+        </sdpi-item>
+
+        <sdpi-item label="Indicator color">
+            <sdpi-color setting="indicatorColor" default="#8b0000"></sdpi-color>
+        </sdpi-item>
+
+        <sdpi-item label="Background color">
+            <sdpi-color setting="bgColor" default="#141414"></sdpi-color>
+        </sdpi-item>
+    </body>
+</html>

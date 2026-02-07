@@ -2,7 +2,7 @@
 #include "plugin/Logger.hpp"
 #include "ui/GDIPlusManager.hpp"
 #include "SimData/SimData.hpp"
-
+// #include "Utils.hpp"
 
 void SwitchAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
     if (!payload.contains("settings")) return;
@@ -17,29 +17,45 @@ void SwitchAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
 
     std::string newFeedback = settings.value("feedbackVar", "");
     std::string newEvent = settings.value("toggleEvent", "");
+    numPos_ = NlohmannJSONUtils::GetIntByName(settings, "numPos", 2);
 
     positions_.clear();
+    valueToIndex_.clear();
 
-    if (settings.contains("positions") && settings["positions"].is_array()) {
-        int idx = 0;
-        for (const auto& p : settings["positions"]) {
-            if (!p.contains("value")) continue;
+    int idx = 0;
 
-            int simValue = 0;
-            try {
-                simValue = std::stoi(p.value("value", "0"));
-            } catch (...) {
-                continue;
+    for (int i = 0; i < numPos_; ++i) {
+        const std::string valueKey = "pos" + std::to_string(i) + "_value";
+        const std::string labelKey = "pos" + std::to_string(i) + "_label";
+
+        std::string valueStr = std::to_string(i);
+        std::string labelStr = "POS " + std::to_string(i);
+
+        if (settings.contains(valueKey) && settings[valueKey].is_string()) {
+            std::string tmp = settings[valueKey].get<std::string>();
+            if (!tmp.empty()) {
+                valueStr = tmp;
             }
-
-            std::string label = p.value("label", "");
-
-            positions_.push_back({ simValue, label });
-            valueToIndex_[simValue] = idx++;
         }
+
+        if (settings.contains(labelKey) && settings[labelKey].is_string()) {
+            std::string tmp = settings[labelKey].get<std::string>();
+            if (!tmp.empty()) {
+                labelStr = tmp;
+            }
+        }
+
+        int simValue = 0;
+        try {
+            simValue = std::stoi(valueStr);
+        } catch (...) {
+            simValue = i; // fallback
+        }
+
+        positions_.push_back({ simValue, labelStr });
+        valueToIndex_[simValue] = idx++;
     }
 
-    numPos_ = static_cast<int>(positions_.size());
     curPos_ = 0;
 
     // Remove variables if necessary
