@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>MSFS Dock Generic Switch PI</title>
+
+    <!-- SDPI JS -->
+    <script src="../CommonPi/sdpi-components.js"></script>
+    <!-- Common JS -->
+    <script src="../CommonPi/autocomplete.js"></script>
+    <script src="../CommonPi/piCore.js"></script>
+    <!-- Action-specific -->
+    <script src="index.js"></script>
+
+    <link rel="stylesheet" href="../CommonPi/styles.css" />
+</head>
+
+<body>
+
+    <div class="sdpi-item position-row">
+        <div class="sdpi-item-label">Header</div>
+        <input id="header" class="sdpi-item-value" placeholder="Header value">
+    </div>
+
+    <!-- Switch event -->
+    <div class="sdpi-item position-row" title="Switch toggle event">
+        <div class="sdpi-item-label">Switch event</div>
+        <div class="sdpi-autocomplete">
+            <input id="toggleEvent" class="sdpi-item-value" placeholder="SWITCH TOGGLE EVENT" pattern="[A-Za-z0-9:_. ]*">
+        </div>
+        <sdpi-button id="applyEvent" variant="primary">✓</sdpi-button>
+    </div>
+
+    <!-- Switch variable -->
+    <div class="sdpi-item position-row" title="Varible indicating switch position">
+        <div class="sdpi-item-label">Switch variable</div>
+        <div class="sdpi-autocomplete">
+            <input id="feedbackVar" class="sdpi-item-value" placeholder="SWITCH POSITION VARIABLE" pattern="[A-Za-z0-9:_. ]*">
+        </div>
+        <sdpi-button id="applyFeedbackVar" variant="primary">✓</sdpi-button>
+    </div>
+
+    <!-- Positions -->
+    <div class="sdpi-item position-row">
+        <div class="sdpi-item-label">Num positions</div>
+        <div class="sdpi-radio-group">
+            <input type="radio" id="2" name="numPos" value="2" checked>
+            <label for="2" class="sdpi-item-value">2</label>
+
+            <input type="radio" id="3" name="numPos" value="3">
+            <label for="3" class="sdpi-item-value">3</label>
+        </div>
+    </div>
+
+    <!-- Position 0 -->
+    <div class="sdpi-item position-row">
+        <div class="sdpi-item-label">Sim val\Text</div>
+            <input id="pos0_value" class="sdpi-item-value" placeholder="0" value="0">
+            <input id="pos0_label" class="sdpi-item-value" placeholder="POS 0" value="POS 0">
+    </div>
+
+    <!-- Position 1 -->
+    <div class="sdpi-item position-row">
+        <div class="sdpi-item-label">Sim val\Text</div>
+            <input id="pos1_value" class="sdpi-item-value" placeholder="1" value="1">
+            <input id="pos1_label" class="sdpi-item-value" placeholder="POS 1" value="POS 1">
+    </div>
+
+    <!-- Position 2 -->
+    <div class="sdpi-item position-row">
+        <div class="sdpi-item-label">Sim val\Text</div>
+            <input id="pos2_value" class="sdpi-item-value" placeholder="2" value="2">
+            <input id="pos2_label" class="sdpi-item-value" placeholder="POS 2" value="POS 2">
+    </div>
+
+</body>
+</html>

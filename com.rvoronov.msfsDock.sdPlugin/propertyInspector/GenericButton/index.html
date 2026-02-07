@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>MSFS Dock Generic Button PI</title>
+
+    <!-- SDPI JS -->
+    <script src="../CommonPi/sdpi-components.js"></script>
+    <!-- Common JS -->
+    <script src="../CommonPi/autocomplete.js"></script>
+    <script src="../CommonPi/piCore.js"></script>
+    <!-- Action-specific -->
+    <script src="index.js"></script>
+
+    <link rel="stylesheet" href="../CommonPi/styles.css" />
+</head>
+
+<body>
+
+    <div class="sdpi-item position-row">
+        <div class="sdpi-item-label">Header</div>
+        <input id="header" class="sdpi-item-value" placeholder="Header value">
+    </div>
+
+    <div class="sdpi-item position-row">
+        <div class="sdpi-item-label">Skin</div>
+        <div class="sdpi-radio-group">
+            <input type="radio" id="skin1" name="skin" value="skin1" checked>
+            <label for="skin1" class="sdpi-item-value">Boeing</label>
+
+            <input type="radio" id="skin2" name="skin" value="skin2">
+            <label for="skin2" class="sdpi-item-value">Airbus</label>
+        </div>
+    </div>
+
+    <!-- Button event -->
+    <div class="sdpi-item position-row" title="Sim event to be called when button pressed">
+        <div class="sdpi-item-label">Button event</div>
+        <div class="sdpi-autocomplete">
+            <input id="toggleEvent" class="sdpi-item-value" placeholder="BUTTON EVENT" pattern="[A-Za-z0-9:_. ]*">
+        </div>
+        <sdpi-button id="applyEvent" variant="primary">✓</sdpi-button>
+    </div>
+
+    <!-- Display variable -->
+    <div class="sdpi-item position-row" title="Sim variable to be displayed on a button">
+        <div class="sdpi-item-label">Display variable</div>
+        <div class="sdpi-autocomplete">
+            <input id="displayVar" class="sdpi-item-value" placeholder="DISPLAY VARIABLE" pattern="[A-Za-z0-9:_. ]*">
+        </div>
+        <sdpi-button id="applyDisplayVar" variant="primary">✓</sdpi-button>
+    </div>
+
+    <!-- Status variable -->
+    <div class="sdpi-item position-row" title="Sim variable to be used to show active status on a button (green light)">
+        <div class="sdpi-item-label">Status variable</div>
+        <div class="sdpi-autocomplete">
+            <input id="feedbackVar" class="sdpi-item-value" placeholder="STATUS VARIABLE" pattern="[A-Za-z0-9:_. ]*">
+        </div>
+        <sdpi-button id="applyFeedbackVar" variant="primary">✓</sdpi-button>
+    </div>
+
+</body>
+</html>

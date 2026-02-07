@@ -21,6 +21,12 @@ int main(int argc, const char** argv) {
   GDIFonts::LoadCustomFont(L"\\fonts\\G7_Segment_7a.ttf");
   std::atexit(Exit);
 
+#if defined(HW_PLATFORM_ELGATO)
+  LogMessage("Platform: Elgato Streamdeck");
+#elif defined(HW_PLATFORM_MIRABOX)
+  LogMessage("Platform: Mirabox/Ajazz Streamdock");
+#endif
+
   SimManager::Instance().Start();
 
   auto plugin = std::make_unique<MSFSDockPlugin>();

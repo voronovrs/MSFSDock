@@ -2,6 +2,7 @@
 #include "plugin/Logger.hpp"
 #include "ui/GDIPlusManager.hpp"
 #include "SimData/SimData.hpp"
+#include "Utils.hpp"
 #include <cmath>
 
 void ButtonAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
@@ -12,7 +13,7 @@ void ButtonAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
     skin_ = settings.value("skin", "skin1");
 
     conditionOperator_ = settings.value("conditionOperator", "==");
-    conditionValue_ = settings.value("conditionValue", 0.0);
+    conditionValue_ = getFloatFromJson(settings, "conditionValue", 0.0f);
 
     std::vector<SimVarDefinition> varsToRegister;
     std::vector<SimVarDefinition> varsToDeregister;
