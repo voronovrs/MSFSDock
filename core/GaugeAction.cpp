@@ -156,6 +156,7 @@ void GaugeAction::UpdateImage() {
             break;
     }
 
+    LogInfo("Min val " + std::to_string(minVal_) + " Max val " + std::to_string(maxVal_));
     std::string base64Image = DrawGaugeImage(header_, header_color, value, data, data_color,
         headerOffset, headerFontSize, dataOffset, dataFontSize, minVal_, maxVal_, fill_,
         scaleColor_, indicatorColor_, bgColor_, SimManager::Instance().IsConnected());
