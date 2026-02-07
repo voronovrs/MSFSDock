@@ -42,6 +42,16 @@ add_executable(
   ${SOURCES}
 )
 
+option(HW_PLATFORM "Target hardware platform" "ELGATO")
+
+if (HW_PLATFORM STREQUAL "ELGATO")
+    target_compile_definitions(msfsDock PRIVATE HW_PLATFORM_ELGATO)
+elseif (HW_PLATFORM STREQUAL "MIRABOX")
+    target_compile_definitions(msfsDock PRIVATE HW_PLATFORM_MIRABOX)
+else()
+    message(FATAL_ERROR "Unknown HW_PLATFORM: ${HW_PLATFORM}")
+endif()
+
 target_include_directories(msfsDock PRIVATE ${CMAKE_SOURCE_DIR}/SimConnect)
 target_link_directories(msfsDock PRIVATE ${CMAKE_SOURCE_DIR}/SimConnect)
 
