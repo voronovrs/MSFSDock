@@ -307,7 +307,7 @@ void SimManager::NotifyAndClearAllVariables() {
 
     // 4. Clear registered groups
     registeredGroups_.clear();
-    
+
     // 5. Clear order vectors
     liveVarOrder_.clear();
     feedbackVarOrder_.clear();
@@ -385,7 +385,7 @@ void SimManager::RegisterVariablesToSim() {
             } else {
                 LogInfo("SimManager: Added data definition for variable: " + var.name);
                 var.registered = true;
-                
+
                 // Add to the corresponding group order vector
                 if (var.group == LIVE_VARIABLE) {
                     liveVarOrder_.push_back(var.name);
@@ -429,7 +429,7 @@ void SimManager::DeregisterVariablesFromSim() {
 
         for (int def = LIVE_VARIABLE; def <= FEEDBACK_VARIABLE; def++) {
             if (registeredGroups_.count(def) == 0) {
-                LogInfo("SimManager: Group " + std::to_string(def) + " not registered — skipping deregister.");
+                LogInfo("SimManager: Group " + std::to_string(def) + " not registered - skipping deregister.");
                 continue;
             }
 
@@ -469,7 +469,7 @@ void SimManager::DeregisterVariablesFromSim() {
             it->second.registered = false;
             ++it;
         }
-        
+
         // Clear order vectors because ClearDataDefinition removes everything
         liveVarOrder_.clear();
         feedbackVarOrder_.clear();
@@ -555,11 +555,11 @@ void SimManager::ParseGroupValues(const SIMCONNECT_RECV_SIMOBJECT_DATA* data, co
 
     {
         std::unique_lock lock(mutex_);
-        
+
         // Select the correct order vector based on the group
-        const std::vector<std::string>& orderVec = 
+        const std::vector<std::string>& orderVec =
             (group == LIVE_VARIABLE) ? liveVarOrder_ : feedbackVarOrder_;
-        
+
         // Iterate in the exact order in which variables were registered in SimConnect
         // This is CRITICAL because SimConnect sends data in registration order
         for (const std::string& varName : orderVec) {
@@ -571,13 +571,13 @@ void SimManager::ParseGroupValues(const SIMCONNECT_RECV_SIMOBJECT_DATA* data, co
                 raw += sizeof(double);
                 continue;
             }
-            
+
             SimVarDefinition& var = it->second;
-            
+
             // Read value even if not in use, to keep pointer synchronized
             double newVal = *reinterpret_cast<const double*>(raw);
             raw += sizeof(double);
-            
+
             if (!var.registered || !var.IsInUse()) {
                 // Variable is no longer in use, ignore value but we already advanced the pointer
                 LogWarn("SimManager: Ignoring stale SimConnect value for variable: " + varName);

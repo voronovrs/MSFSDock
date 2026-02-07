@@ -54,8 +54,9 @@ std::string DrawGaugeImage(const std::string& header = "", Gdiplus::Color header
                            int headerOffset = 4, int headerFontSize = 16,
                            int dataOffset = 25, int dataFontSize = 20,
                            int minVal=0, int maxVal=10000, bool fill=false,
-                           Gdiplus::Color scaleColor = COLOR_YELLOW, Gdiplus::Color indicatorColor = COLOR_RED,
-                           Gdiplus::Color bgColor = COLOR_NEAR_BLACK, bool simConnected = false);
+                           std::string scaleColor = "#ffff00", std::string indicatorColor = "#8b0000",
+                           std::string bgColor = "#141414",
+                           bool simConnected = false);
 
 std::string DrawSwitchImage(const std::vector<std::string>& labels, int currentPosition,
                             const std::string& header = "", bool simConnected = false);

@@ -2,26 +2,8 @@
 #include "plugin/Logger.hpp"
 #include "ui/GDIPlusManager.hpp"
 #include "SimData/SimData.hpp"
+// #include "Utils.hpp"
 
-void GetColor(Gdiplus::Color& color, const std::string& cfg_val) {
-    static const std::unordered_map<std::string, Gdiplus::Color> colorMap = {
-        { "white",          COLOR_WHITE },
-        { "orange",         COLOR_ORANGE },
-        { "gray",           COLOR_GRAY },
-        { "yellow",         COLOR_YELLOW },
-        { "red",            COLOR_RED },
-        { "green",          COLOR_GREEN },
-        { "darkGreen",      COLOR_DARK_GREEN },
-        { "cyan",           COLOR_CYAN },
-        { "blue",           COLOR_BLUE },
-        { "darkBlue",       COLOR_DARK_BLUE },
-        { "black",          COLOR_NEAR_BLACK },
-    };
-
-    auto it = colorMap.find(cfg_val);
-    if (it != colorMap.end())
-        color = it->second;
-}
 
 void GaugeAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
     if (!payload.contains("settings"))
@@ -30,13 +12,14 @@ void GaugeAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
     const auto& settings = payload["settings"];
 
     header_ = settings.value("header", "");
-    minVal_ = settings.value("minVal", 0);
-    maxVal_ = settings.value("maxVal", 10000);
+    minVal_ = NlohmannJSONUtils::GetIntByName(settings, "minVal", 0);
+    maxVal_ = NlohmannJSONUtils::GetIntByName(settings, "maxVal", 10000);
+
     fill_ = (settings.value("style", "") == "fill") ? true : false;
     dataFormat = (settings.value("dataFormat", "") == "percent") ? DATA_FMT_PERCENT : DATA_FMT_INT;
-    GetColor(scaleColor_, settings.value("scaleColor", std::string{}));
-    GetColor(indicatorColor_, settings.value("indicatorColor", std::string{}));
-    GetColor(bgColor_, settings.value("bgColor", std::string{}));
+    scaleColor_ = settings.value("scaleColor", "#ffff00");
+    indicatorColor_ = settings.value("indicatorColor", "#8b0000");
+    bgColor_ = settings.value("bgColor", "#141414");
 
     std::vector<SimVarDefinition> varsToRegister;
     std::vector<SimVarDefinition> varsToDeregister;
@@ -102,6 +85,7 @@ void GaugeAction::KeyUp(const nlohmann::json& /*payload*/) {
 }
 
 void GaugeAction::SendToPI(const nlohmann::json& payload) {
+    LogInfo("Sending PI payload");
     nlohmann::json out_payload;
     out_payload["type"] = "evt_var_list";
     out_payload["common_variables"] = nlohmann::json::array();

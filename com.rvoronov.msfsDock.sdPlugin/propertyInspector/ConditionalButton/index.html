@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="utf-8" />
+        <title>MSFS Dock Conditional Button PI</title>
+
+        <!-- SDPI -->
+        <script src="../CommonPi/sdpi-components.js"></script>
+        <!-- Common JS -->
+        <script src="../CommonPi/autocomplete.js"></script>
+        <script src="../CommonPi/piCore.js"></script>
+        <script src="../CommonPi/piAutocomplete.js"></script>
+        <script src="../CommonPi/piApply.js"></script>
+        <script src="../CommonPi/piInit.js"></script>
+        <!-- Action-specific -->
+        <script src="index.js"></script>
+
+        <link rel="stylesheet" href="../CommonPi/styles.css" />
+    </head>
+
+    <body>
+        <sdpi-item label="Header">
+            <sdpi-textfield setting="header"></sdpi-textfield>
+        </sdpi-item>
+
+        <sdpi-item label="Skin">
+            <sdpi-radio setting="skin" columns="2" default="skin1">
+                <option value="skin1">Boeing</option>
+                <option value="skin2">Airbus</option>
+            </sdpi-radio>
+        </sdpi-item>
+
+        <sdpi-item label="Conditional Variable" title="Variable to evaluate for condition">
+            <div class="position-row">
+                <div class="sdpi-autocomplete">
+                    <input
+                    id="conditionalVar"
+                    class="sdpi-item-value"
+                    data-setting="conditionalVar"
+                    placeholder="CONDITIONAL VARIABLE"
+                    pattern="[A-Za-z0-9:_. ]*"
+                    />
+                </div>
+                <sdpi-button id="applyConditionalVar" variant="primary">✓</sdpi-button>
+            </div>
+        </sdpi-item>
+
+        <sdpi-item label="Comparison operator">
+            <sdpi-select setting="conditionOperator" default="==">
+                <option value="==">== (Equal)</option>
+                <option value="!=">!= (Not Equal)</option>
+                <option value=">">> (Greater Than)</option>
+                <option value="<">< (Less Than)</option>
+                <option value=">=">>= (Greater or Equal)</option>
+                <option value="<="><= (Less or Equal)</option>
+            </sdpi-radio>
+        </sdpi-item>
+
+        <sdpi-item label="Condition Value">
+            <sdpi-textfield setting="conditionValue" placeholder="0"></sdpi-textfield>
+        </sdpi-item>
+
+        <sdpi-item label="Event When True" title="Event to send when condition is true">
+            <div class="position-row">
+                <div class="sdpi-autocomplete">
+                    <input
+                    id="eventWhenTrue"
+                    class="sdpi-item-value"
+                    data-setting="eventWhenTrue"
+                    placeholder="EVENT WHEN TRUE"
+                    pattern="[A-Za-z0-9:_. ]*"
+                    />
+                </div>
+                <sdpi-button id="applyEventWhenTrue" variant="primary">✓</sdpi-button>
+            </div>
+        </sdpi-item>
+
+        <sdpi-item label="Event When False" title="Event to send when condition is false">
+            <div class="position-row">
+                <div class="sdpi-autocomplete">
+                    <input
+                    id="eventWhenFalse"
+                    class="sdpi-item-value"
+                    data-setting="eventWhenFalse"
+                    placeholder="EVENT"
+                    pattern="[A-Za-z0-9:_. ]*"
+                    />
+                </div>
+                <sdpi-button id="applyEventWhenFalse" variant="primary">✓</sdpi-button>
+            </div>
+        </sdpi-item>
+
+        <sdpi-item label="Display variable" title="Sim variable to be displayed on a button">
+            <div class="position-row">
+                <div class="sdpi-autocomplete">
+                    <input
+                    id="displayVar"
+                    class="sdpi-item-value"
+                    data-setting="displayVar"
+                    placeholder="DISPLAY VARIABLE"
+                    pattern="[A-Za-z0-9:_. ]*"
+                    />
+                </div>
+                <sdpi-button id="applyDisplayVar" variant="primary">✓</sdpi-button>
+            </div>
+        </sdpi-item>
+
+        <sdpi-item label="Status variable" title="Sim variable to be used to show active status on a button (green light)">
+            <div class="position-row">
+                <div class="sdpi-autocomplete">
+                    <input
+                    id="feedbackVar"
+                    class="sdpi-item-value"
+                    data-setting="feedbackVar"
+                    placeholder="STATUS VARIABLE"
+                    pattern="[A-Za-z0-9:_. ]*"
+                    />
+                </div>
+                <sdpi-button id="applyFeedbackVar" variant="primary">✓</sdpi-button>
+            </div>
+        </sdpi-item>
+    </body>
+</html>

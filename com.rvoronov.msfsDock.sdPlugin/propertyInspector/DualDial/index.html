@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="utf-8" />
+        <title>MSFS Dock Dual Dial PI</title>
+
+        <!-- SDPI -->
+        <script src="../CommonPi/sdpi-components.js"></script>
+        <!-- Common JS -->
+        <script src="../CommonPi/autocomplete.js"></script>
+        <script src="../CommonPi/piCore.js"></script>
+        <script src="../CommonPi/piAutocomplete.js"></script>
+        <script src="../CommonPi/piApply.js"></script>
+        <script src="../CommonPi/piInit.js"></script>
+        <!-- Action-specific -->
+        <script src="index.js"></script>
+
+        <link rel="stylesheet" href="../CommonPi/styles.css" />
+    </head>
+
+    <body>
+        <sdpi-item label="Header">
+            <sdpi-textfield setting="header"></sdpi-textfield>
+        </sdpi-item>
+
+        <sdpi-item label="Skin">
+            <sdpi-radio setting="skin" columns="2" default="skin1">
+                <option value="skin1">Boeing</option>
+                <option value="skin2">Airbus</option>
+            </sdpi-radio>
+        </sdpi-item>
+
+        <sdpi-item label="Dial 1 variable" title="Sim variable to be displayed on dial 1">
+            <div class="position-row">
+                <div class="sdpi-autocomplete">
+                    <input
+                    id="displayVar"
+                    class="sdpi-item-value"
+                    data-setting="displayVar"
+                    placeholder="DIAL 1 VARIABLE"
+                    pattern="[A-Za-z0-9:_. ]*"
+                    />
+                </div>
+                <sdpi-button id="applyDisplayVar" variant="primary">✓</sdpi-button>
+            </div>
+        </sdpi-item>
+
+        <sdpi-item label="Inc 1 event" title="Sim event to be called when rotating knob CW">
+            <div class="position-row">
+                <div class="sdpi-autocomplete">
+                    <input
+                    id="incEvent"
+                    class="sdpi-item-value"
+                    data-setting="incEvent"
+                    placeholder="INCREMENT EVENT"
+                    pattern="[A-Za-z0-9:_. ]*"
+                    />
+                </div>
+                <sdpi-button id="applyIncEvent" variant="primary">✓</sdpi-button>
+            </div>
+        </sdpi-item>
+
+        <sdpi-item label="Dec 1 event" title="Sim event to be called when rotating knob CCW">
+            <div class="position-row">
+                <div class="sdpi-autocomplete">
+                    <input
+                    id="decEvent"
+                    class="sdpi-item-value"
+                    data-setting="decEvent"
+                    placeholder="DECREMENT EVENT"
+                    pattern="[A-Za-z0-9:_. ]*"
+                    />
+                </div>
+                <sdpi-button id="applyDecEvent" variant="primary">✓</sdpi-button>
+            </div>
+        </sdpi-item>
+
+        <sdpi-item label="Dial 2 variable" title="Sim variable to be displayed on dial 2">
+            <div class="position-row">
+                <div class="sdpi-autocomplete">
+                    <input
+                    id="display2Var"
+                    class="sdpi-item-value"
+                    data-setting="display2Var"
+                    placeholder="DIAL 2 VARIABLE"
+                    pattern="[A-Za-z0-9:_. ]*"
+                    />
+                </div>
+                <sdpi-button id="applyDisplay2Var" variant="primary">✓</sdpi-button>
+            </div>
+        </sdpi-item>
+
+        <sdpi-item label="Inc 2 event" title="Sim event to be called when rotating knob CW">
+            <div class="position-row">
+                <div class="sdpi-autocomplete">
+                    <input
+                    id="inc2Event"
+                    class="sdpi-item-value"
+                    data-setting="inc2Event"
+                    placeholder="INCREMENT EVENT"
+                    pattern="[A-Za-z0-9:_. ]*"
+                    />
+                </div>
+                <sdpi-button id="applyInc2Event" variant="primary">✓</sdpi-button>
+            </div>
+        </sdpi-item>
+
+        <sdpi-item label="Dec 2 event" title="Sim event to be called when rotating knob CCW">
+            <div class="position-row">
+                <div class="sdpi-autocomplete">
+                    <input
+                    id="dec2Event"
+                    class="sdpi-item-value"
+                    data-setting="dec2Event"
+                    placeholder="DECREMENT EVENT"
+                    pattern="[A-Za-z0-9:_. ]*"
+                    />
+                </div>
+                <sdpi-button id="applyDec2Event" variant="primary">✓</sdpi-button>
+            </div>
+        </sdpi-item>
+
+    </body>
+</html>

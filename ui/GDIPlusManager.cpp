@@ -77,6 +77,30 @@ static std::wstring StringToWString(const std::string& str) {
     return wstr;
 }
 
+Gdiplus::Color ColorFromHex(const std::string& hex) {
+    if (hex.size() != 7 || hex[0] != '#') {
+        return Gdiplus::Color(255, 0, 0, 0); // дефолт черный
+    }
+
+    unsigned int r, g, b;
+    std::stringstream ss;
+
+    ss << std::hex << hex.substr(1,2);
+    ss >> r;
+    ss.clear();
+    ss.str("");
+
+    ss << std::hex << hex.substr(3,2);
+    ss >> g;
+    ss.clear();
+    ss.str("");
+
+    ss << std::hex << hex.substr(5,2);
+    ss >> b;
+
+    return Gdiplus::Color(255, r, g, b); // a=255
+}
+
 // Helper to load image from file
 static Gdiplus::Bitmap* LoadPNGImage(const std::wstring& filePath) {
     return Gdiplus::Bitmap::FromFile(filePath.c_str(), FALSE);
@@ -407,7 +431,7 @@ std::string DrawGaugeImage(const std::string& header, Color headerColor,
                            int headerOffset, int headerFontSize,
                            int dataOffset, int dataFontSize,
                            int minVal, int maxVal, bool fill,
-                           Color scaleColor, Color indicatorColor, Color bgColor, bool simConnected) {
+                           std::string scaleColor, std::string indicatorColor, std::string bgColor, bool simConnected) {
     float baseAngle = 135.0f, arcLength = 180.0f, arcWidth = 12.0f, zeroArcWidth = 2.0f, pointerWidth = 16.0f,
         pointerLength = 9.0f;
 
@@ -421,7 +445,7 @@ std::string DrawGaugeImage(const std::string& header, Color headerColor,
 
     // Draw background
     Graphics graphics(bmp);
-    graphics.Clear(bgColor);
+    graphics.Clear(ColorFromHex(bgColor));
     graphics.SetTextRenderingHint(TextRenderingHintAntiAliasGridFit);
     graphics.SetSmoothingMode(SmoothingModeAntiAlias);
 
@@ -441,7 +465,7 @@ std::string DrawGaugeImage(const std::string& header, Color headerColor,
     );
 
     // Draw BG indicator arc
-    DrawGaugeArc(graphics, arcRect, baseAngle, arcLength, scaleColor, arcWidth);
+    DrawGaugeArc(graphics, arcRect, baseAngle, arcLength, ColorFromHex(scaleColor), arcWidth);
 
     // Draw Zero arc if needed
     if (minVal < 0 && maxVal > 0) {
@@ -454,9 +478,9 @@ std::string DrawGaugeImage(const std::string& header, Color headerColor,
     // Draw indicator arc
     if (fill) {
         float fillAngle =(angle - baseAngle) ? angle - baseAngle : 4.0f;
-        DrawGaugeArc(graphics, arcRect, baseAngle, fillAngle, indicatorColor, pointerWidth - 6.0f);
+        DrawGaugeArc(graphics, arcRect, baseAngle, fillAngle, ColorFromHex(indicatorColor), pointerWidth - 6.0f);
     } else {
-        DrawGaugeArc(graphics, arcRect, angle, pointerLength, indicatorColor, pointerWidth);
+        DrawGaugeArc(graphics, arcRect, angle, pointerLength, ColorFromHex(indicatorColor), pointerWidth);
     }
 
     DrawHeader(graphics, bmp->GetWidth(), header, headerColor, headerFontSize, headerOffset, 18, StringAlignmentNear);

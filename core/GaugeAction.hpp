@@ -42,9 +42,13 @@ private:
     int maxVal_;
     int minVal_;
     bool fill_ = false;
-    Gdiplus::Color scaleColor_ = COLOR_YELLOW;
-    Gdiplus::Color indicatorColor_ = COLOR_RED;
-    Gdiplus::Color bgColor_ = COLOR_NEAR_BLACK;
+    // Gdiplus::Color scaleColor_ = COLOR_YELLOW;
+    // Gdiplus::Color indicatorColor_ = COLOR_RED;
+    // Gdiplus::Color bgColor_ = COLOR_NEAR_BLACK;
+
+    std::string scaleColor_ = "#ffff00";
+    std::string indicatorColor_ = "#8b0000";
+    std::string bgColor_ = "#141414";
 
     SimVarDefinition displayVarDef_;
 

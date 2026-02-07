@@ -1,7 +1,7 @@
 {
   "Actions": [
     {
-      "Icon": "images/toggleIcon",
+      "Icon": "images/buttonIcon",
       "Name": "Generic button",
       "States": [
         {
@@ -10,12 +10,13 @@
         }
       ],
       "SupportedInMultiActions": true,
-      "PropertyInspectorPath": "GenericButton/index.html",
+      "PropertyInspectorPath": "propertyInspector/GenericButton/index.html",
       "Tooltip": "Use SimConnect or MobiFlight variables to define the button action",
-      "UUID": "com.rvoronov.msfsDock.generic.toggle"
+      "UUID": "com.rvoronov.msfsdock.generic.toggle",
+      "Controllers": [ "Keypad" ]
     },
     {
-      "Icon": "images/toggleIconcond",
+      "Icon": "images/buttonIconcond",
       "Name": "Conditional button",
       "States": [
         {
@@ -24,9 +25,10 @@
         }
       ],
       "SupportedInMultiActions": true,
-      "PropertyInspectorPath": "ConditionalButton/index.html",
+      "PropertyInspectorPath": "propertyInspector/ConditionalButton/index.html",
       "Tooltip": "Use SimConnect or MobiFlight variables to define conditional button actions",
-      "UUID": "com.rvoronov.msfsDock.conditional.toggle"
+      "UUID": "com.rvoronov.msfsdock.conditional.toggle",
+      "Controllers": [ "Keypad" ]
     },
     {
       "Icon": "images/switchIcon",
@@ -38,9 +40,10 @@
         }
       ],
       "SupportedInMultiActions": true,
-      "PropertyInspectorPath": "GenericSwitch/index.html",
+      "PropertyInspectorPath": "propertyInspector/GenericSwitch/index.html",
       "Tooltip": "Use SimConnect or MobiFlight variables to define the switch action",
-      "UUID": "com.rvoronov.msfsdock.generic.switch"
+      "UUID": "com.rvoronov.msfsdock.generic.switch",
+      "Controllers": [ "Keypad" ]
     },
     {
       "Icon": "images/gaugeIcon",
@@ -52,9 +55,10 @@
         }
       ],
       "SupportedInMultiActions": true,
-      "PropertyInspectorPath": "GenericGauge/index.html",
+      "PropertyInspectorPath": "propertyInspector/GenericGauge/index.html",
       "Tooltip": "Use SimConnect or MobiFlight variables to display gauge",
-      "UUID": "com.rvoronov.msfsDock.generic.gauge"
+      "UUID": "com.rvoronov.msfsdock.generic.gauge",
+      "Controllers": [ "Keypad" ]
     },
     {
       "Icon": "images/dialIcon",
@@ -66,9 +70,9 @@
         }
       ],
       "SupportedInMultiActions": true,
-      "PropertyInspectorPath": "GenericDial/index.html",
+      "PropertyInspectorPath": "propertyInspector/GenericDial/index.html",
       "Tooltip": "Use SimConnect or MobiFlight variables to dispaly dial and interract with them",
-      "UUID": "com.rvoronov.msfsDock.generic.dial",
+      "UUID": "com.rvoronov.msfsdock.generic.dial",
       "Controllers": [ "Knob" ]
     },
     {
@@ -81,9 +85,9 @@
         }
       ],
       "SupportedInMultiActions": true,
-      "PropertyInspectorPath": "DualDial/index.html",
+      "PropertyInspectorPath": "propertyInspector/DualDial/index.html",
       "Tooltip": "Use SimConnect or MobiFlight variables to dispaly dual dial and interract with them",
-      "UUID": "com.rvoronov.msfsDock.generic.dualdial",
+      "UUID": "com.rvoronov.msfsdock.generic.dualdial",
       "Controllers": [ "Knob" ]
     },
     {
@@ -96,13 +100,14 @@
         }
       ],
       "SupportedInMultiActions": true,
-      "PropertyInspectorPath": "GenericRadio/index.html",
+      "PropertyInspectorPath": "propertyInspector/GenericRadio/index.html",
       "Tooltip": "Use SimConnect or MobiFlight variables to dispaly radio and interract with them",
-      "UUID": "com.rvoronov.msfsDock.generic.radio",
+      "UUID": "com.rvoronov.msfsdock.generic.radio",
       "Controllers": [ "Knob" ]
     }
   ],
-  "SDKVersion": 1,
+  "UUID": "com.rvoronov.msfsdock",
+  "SDKVersion": 2,
   "Author": "rvoronov",
   "Category": "MSFS Dock",
   "CategoryIcon": "images/plugin_icon",
@@ -110,7 +115,7 @@
   "Description": "Interact with Microsoft Flight Simulator right from your Stream Dock!",
   "Name": "MSFS Dock",
   "Icon": "images/plugin_icon",
-  "Version": "0.7.3",
+  "Version": "0.8.0.0",
   "OS": [
     {
       "Platform": "windows",
@@ -118,6 +123,6 @@
     }
   ],
   "Software": {
-    "MinimumVersion": "2.9"
+    "MinimumVersion": "6.4"
   }
 }
