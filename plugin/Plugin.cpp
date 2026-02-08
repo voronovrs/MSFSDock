@@ -16,7 +16,7 @@ std::shared_ptr<HSDAction> MSFSDockPlugin::GetOrCreateAction(const std::string& 
         return it->second;
     }
 
-    if (action == "com.rvoronov.msfsDock.generic.toggle") {
+    if (action == "com.rvoronov.msfsdock.generic.toggle") {
         auto impl = std::make_shared<ButtonAction>(
             mConnectionManager,
             action,
@@ -25,7 +25,7 @@ std::shared_ptr<HSDAction> MSFSDockPlugin::GetOrCreateAction(const std::string& 
             );
         mActions.emplace(context, impl);
         return impl;
-    } else if (action == "com.rvoronov.msfsDock.conditional.toggle") {
+    } else if (action == "com.rvoronov.msfsdock.conditional.toggle") {
         auto impl = std::make_shared<ButtonAction>(
             mConnectionManager,
             action,
@@ -42,7 +42,7 @@ std::shared_ptr<HSDAction> MSFSDockPlugin::GetOrCreateAction(const std::string& 
             );
         mActions.emplace(context, impl);
         return impl;
-    } else if (action == "com.rvoronov.msfsDock.generic.gauge") {
+    } else if (action == "com.rvoronov.msfsdock.generic.gauge") {
         auto impl = std::make_shared<GaugeAction>(
             mConnectionManager,
             action,
@@ -50,7 +50,7 @@ std::shared_ptr<HSDAction> MSFSDockPlugin::GetOrCreateAction(const std::string& 
             );
         mActions.emplace(context, impl);
         return impl;
-    } else if (action == "com.rvoronov.msfsDock.generic.dial") {
+    } else if (action == "com.rvoronov.msfsdock.generic.dial") {
         auto impl = std::make_shared<DialAction>(
             mConnectionManager,
             action,
@@ -60,7 +60,7 @@ std::shared_ptr<HSDAction> MSFSDockPlugin::GetOrCreateAction(const std::string& 
             );
         mActions.emplace(context, impl);
         return impl;
-    } else if (action == "com.rvoronov.msfsDock.generic.dualdial") {
+    } else if (action == "com.rvoronov.msfsdock.generic.dualdial") {
         auto impl = std::make_shared<DialAction>(
             mConnectionManager,
             action,
@@ -70,7 +70,7 @@ std::shared_ptr<HSDAction> MSFSDockPlugin::GetOrCreateAction(const std::string& 
             );
         mActions.emplace(context, impl);
         return impl;
-    } else if (action == "com.rvoronov.msfsDock.generic.radio") {
+    } else if (action == "com.rvoronov.msfsdock.generic.radio") {
         auto impl = std::make_shared<DialAction>(
             mConnectionManager,
             action,

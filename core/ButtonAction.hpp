@@ -6,7 +6,7 @@
 
 #include "StreamDockCPPSDK/StreamDockSDK/HSDAction.h"
 #include "StreamDockCPPSDK/StreamDockSDK/NlohmannJSONUtils.h"
-#include "SimVar.hpp"
+#include "SimData/SimVar.hpp"
 #include "SimManager/SimManager.hpp"
 #include "ui/UIManager.hpp"
 

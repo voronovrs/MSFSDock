@@ -3,5 +3,5 @@
 #include <string>
 #include <vector>
 
-const std::vector<std::string>& GetKnownVariables();
+std::vector<std::string> GetKnownVariables();
 const std::vector<std::string>& GetKnownEvents();

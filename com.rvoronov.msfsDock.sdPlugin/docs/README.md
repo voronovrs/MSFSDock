@@ -1,8 +1,8 @@
-![screenshot](com.rvoronov.msfsDock.sdPlugin/docs/images/plugin_icon.png)
+![screenshot](images/plugin_icon.png)
 # MSFSDock - plugin for MSFS2024 for Mirabox\Ajazz Streamdock and Elgato Streamdeck devices (v0.8.0.0)
 
 # Usage example
-| ![](com.rvoronov.msfsDock.sdPlugin/docs/images/boeing_example.png) | ![](com.rvoronov.msfsDock.sdPlugin/docs/images/airbus_example.png) |
+| ![](images/boeing_example.png) | ![](images/airbus_example.png) |
 |---------|---------|
 | Boeing style skin | Airbus style skin |
 
@@ -25,7 +25,7 @@ But there is a way to save then. To do so follow this instruction.
 Since version 0.8.0.0 plugin should work on Elgato Streamdeck, but since I have no such hardware so my testing options are limited. Buttons should work, encoders, not so sure. Could require additional tweaks. Please leave feedback if you try it.
 
 # Startup procedure
-![](com.rvoronov.msfsDock.sdPlugin/docs/images/no_sim_connection.png)
+![](images/no_sim_connection.png)
 
 Since v0.6.0 no autoconnect to sim is available. By default plugin will be in disconnected state.
 

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>MSFS Dock Generic Gauge PI</title>
+
+    <!-- SDPI JS -->
+    <script src="../CommonPi/sdpi-components.js"></script>
+    <!-- Common JS -->
+    <script src="../CommonPi/autocomplete.js"></script>
+    <script src="../CommonPi/piCore.js"></script>
+    <!-- Action-specific -->
+    <script src="index.js"></script>
+
+    <link rel="stylesheet" href="../CommonPi/styles.css" />
+</head>
+
+<body>
+
+    <div class="sdpi-item position-row">
+        <div class="sdpi-item-label">Header</div>
+        <input id="header" class="sdpi-item-value" placeholder="Header value">
+    </div>
+
+    <!-- Display variable -->
+    <div class="sdpi-item position-row" title="Sim variable to be displayed on a button">
+        <div class="sdpi-item-label">Display variable</div>
+        <div class="sdpi-autocomplete">
+            <input id="displayVar" class="sdpi-item-value" placeholder="DISPLAY VARIABLE" pattern="[A-Za-z0-9:_. ]*">
+        </div>
+        <sdpi-button id="applyDisplayVar" variant="primary">✓</sdpi-button>
+    </div>
+
+    <!-- Format -->
+    <div class="sdpi-item position-row">
+        <div class="sdpi-item-label">Format</div>
+        <div class="sdpi-radio-group">
+            <input type="radio" id="int" name="dataFormat" value="int" checked>
+            <label for="int" class="sdpi-item-value">Integer</label>
+
+            <input type="radio" id="percent" name="dataFormat" value="percent">
+            <label for="percent" class="sdpi-item-value">Percent</label>
+        </div>
+    </div>
+
+    <!-- Style -->
+    <div class="sdpi-item position-row">
+        <div class="sdpi-item-label">Style</div>
+        <div class="sdpi-radio-group">
+            <input type="radio" id="indicator" name="style" value="indicator" checked>
+            <label for="indicator" class="sdpi-item-value">Indicator</label>
+
+            <input type="radio" id="fill" name="style" value="fill">
+            <label for="fill" class="sdpi-item-value">Fill</label>
+        </div>
+    </div>
+
+    <!-- Min val -->
+    <div class="sdpi-item position-row" title="Minimum value for gauge">
+        <div class="sdpi-item-label">Min value</div>
+        <input id="minVal" class="sdpi-item-value" value="0" placeholder="0">
+    </div>
+
+    <!-- Max val -->
+    <div class="sdpi-item position-row" title="Maximum value for gauge">
+        <div class="sdpi-item-label">Max value</div>
+        <input id="maxVal" class="sdpi-item-value" value="10000" placeholder="10000">
+    </div>
+
+    <!-- Colors -->
+    <div type="color" class="sdpi-item  position-row">
+        <div class="sdpi-item-label">Scale color</div>
+        <input type="color" class="sdpi-item-value" id="scaleColor" value="#ffff00">
+    </div>
+
+    <div type="color" class="sdpi-item  position-row">
+        <div class="sdpi-item-label">Indicator color</div>
+        <input type="color" class="sdpi-item-value" id="indicatorColor" value="#8b0000">
+    </div>
+
+    <div type="color" class="sdpi-item  position-row">
+        <div class="sdpi-item-label">Background color</div>
+        <input type="color" class="sdpi-item-value" id="bgColor" value="#141414">
+    </div>
+</body>
+</html>

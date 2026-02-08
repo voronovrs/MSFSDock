@@ -4,6 +4,30 @@
 
 using namespace Gdiplus;
 
+std::string WideToUtf8(const std::wstring& wstr)
+{
+    if (wstr.empty())
+        return {};
+
+    int size = WideCharToMultiByte(
+        CP_UTF8, 0,
+        wstr.data(), (int)wstr.size(),
+        nullptr, 0,
+        nullptr, nullptr
+    );
+
+    std::string result(size, 0);
+
+    WideCharToMultiByte(
+        CP_UTF8, 0,
+        wstr.data(), (int)wstr.size(),
+        result.data(), size,
+        nullptr, nullptr
+    );
+
+    return result;
+}
+
 namespace GDIFonts {
     static std::unique_ptr<Gdiplus::PrivateFontCollection> fontCollection;
     static std::wstring customFontName;
@@ -20,7 +44,7 @@ namespace GDIFonts {
 
         std::wstring fullPath = GetExecutableDir() + path;
         if (fontCollection->AddFontFile(fullPath.c_str()) != Ok) {
-            LogError("Failed to load custom font: " + std::string(path.begin(), path.end()));
+            LogError("Failed to load custom font: " + WideToUtf8(path));
             fontCollection.reset();
             return;
         }
@@ -40,7 +64,7 @@ namespace GDIFonts {
             WCHAR familyName[LF_FACESIZE];
             families[0].GetFamilyName(familyName);
             customFontName = familyName;
-            LogInfo("Custom font loaded: " + std::string(customFontName.begin(), customFontName.end()));
+            LogInfo("Custom font loaded: " + WideToUtf8(customFontName));
         }
     }
 

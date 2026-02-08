@@ -2,7 +2,7 @@
 
 #include <Windows.h>
 #include <SimConnect.h>
-#include "core/SimVar.hpp"
+#include "SimData/SimVar.hpp"
 #include <atomic>
 #include <condition_variable>
 #include <functional>
