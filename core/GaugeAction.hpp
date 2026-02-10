@@ -16,6 +16,11 @@ enum DataFormat {
     DATA_FMT_PERCENT,
 };
 
+enum GaugeSkin {
+    GAUGE_SKIN_CIRCULAR = 0,
+    GAUGE_SKIN_VERTICAL,
+};
+
 class GaugeAction : public HSDAction, public IUIUpdatable {
 public:
     using HSDAction::HSDAction;
@@ -38,6 +43,7 @@ private:
     // parsed settings
     std::string header_;
     DataFormat dataFormat = DATA_FMT_INT;
+    GaugeSkin skinType_ = GAUGE_SKIN_CIRCULAR;
     std::string displayVar_;
     int maxVal_;
     int minVal_;
@@ -46,6 +52,10 @@ private:
     std::string scaleColor_ = "#ffff00";
     std::string indicatorColor_ = "#8b0000";
     std::string bgColor_ = "#141414";
+
+    // Vertical gauge specific
+    bool showZeroTick_ = true;
+    std::vector<ScaleMarker> scaleMarkers_;
 
     SimVarDefinition displayVarDef_;
 

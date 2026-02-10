@@ -5,6 +5,11 @@
 #include <string>
 #include <vector>
 
+struct ScaleMarker {
+    int position = 0;
+    std::string color = "#ffffff";
+};
+
 #define TO_REAL(x) static_cast<Gdiplus::REAL>(x)
 extern const Gdiplus::Color COLOR_WHITE;
 extern const Gdiplus::Color COLOR_OFF_WHITE;
@@ -60,3 +65,14 @@ std::string DrawGaugeImage(const std::string& header = "", Gdiplus::Color header
 
 std::string DrawSwitchImage(const std::vector<std::string>& labels, int currentPosition,
                             const std::string& header = "", bool simConnected = false);
+
+std::string DrawVerticalGaugeImage(const std::string& header = "", Gdiplus::Color headerColor = COLOR_WHITE,
+                           double value = 0, const std::string& data = "", Gdiplus::Color dataColor = COLOR_WHITE,
+                           int headerOffset = 57, int headerFontSize = 12,
+                           int dataOffset = 0, int dataFontSize = 16,
+                           int minVal = 0, int maxVal = 10000, bool fill = false,
+                           std::string scaleColor = "#ffff00", std::string indicatorColor = "#8b0000",
+                           std::string bgColor = "#141414",
+                           bool simConnected = false,
+                           const std::vector<ScaleMarker>& scaleMarkers = {},
+                           bool showZeroTick = true);

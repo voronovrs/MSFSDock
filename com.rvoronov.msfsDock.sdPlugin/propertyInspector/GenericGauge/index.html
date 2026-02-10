@@ -29,7 +29,19 @@
         <div class="sdpi-autocomplete">
             <input id="displayVar" class="sdpi-item-value" placeholder="DISPLAY VARIABLE" pattern="[A-Za-z0-9:_. ]*">
         </div>
-        <sdpi-button id="applyDisplayVar" variant="primary">✓</sdpi-button>
+        <sdpi-button id="applyDisplayVar" variant="primary">&#x2713;</sdpi-button>
+    </div>
+
+    <!-- Skin -->
+    <div class="sdpi-item position-row">
+        <div class="sdpi-item-label">Skin</div>
+        <div class="sdpi-radio-group">
+            <input type="radio" id="skinCircular" name="skin" value="circular" checked>
+            <label for="skinCircular" class="sdpi-item-value">Circular</label>
+
+            <input type="radio" id="skinVertical" name="skin" value="vertical">
+            <label for="skinVertical" class="sdpi-item-value">Vertical</label>
+        </div>
     </div>
 
     <!-- Format -->
@@ -83,5 +95,24 @@
         <div class="sdpi-item-label">Background color</div>
         <input type="color" class="sdpi-item-value" id="bgColor" value="#141414">
     </div>
+
+    <!-- Vertical gauge specific options -->
+    <div id="verticalOptions" style="display:none;">
+
+        <div class="sdpi-item position-row">
+            <div class="sdpi-item-label" title="Show zero reference mark on scale">Zero tick</div>
+            <input type="checkbox" id="showZeroTick" checked>
+        </div>
+
+        <div class="sdpi-item position-row">
+            <div class="sdpi-item-label">Scale markers</div>
+            <div style="display:flex; flex-direction:column; gap:2px;">
+                <div id="markersContainer"></div>
+                <button id="addMarkerBtn" style="cursor:pointer;">+ Add marker</button>
+            </div>
+        </div>
+
+    </div>
+
 </body>
 </html>
