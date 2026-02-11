@@ -1,0 +1,36 @@
+{
+    "Description": "Interact with Microsoft Flight Simulator right from your Stream Deck!",
+    "com.rvoronov.msfsdock.generic.toggle": {
+        "Name": "Generic Button",
+        "Tooltip": "This button can trigger an event and display the current status of a selected variable."
+    },
+    "com.rvoronov.msfsdock.conditional.toggle": {
+        "Name": "Conditional Button",
+        "Tooltip": "Triggers one of two specified events based on whether a set condition for a variable is met."
+    },
+    
+    "com.rvoronov.msfsdock.generic.switch": {
+        "Name": "Generic switch",
+        "Tooltip": "A two or three-position switch. Can display current state and toggle on press."
+    },
+    
+    "com.rvoronov.msfsdock.generic.gauge": {
+        "Name": "Generic gauge",
+        "Tooltip": "Graphical display of a specified variable. You can set limits and customize the appearance."
+    },
+    
+    "com.rvoronov.msfsdock.generic.dial": {
+        "Name": "Generic dial",
+        "Tooltip": "Displays a specified variable, increases or decreases the value via knob rotation, and triggers an additional event on knob press."
+    },
+    
+    "com.rvoronov.msfsdock.generic.dualdial": {
+        "Name": "Dual dial",
+        "Tooltip": "Displays two variables simultaneously, increases or decreases the selected variable via knob rotation, switches between variables on knob press."
+    },
+    
+    "com.rvoronov.msfsdock.generic.radio": {
+        "Name": "Generic Radio",
+        "Tooltip": "Displays active and standby frequencies, adjusts integer and fractional parts of the standby frequency, swaps frequencies on knob double-press."
+    }
+}
