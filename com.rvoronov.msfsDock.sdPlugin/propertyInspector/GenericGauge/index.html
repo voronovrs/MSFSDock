@@ -99,16 +99,11 @@
     <!-- Vertical gauge specific options -->
     <div id="verticalOptions" style="display:none;">
 
-        <div class="sdpi-item position-row">
-            <div class="sdpi-item-label" title="Show zero reference mark on scale">Zero tick</div>
-            <input type="checkbox" id="showZeroTick" checked>
-        </div>
-
-        <div class="sdpi-item position-row">
-            <div class="sdpi-item-label">Scale markers</div>
-            <div style="display:flex; flex-direction:column; gap:2px;">
+        <div class="sdpi-item position-row" style="align-items:flex-start;">
+            <div class="sdpi-item-label" style="padding-top:6px;">Scale markers</div>
+            <div class="sdpi-markers-wrap">
                 <div id="markersContainer"></div>
-                <button id="addMarkerBtn" style="cursor:pointer;">+ Add marker</button>
+                <button id="addMarkerBtn" class="sdpi-btn-add">+ Add marker</button>
             </div>
         </div>
 

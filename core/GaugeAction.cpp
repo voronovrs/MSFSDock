@@ -24,7 +24,6 @@ void GaugeAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
     bgColor_ = settings.value("bgColor", "#141414");
 
     // Vertical gauge specific settings
-    showZeroTick_ = settings.value("showZeroTick", true);
     scaleMarkers_.clear();
     if (settings.contains("scaleMarkers") && settings["scaleMarkers"].is_array()) {
         for (const auto& m : settings["scaleMarkers"]) {
@@ -176,7 +175,7 @@ void GaugeAction::UpdateImage() {
         std::string base64Image = DrawVerticalGaugeImage(header_, header_color, value, data, data_color,
             headerOffset, headerFontSize, dataOffset, dataFontSize, minVal_, maxVal_, fill_,
             scaleColor_, indicatorColor_, bgColor_, SimManager::Instance().IsConnected(),
-            scaleMarkers_, showZeroTick_);
+            scaleMarkers_);
         SetImage(base64Image, kESDSDKTarget_HardwareAndSoftware, -1);
     } else {
         // Circular gauge (original behavior)

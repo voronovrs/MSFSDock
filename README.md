@@ -123,11 +123,12 @@ Controller - button.
 - Positions - Define mapping of switch position value in sim (left field) and displayed text (right field, 5 characters max).
 
 ## Generic Gauge
-This action intended to display data from Sim on Stream Dock button with gauge like interface.
+This action intended to display data from Sim on Stream Dock button with gauge like interface. Gauge supports two skins - circular (classic round gauge) and vertical (bar gauge).
 Controller - Button.
 ### Generic Gauge parameters:
 - Header - header to be displayed on a gauge
 - Display variable - Variable used in displaying data
+- Skin - select gauge skin, Circular (round gauge) or Vertical (bar gauge)
 - Format - Format of displayed data, integer or percent value.
 - Style - Select gauge style, Indicator - display current value with indicator on a scale, Fill - fill scale up to current value
 - Min value - Minimum value of a gauge
@@ -135,6 +136,14 @@ Controller - Button.
 - Scale - choose scale color (default - Yellow)
 - Indicator - choose indicator color (default - Red)
 - Background - choose background color (default - Black)
+
+#### Vertical gauge specific
+When Vertical skin is selected additional options become available:
+- Scale markers - add colored tick marks at specific values on the scale. Each marker has two parameters:
+    - Position - the value on the scale where the marker should appear, must be within the configured Min/Max range
+    - Color - the color of the tick mark
+
+  Useful for marking operational limits, caution ranges, level notches etc. When Percent format is selected, displayed value is calculated based on the configured minimum and maximum values.
 
 ## Generic Dial (single)
 This action intended to implement plane dial on Stream Dock display. Dial can display value, change value by rotating a knob, call event by pressing a knob/screen.

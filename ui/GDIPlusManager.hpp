@@ -74,5 +74,4 @@ std::string DrawVerticalGaugeImage(const std::string& header = "", Gdiplus::Colo
                            std::string scaleColor = "#ffff00", std::string indicatorColor = "#8b0000",
                            std::string bgColor = "#141414",
                            bool simConnected = false,
-                           const std::vector<ScaleMarker>& scaleMarkers = {},
-                           bool showZeroTick = true);
+                           const std::vector<ScaleMarker>& scaleMarkers = {});

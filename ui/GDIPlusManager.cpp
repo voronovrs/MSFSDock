@@ -649,7 +649,7 @@ std::string DrawVerticalGaugeImage(const std::string& header, Color headerColor,
                            int minVal, int maxVal, bool fill,
                            std::string scaleColor, std::string indicatorColor, std::string bgColor,
                            bool simConnected,
-                           const std::vector<ScaleMarker>& scaleMarkers, bool showZeroTick) {
+                           const std::vector<ScaleMarker>& scaleMarkers) {
     const int bmpW = 72, bmpH = 72;
     // Scale bar on the RIGHT side, value text on the LEFT -4
     const float barX = 53.0f, barY = 4.0f, barW = 6.0f, barH = 52.0f;
@@ -698,14 +698,6 @@ std::string DrawVerticalGaugeImage(const std::string& header, Color headerColor,
         };
         SolidBrush triBrush(ColorFromHex(indicatorColor));
         graphics.FillPolygon(&triBrush, triPts, 3);
-    }
-
-    // Zero tick mark
-    if (showZeroTick && minVal < 0 && maxVal > 0 && range != 0.0) {
-        float zt = static_cast<float>((0.0 - minVal) / range);
-        float zy = barY + barH * (1.0f - zt);
-        Pen zPen(COLOR_NEAR_BLACK, 2.0f);
-        graphics.DrawLine(&zPen, barX, zy, barX + barW, zy);
     }
 
     // Scale markers (tick marks extending to BOTH sides of the bar)

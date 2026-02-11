@@ -54,7 +54,6 @@ private:
     std::string bgColor_ = "#141414";
 
     // Vertical gauge specific
-    bool showZeroTick_ = true;
     std::vector<ScaleMarker> scaleMarkers_;
 
     SimVarDefinition displayVarDef_;
