@@ -679,7 +679,18 @@ std::string DrawVerticalGaugeImage(const std::string& header, Color headerColor,
         t = static_cast<float>((clamped - minVal) / range);
     }
 
-    // Draw fill or pointer indicator
+    // Scale markers (tick marks extending to BOTH sides of the bar) — drawn on top of scale
+    for (const auto& m : scaleMarkers) {
+        if (range == 0.0) continue;
+        float mt = static_cast<float>((m.position - minVal) / range);
+        if (mt < 0.0f) mt = 0.0f;
+        if (mt > 1.0f) mt = 1.0f;
+        float my = barY + barH * (1.0f - mt);
+        Pen mPen(ColorFromHex(m.color), 2.0f);
+        graphics.DrawLine(&mPen, barX - 4.0f, my, barX + barW + 4.0f, my);
+    }
+
+    // Draw fill or pointer indicator — drawn last (on top of scale and markers)
     if (fill) {
         float fillH = barH * t;
         if (fillH < 2.0f && t > 0.0f) fillH = 2.0f;
@@ -698,17 +709,6 @@ std::string DrawVerticalGaugeImage(const std::string& header, Color headerColor,
         };
         SolidBrush triBrush(ColorFromHex(indicatorColor));
         graphics.FillPolygon(&triBrush, triPts, 3);
-    }
-
-    // Scale markers (tick marks extending to BOTH sides of the bar)
-    for (const auto& m : scaleMarkers) {
-        if (range == 0.0) continue;
-        float mt = static_cast<float>((m.position - minVal) / range);
-        if (mt < 0.0f) mt = 0.0f;
-        if (mt > 1.0f) mt = 1.0f;
-        float my = barY + barH * (1.0f - mt);
-        Pen mPen(ColorFromHex(m.color), 2.0f);
-        graphics.DrawLine(&mPen, barX - 4.0f, my, barX + barW + 4.0f, my);
     }
 
     // Header text (bottom, centered full width)
