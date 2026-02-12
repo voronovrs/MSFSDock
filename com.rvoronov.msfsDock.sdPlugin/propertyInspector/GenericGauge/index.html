@@ -29,7 +29,19 @@
         <div class="sdpi-autocomplete">
             <input id="displayVar" class="sdpi-item-value" placeholder="DISPLAY VARIABLE" pattern="[A-Za-z0-9:_. ]*">
         </div>
-        <sdpi-button id="applyDisplayVar" variant="primary">✓</sdpi-button>
+        <sdpi-button id="applyDisplayVar" variant="primary">&#x2713;</sdpi-button>
+    </div>
+
+    <!-- Skin -->
+    <div class="sdpi-item position-row">
+        <div class="sdpi-item-label">Skin</div>
+        <div class="sdpi-radio-group">
+            <input type="radio" id="skinCircular" name="skin" value="circular" checked>
+            <label for="skinCircular" class="sdpi-item-value">Circular</label>
+
+            <input type="radio" id="skinVertical" name="skin" value="vertical">
+            <label for="skinVertical" class="sdpi-item-value">Vertical</label>
+        </div>
     </div>
 
     <!-- Format -->
@@ -83,5 +95,19 @@
         <div class="sdpi-item-label">Background color</div>
         <input type="color" class="sdpi-item-value" id="bgColor" value="#141414">
     </div>
+
+    <!-- Vertical gauge specific options -->
+    <div id="verticalOptions" style="display:none;">
+
+        <div class="sdpi-item position-row" style="align-items:flex-start;">
+            <div class="sdpi-item-label" style="padding-top:6px;">Scale markers</div>
+            <div style="flex:1; display:flex; flex-direction:column; gap:3px;">
+                <div id="markersContainer"></div>
+                <sdpi-button id="addMarkerBtn" style="width:fit-content;">+ Add marker</sdpi-button>
+            </div>
+        </div>
+
+    </div>
+
 </body>
 </html>

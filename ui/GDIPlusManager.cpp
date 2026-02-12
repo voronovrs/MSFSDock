@@ -641,3 +641,102 @@ std::string DrawSwitchImage(const std::vector<std::string>& labels, int currentP
     delete bmp;
     return base64Image;
 }
+
+std::string DrawVerticalGaugeImage(const std::string& header, Color headerColor,
+                           double value, const std::string& data, Color dataColor,
+                           int headerOffset, int headerFontSize,
+                           int dataOffset, int dataFontSize,
+                           int minVal, int maxVal, bool fill,
+                           std::string scaleColor, std::string indicatorColor, std::string bgColor,
+                           bool simConnected,
+                           const std::vector<ScaleMarker>& scaleMarkers) {
+    const int bmpW = 72, bmpH = 72;
+    // Scale bar on the RIGHT side, value text on the LEFT -4
+    const float barX = 53.0f, barY = 4.0f, barW = 6.0f, barH = 52.0f;
+
+    auto* bmp = new Gdiplus::Bitmap(bmpW, bmpH, PixelFormat32bppARGB);
+    if (!bmp || bmp->GetLastStatus() != Ok) {
+        LogError("Bitmap create error!");
+        return {};
+    }
+
+    Graphics graphics(bmp);
+    graphics.Clear(ColorFromHex(bgColor));
+    graphics.SetTextRenderingHint(TextRenderingHintAntiAliasGridFit);
+    graphics.SetSmoothingMode(SmoothingModeAntiAlias);
+
+    // Draw scale bar background
+    SolidBrush scaleBrush(ColorFromHex(scaleColor));
+    graphics.FillRectangle(&scaleBrush, barX, barY, barW, barH);
+
+    // Normalize value to [0, 1] (0 = bottom, 1 = top)
+    double range = static_cast<double>(maxVal) - static_cast<double>(minVal);
+    float t = 0.0f;
+    if (range != 0.0) {
+        double clamped = value;
+        if (clamped < minVal) clamped = minVal;
+        if (clamped > maxVal) clamped = maxVal;
+        t = static_cast<float>((clamped - minVal) / range);
+    }
+
+    // Scale markers (tick marks extending to BOTH sides of the bar) — drawn on top of scale
+    for (const auto& m : scaleMarkers) {
+        if (range == 0.0) continue;
+        float mt = static_cast<float>((m.position - minVal) / range);
+        if (mt < 0.0f) mt = 0.0f;
+        if (mt > 1.0f) mt = 1.0f;
+        float my = barY + barH * (1.0f - mt);
+        Pen mPen(ColorFromHex(m.color), 2.0f);
+        graphics.DrawLine(&mPen, barX - 4.0f, my, barX + barW + 4.0f, my);
+    }
+
+    // Draw fill or pointer indicator — drawn last (on top of scale and markers)
+    if (fill) {
+        float fillH = barH * t;
+        if (fillH < 2.0f && t > 0.0f) fillH = 2.0f;
+        SolidBrush fillBrush(ColorFromHex(indicatorColor));
+        graphics.FillRectangle(&fillBrush, barX, barY + barH - fillH, barW, fillH);
+    } else {
+        // Pointer indicator: triangle on the RIGHT side of the bar, pointing left
+        float ptrY = barY + barH * (1.0f - t);
+        float triBase = barX + barW + 10.0f;  // right tip of triangle base
+        float triTip = barX + barW + 1.0f;    // left tip (points toward bar)
+        float triHalf = 5.0f;                 // half-height of the triangle
+        Gdiplus::PointF triPts[3] = {
+            { triTip,  ptrY },               // left vertex (tip)
+            { triBase, ptrY - triHalf },     // top-right vertex
+            { triBase, ptrY + triHalf },     // bottom-right vertex
+        };
+        SolidBrush triBrush(ColorFromHex(indicatorColor));
+        graphics.FillPolygon(&triBrush, triPts, 3);
+    }
+
+    // Header text (bottom, centered full width)
+    DrawHeader(graphics, bmpW, header, headerColor, headerFontSize, headerOffset);
+
+    // Data value text (LEFT of bar, vertically centered on the bar)
+    if (!data.empty()) {
+        float textX = 2.0f;
+        float textW = barX - 4.0f;
+        float textH = barH;  // use bar height region for vertical centering
+
+        SolidBrush brush(dataColor);
+        RectF rect(textX, barY, textW, textH);
+        StringFormat fmt;
+        fmt.SetAlignment(StringAlignmentFar);
+        fmt.SetLineAlignment(StringAlignmentCenter);
+
+        std::wstring wdata = StringToWString(data);
+        FontFamily fontFamily(L"Consolas");
+        Font font(&fontFamily, TO_REAL(dataFontSize), FontStyleRegular, UnitPixel);
+        graphics.DrawString(wdata.c_str(), -1, &font, rect, &fmt, &brush);
+    }
+
+    if (!simConnected) {
+        DrawNotConnectedOutline(graphics, bmpW, bmpH);
+    }
+
+    std::string base64Image = BitmapToBase64(bmp);
+    delete bmp;
+    return base64Image;
+}
