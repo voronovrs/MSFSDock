@@ -1,19 +1,15 @@
 #include "SwitchAction.hpp"
 #include "plugin/Logger.hpp"
 #include "ui/GDIPlusManager.hpp"
-#include "SimData/SimData.hpp"
 #include "Utils.hpp"
+
+namespace EVT = BaseActionEvents;
 
 void SwitchAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
     if (!payload.contains("settings")) return;
     const auto& settings = payload["settings"];
 
     header_ = settings.value("header", "");
-
-    std::vector<SimVarDefinition> varsToRegister;
-    std::vector<SimVarDefinition> varsToDeregister;
-    std::vector<SimEventDefinition> eventsToRegister;
-    std::vector<SimEventDefinition> eventsToDeregister;
 
     std::string newFeedback = settings.value("feedbackVar", "");
     std::string newEvent = settings.value("toggleEvent", "");
@@ -58,52 +54,15 @@ void SwitchAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
 
     curPos_ = 0;
 
-    // Remove variables if necessary
-    if (!feedbackVar_.empty() && feedbackVar_ != newFeedback) {
-        if (feedbackSubId_) {
-            SimManager::Instance().UnsubscribeFromVariable(feedbackVar_, feedbackSubId_);
-        }
-        varsToDeregister.push_back({ feedbackVar_, FEEDBACK_VARIABLE });
-    }
+    varBindings_ = {
+        {&feedbackVarDef_, newFeedback, FEEDBACK_VARIABLE, &feedbackSubId_},
+    };
 
-    if (!toggleEvent_.empty() && toggleEvent_ != newEvent) {
-        eventsToDeregister.push_back({toggleEvent_});
-    }
+    eventBindings_ = {
+        { &toggleEventDef_, newEvent, EVENT_GENERIC, EVT::GENERIC},
+    };
 
-    // Add new variables if necessary
-    if (!newFeedback.empty() && newFeedback != feedbackVar_) {
-        feedbackVarDef_.name = newFeedback;
-        feedbackVarDef_.group = FEEDBACK_VARIABLE;
-        varsToRegister.push_back(feedbackVarDef_);
-    }
-
-    if (!newEvent.empty() && newEvent != toggleEvent_) {
-        toggleEventDef_.name = newEvent;
-        eventsToRegister.push_back(toggleEventDef_);
-    }
-
-    // Call add/remove
-    if (!varsToDeregister.empty())
-        SimManager::Instance().RemoveSimVars(varsToDeregister);
-    if (!eventsToDeregister.empty())
-        SimManager::Instance().RemoveSimEvents(eventsToDeregister);
-
-    if (!varsToRegister.empty())
-        SimManager::Instance().AddSimVars(varsToRegister);
-    if (!eventsToRegister.empty())
-        SimManager::Instance().AddSimEvents(eventsToRegister);
-
-    // Save new values
-    feedbackVar_ = newFeedback;
-    toggleEvent_ = newEvent;
-
-    // Subscribe callbacks
-    if (!newFeedback.empty()) {
-        feedbackSubId_ = SimManager::Instance().SubscribeToVariable(newFeedback,
-            [this](const std::string& name, double value) {
-                this->OnVariableUpdated(name, value);
-            });
-    }
+    ApplyBindings();
 }
 
 void SwitchAction::OnVariableUpdated(const std::string& name, double value) {
@@ -111,7 +70,7 @@ void SwitchAction::OnVariableUpdated(const std::string& name, double value) {
 
     auto it = valueToIndex_.find(intValue);
     if (it == valueToIndex_.end()) {
-        LogWarn(feedbackVar_ + " Unknown switch position.");
+        LogWarn(feedbackVarDef_.name + " Unknown switch position.");
         return;
     }
 
@@ -133,8 +92,8 @@ void SwitchAction::KeyDown(const nlohmann::json& payload) {
         return;
     }
 
-    if (!toggleEvent_.empty()) {
-        SimManager::Instance().SendEvent(toggleEvent_);
+    if (!toggleEventDef_.name.empty()) {
+        SimManager::Instance().SendEvent(toggleEventDef_.name);
     }
 }
 
@@ -170,22 +129,7 @@ void SwitchAction::WillAppear(const nlohmann::json& payload) {
 void SwitchAction::WillDisappear(const nlohmann::json& /*payload*/) {
     // Deregister only the vars coming from this action
     LogInfo("SwitchAction WillDisappear");
-    std::vector<SimVarDefinition> vars;
-    std::vector<SimEventDefinition> events;
-    if (!feedbackVar_.empty()) {
-        if (feedbackSubId_) {
-            SimManager::Instance().UnsubscribeFromVariable(feedbackVar_, feedbackSubId_);
-        }
-        vars.push_back({feedbackVar_, FEEDBACK_VARIABLE});
-    }
-    if (!vars.empty()) {
-        SimManager::Instance().RemoveSimVars(vars);
-    }
-
-    if (!toggleEvent_.empty()) {
-        events.push_back({toggleEvent_});
-        SimManager::Instance().RemoveSimEvents(events);
-    }
+    UnregisterAll();
 
     ClearSettings();
     UIManager::Instance().Unregister(this);
@@ -193,12 +137,8 @@ void SwitchAction::WillDisappear(const nlohmann::json& /*payload*/) {
 
 void SwitchAction::ClearSettings() {
     header_.clear();
-    feedbackVar_.clear();
-    toggleEvent_.clear();
-    positions_.clear();
-
+    CleanUp();
     curPos_ = 0;
-    feedbackSubId_ = 0;
 }
 
 void SwitchAction::UpdateImage() {

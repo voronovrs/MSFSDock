@@ -4,20 +4,21 @@
 #include <string>
 #include <vector>
 
-#include "StreamDockCPPSDK/StreamDockSDK/HSDAction.h"
-#include "StreamDockCPPSDK/StreamDockSDK/NlohmannJSONUtils.h"
-#include "SimData/SimVar.hpp"
-#include "SimManager/SimManager.hpp"
-#include "ui/UIManager.hpp"
+#include "BaseAction.hpp"
 
 struct SwitchPosition {
     int simValue;
     std::string label;
 };
 
-class SwitchAction : public HSDAction, public IUIUpdatable {
+class SwitchAction : public BaseAction {
 public:
-    using HSDAction::HSDAction;
+
+    SwitchAction(HSDConnectionManager* hsd_connection,
+                const std::string& action,
+                const std::string& context)
+        : BaseAction(hsd_connection, action, context)
+    {}
 
     virtual void SendToPI(const nlohmann::json& payload) override;
     virtual void DidReceiveSettings(const nlohmann::json& payload) override;
@@ -36,8 +37,6 @@ private:
     std::vector<SwitchPosition> positions_;
     std::unordered_map<int, int> valueToIndex_;
 
-    std::string feedbackVar_;
-    std::string toggleEvent_;
     std::string header_;
     int numPos_;
     int curPos_ = 0;

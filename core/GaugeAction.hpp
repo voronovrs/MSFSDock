@@ -4,12 +4,8 @@
 #include <string>
 #include <vector>
 
-#include "StreamDockCPPSDK/StreamDockSDK/HSDAction.h"
-#include "StreamDockCPPSDK/StreamDockSDK/NlohmannJSONUtils.h"
-#include "SimData/SimVar.hpp"
+#include "BaseAction.hpp"
 #include "ui/GDIPlusManager.hpp"
-#include "SimManager/SimManager.hpp"
-#include "ui/UIManager.hpp"
 
 enum DataFormat {
     DATA_FMT_INT = 0,
@@ -21,9 +17,14 @@ enum GaugeSkin {
     GAUGE_SKIN_VERTICAL,
 };
 
-class GaugeAction : public HSDAction, public IUIUpdatable {
+class GaugeAction : public BaseAction {
 public:
-    using HSDAction::HSDAction;
+
+    GaugeAction(HSDConnectionManager* hsd_connection,
+                const std::string& action,
+                const std::string& context)
+        : BaseAction(hsd_connection, action, context)
+    {}
 
     virtual void SendToPI(const nlohmann::json& payload) override;
     virtual void DidReceiveSettings(const nlohmann::json& payload) override;
@@ -44,7 +45,6 @@ private:
     std::string header_;
     DataFormat dataFormat = DATA_FMT_INT;
     GaugeSkin skinType_ = GAUGE_SKIN_CIRCULAR;
-    std::string displayVar_;
     int maxVal_;
     int minVal_;
     bool fill_ = false;

@@ -4,20 +4,16 @@
 #include <string>
 #include <vector>
 
-#include "StreamDockCPPSDK/StreamDockSDK/HSDAction.h"
-#include "StreamDockCPPSDK/StreamDockSDK/NlohmannJSONUtils.h"
-#include "SimData/SimVar.hpp"
-#include "SimManager/SimManager.hpp"
-#include "ui/UIManager.hpp"
+#include "BaseAction.hpp"
 
-class DialAction : public HSDAction, public IUIUpdatable {
+class DialAction : public BaseAction {
 public:
 
     DialAction(HSDConnectionManager* hsd_connection,
                const std::string& action,
                const std::string& context,
                bool isDual, bool isRadio)
-        : HSDAction(hsd_connection, action, context),
+        : BaseAction(hsd_connection, action, context),
           isDual(isDual), isRadio(isRadio)
     {}
 
@@ -48,16 +44,9 @@ private:
     const std::wstring ab_Dual_2 = L"images/dualdial_ab_2.png";
 
     // parsed settings
-    std::string displayVar_;
-    std::string display2Var_;
-    std::string feedbackVar_;
-    std::string incEvent_;
-    std::string decEvent_;
-    std::string inc2Event_;
-    std::string dec2Event_;
-    std::string toggleEvent_;
     std::string header_;
     std::string skin_;
+
     bool isActive = false;
     bool isDual = false;
     bool isRadio = false;

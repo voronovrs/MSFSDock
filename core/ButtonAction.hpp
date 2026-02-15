@@ -4,20 +4,16 @@
 #include <string>
 #include <vector>
 
-#include "StreamDockCPPSDK/StreamDockSDK/HSDAction.h"
-#include "StreamDockCPPSDK/StreamDockSDK/NlohmannJSONUtils.h"
-#include "SimData/SimVar.hpp"
-#include "SimManager/SimManager.hpp"
-#include "ui/UIManager.hpp"
+#include "BaseAction.hpp"
 
-class ButtonAction : public HSDAction, public IUIUpdatable {
+class ButtonAction : public BaseAction {
 public:
 
     ButtonAction(HSDConnectionManager* hsd_connection,
                 const std::string& action,
                 const std::string& context,
                 bool isConditional)
-        : HSDAction(hsd_connection, action, context),
+        : BaseAction(hsd_connection, action, context),
           isConditional(isConditional)
     {}
 
@@ -38,20 +34,14 @@ private:
     std::string GetEventToSend() const;
 
     // parsed settings
-    std::string displayVar_;
-    std::string feedbackVar_;
-    std::string toggleEvent_;
-    std::string header_;
     bool isActive = false;
+    std::string header_;
     std::string skin_;
 
     // Conditional events support
     bool isConditional = false;
-    std::string conditionalVar_;
     std::string conditionOperator_;
     double conditionValue_ = 0.0;
-    std::string eventWhenTrue_;
-    std::string eventWhenFalse_;
 
     const std::wstring b_Inactive = L"images/button.png";
     const std::wstring b_Active = L"images/button_active.png";
@@ -60,8 +50,8 @@ private:
 
     SimVarDefinition displayVarDef_;
     SimVarDefinition feedbackVarDef_;
-    SimVarDefinition conditionalVarDef_;
     SimEventDefinition toggleEventDef_;
+    SimVarDefinition conditionalVarDef_;
     SimEventDefinition eventWhenTrueDef_;
     SimEventDefinition eventWhenFalseDef_;
 
