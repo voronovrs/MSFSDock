@@ -26,7 +26,6 @@ static std::string NowTimeString() {
 
 void LogInit() {
     std::ofstream log(LOG_FILE, std::ios::trunc);
-    log << "==MSFSDock Plugin start==" << std::endl;
 }
 
 static void WriteLog(const std::string& level, const std::string& line) {

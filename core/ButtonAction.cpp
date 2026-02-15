@@ -1,9 +1,10 @@
 #include "ButtonAction.hpp"
 #include "plugin/Logger.hpp"
 #include "ui/GDIPlusManager.hpp"
-#include "SimData/SimData.hpp"
 #include "Utils.hpp"
 #include <cmath>
+
+namespace EVT = BaseActionEvents;
 
 void ButtonAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
     if (!payload.contains("settings")) return;
@@ -15,136 +16,36 @@ void ButtonAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
     conditionOperator_ = settings.value("conditionOperator", "==");
     conditionValue_ = getFloatFromJson(settings, "conditionValue", 0.0f);
 
-    std::vector<SimVarDefinition> varsToRegister;
-    std::vector<SimVarDefinition> varsToDeregister;
-    std::vector<SimEventDefinition> eventsToRegister;
-    std::vector<SimEventDefinition> eventsToDeregister;
+    std::string newDisplay          = settings.value("displayVar", "");
+    std::string newFeedback         = settings.value("feedbackVar", "");
+    std::string newConditionalVar   = settings.value("conditionalVar", "");
+    std::string newEvent            = settings.value("toggleEvent", "");
+    std::string newEventWhenTrue    = settings.value("eventWhenTrue", "");
+    std::string newEventWhenFalse   = settings.value("eventWhenFalse", "");
 
-    std::string newDisplay = settings.value("displayVar", "");
-    std::string newFeedback = settings.value("feedbackVar", "");
-    std::string newConditionalVar = settings.value("conditionalVar", "");
-    std::string newEvent = settings.value("toggleEvent", "");
-    std::string newEventWhenTrue = settings.value("eventWhenTrue", "");
-    std::string newEventWhenFalse = settings.value("eventWhenFalse", "");
+    varBindings_ = {
+        {&displayVarDef_, newDisplay, LIVE_VARIABLE, &displaySubId_},
+        {&feedbackVarDef_, newFeedback, FEEDBACK_VARIABLE, &feedbackSubId_},
+        {&conditionalVarDef_, newConditionalVar, FEEDBACK_VARIABLE, &conditionalSubId_},
+    };
 
-    // Remove variables if necessary
-    if (!displayVar_.empty() && displayVar_ != newDisplay) {
-        if (displaySubId_) {
-            SimManager::Instance().UnsubscribeFromVariable(displayVar_, displaySubId_);
-        }
-        varsToDeregister.push_back({ displayVar_, LIVE_VARIABLE });
-    }
+    eventBindings_ = {
+        { &toggleEventDef_, newEvent, EVENT_GENERIC, EVT::GENERIC },
+        { &eventWhenTrueDef_, newEventWhenTrue, EVENT_GENERIC, EVT::GENERIC },
+        { &eventWhenFalseDef_, newEventWhenFalse, EVENT_GENERIC, EVT::GENERIC },
+    };
 
-    if (!feedbackVar_.empty() && feedbackVar_ != newFeedback) {
-        if (feedbackSubId_) {
-            SimManager::Instance().UnsubscribeFromVariable(feedbackVar_, feedbackSubId_);
-        }
-        varsToDeregister.push_back({ feedbackVar_, FEEDBACK_VARIABLE });
-    }
-
-    if (!conditionalVar_.empty() && conditionalVar_ != newConditionalVar) {
-        if (conditionalSubId_) {
-            SimManager::Instance().UnsubscribeFromVariable(conditionalVar_, conditionalSubId_);
-        }
-        varsToDeregister.push_back({ conditionalVar_, FEEDBACK_VARIABLE });
-    }
-
-    // Deregister old events
-    if (!toggleEvent_.empty() && toggleEvent_ != newEvent) {
-        eventsToDeregister.push_back({toggleEvent_});
-    }
-    if (!eventWhenTrue_.empty() && eventWhenTrue_ != newEventWhenTrue) {
-        eventsToDeregister.push_back({eventWhenTrue_});
-    }
-    if (!eventWhenFalse_.empty() && eventWhenFalse_ != newEventWhenFalse) {
-        eventsToDeregister.push_back({eventWhenFalse_});
-    }
-
-    // Add new variables if necessary
-    if (!newDisplay.empty() && newDisplay != displayVar_) {
-        displayVarDef_.name = newDisplay;
-        displayVarDef_.group = LIVE_VARIABLE;
-        varsToRegister.push_back(displayVarDef_);
-    }
-
-    if (!newFeedback.empty() && newFeedback != feedbackVar_) {
-        feedbackVarDef_.name = newFeedback;
-        feedbackVarDef_.group = FEEDBACK_VARIABLE;
-        varsToRegister.push_back(feedbackVarDef_);
-    }
-
-    // Register conditional variable if needed
-    if (isConditional && !newConditionalVar.empty() && newConditionalVar != conditionalVar_) {
-        conditionalVarDef_.name = newConditionalVar;
-        conditionalVarDef_.group = FEEDBACK_VARIABLE;
-        varsToRegister.push_back(conditionalVarDef_);
-    }
-
-    // Register events based on mode
-    if (isConditional) {
-        if (!newEventWhenTrue.empty() && newEventWhenTrue != eventWhenTrue_) {
-            eventWhenTrueDef_.name = newEventWhenTrue;
-            eventsToRegister.push_back(eventWhenTrueDef_);
-        }
-        if (!newEventWhenFalse.empty() && newEventWhenFalse != eventWhenFalse_) {
-            eventWhenFalseDef_.name = newEventWhenFalse;
-            eventsToRegister.push_back(eventWhenFalseDef_);
-        }
-    } else {
-        if (!newEvent.empty() && newEvent != toggleEvent_) {
-            toggleEventDef_.name = newEvent;
-            eventsToRegister.push_back(toggleEventDef_);
-        }
-    }
-
-    // Call add/remove
-    if (!varsToDeregister.empty())
-        SimManager::Instance().RemoveSimVars(varsToDeregister);
-    if (!eventsToDeregister.empty())
-        SimManager::Instance().RemoveSimEvents(eventsToDeregister);
-
-    if (!varsToRegister.empty())
-        SimManager::Instance().AddSimVars(varsToRegister);
-    if (!eventsToRegister.empty())
-        SimManager::Instance().AddSimEvents(eventsToRegister);
-
-    // Save new values
-    displayVar_ = newDisplay;
-    feedbackVar_ = newFeedback;
-    conditionalVar_ = newConditionalVar;
-    toggleEvent_ = newEvent;
-    eventWhenTrue_ = newEventWhenTrue;
-    eventWhenFalse_ = newEventWhenFalse;
-
-    // Subscribe callbacks
-    if (!displayVar_.empty()) {
-        displaySubId_ = SimManager::Instance().SubscribeToVariable(displayVar_,
-            [this](const std::string& name, double value) {
-                this->OnVariableUpdated(name, value);
-            });
-    }
-    if (!feedbackVar_.empty()) {
-        feedbackSubId_ = SimManager::Instance().SubscribeToVariable(feedbackVar_,
-            [this](const std::string& name, double value) {
-                this->OnVariableUpdated(name, value);
-            });
-    }
-    if (isConditional && !conditionalVar_.empty()) {
-        conditionalSubId_ = SimManager::Instance().SubscribeToVariable(conditionalVar_,
-            [this](const std::string& name, double value) {
-                this->OnVariableUpdated(name, value);
-            });
-    }
+    ApplyBindings();
 }
 
 void ButtonAction::OnVariableUpdated(const std::string& name, double value) {
-    if (name == displayVar_) {
+    if (name == displayVarDef_.name) {
         displayVarDef_.value = value;
     }
-    if (name == feedbackVar_) {
+    if (name == feedbackVarDef_.name) {
         isActive = (value != 0.0);
     }
-    if (name == conditionalVar_) {
+    if (name == conditionalVarDef_.name) {
         conditionalVarDef_.value = value;
     }
     UpdateImage();
@@ -178,7 +79,7 @@ void ButtonAction::KeyUp(const nlohmann::json& /*payload*/) {
 
 std::string ButtonAction::GetEventToSend() const {
     if (!isConditional) {
-        return toggleEvent_;
+        return toggleEventDef_.name;
     }
 
     double varValue = conditionalVarDef_.value;
@@ -198,7 +99,7 @@ std::string ButtonAction::GetEventToSend() const {
         conditionMet = (varValue <= conditionValue_);
     }
 
-    std::string result = conditionMet ? eventWhenTrue_ : eventWhenFalse_;
+    std::string result = conditionMet ? eventWhenTrueDef_.name : eventWhenFalseDef_.name;
     LogInfo("Condition evaluation: varValue=" + std::to_string(varValue) +
             " conditionValue=" + std::to_string(conditionValue_) +
             " operator=" + conditionOperator_ +
@@ -235,47 +136,8 @@ void ButtonAction::WillAppear(const nlohmann::json& payload) {
 void ButtonAction::WillDisappear(const nlohmann::json& /*payload*/) {
     // Deregister only the vars coming from this action
     LogInfo("ButtonAction WillDisappear");
-    std::vector<SimVarDefinition> vars;
-    std::vector<SimEventDefinition> events;
 
-    if (!displayVar_.empty()) {
-        if (displaySubId_) {
-            SimManager::Instance().UnsubscribeFromVariable(displayVar_, displaySubId_);
-        }
-        vars.push_back({displayVar_, LIVE_VARIABLE});
-    }
-
-    if (!feedbackVar_.empty()) {
-        if (feedbackSubId_) {
-            SimManager::Instance().UnsubscribeFromVariable(feedbackVar_, feedbackSubId_);
-        }
-        vars.push_back({feedbackVar_, FEEDBACK_VARIABLE});
-    }
-
-    if (!conditionalVar_.empty()) {
-        if (conditionalSubId_) {
-            SimManager::Instance().UnsubscribeFromVariable(conditionalVar_, conditionalSubId_);
-        }
-        vars.push_back({conditionalVar_, FEEDBACK_VARIABLE});
-    }
-
-    if (!vars.empty()) {
-        SimManager::Instance().RemoveSimVars(vars);
-    }
-
-    if (!toggleEvent_.empty()) {
-        events.push_back({toggleEvent_});
-    }
-    if (!eventWhenTrue_.empty()) {
-        events.push_back({eventWhenTrue_});
-    }
-    if (!eventWhenFalse_.empty()) {
-        events.push_back({eventWhenFalse_});
-    }
-
-    if (!events.empty()) {
-        SimManager::Instance().RemoveSimEvents(events);
-    }
+    UnregisterAll();
 
     ClearSettings();
     UIManager::Instance().Unregister(this);
@@ -283,16 +145,9 @@ void ButtonAction::WillDisappear(const nlohmann::json& /*payload*/) {
 
 void ButtonAction::ClearSettings() {
     header_.clear();
-    displayVar_.clear();
-    feedbackVar_.clear();
-    toggleEvent_.clear();
-    conditionalVar_.clear();
-    eventWhenTrue_.clear();
-    eventWhenFalse_.clear();
 
-    displaySubId_ = 0;
-    feedbackSubId_ = 0;
-    conditionalSubId_ = 0;
+    CleanUp();
+
     conditionValue_ = 0.0;
     conditionOperator_ = "==";
 }
@@ -323,7 +178,7 @@ void ButtonAction::UpdateImage() {
     }
 
     std::wstring img_path = (isActive) ? backgroundImageActive : backgroundImageInactive;
-    std::string val = (displayVar_.empty()) ? "" : std::to_string(static_cast<int>(displayVarDef_.value));
+    std::string val = (displayVarDef_.name.empty()) ? "" : std::to_string(static_cast<int>(displayVarDef_.value));
     std::string base64Image = DrawButtonImage(img_path, header_, header_color, val, data_color,
         headerOffset, headerFontSize, dataOffset, dataFontSize, SimManager::Instance().IsConnected());
     SetImage(base64Image, kESDSDKTarget_HardwareAndSoftware, -1);

@@ -1,14 +1,21 @@
 #pragma once
 #include <Windows.h>
+#include <array>
 #include <algorithm>
 #include <string>
 #include <vector>
 #include "KnownVariables.hpp"
+#include "PMDG_NG3_SDK.h"
 
 enum DEFINITIONS {
     LIVE_VARIABLE = 2,
     FEEDBACK_VARIABLE,
     EVENT_GROUP,
+};
+
+enum EVENT_TYPES {
+    EVENT_GENERIC = 0,
+    EVENT_PMDG,
 };
 
 struct SimVarDefinition {
@@ -54,6 +61,10 @@ struct SimEventDefinition {
     DWORD id;
     uint16_t used = 0;
     bool registered = false;
+
+    EVENT_TYPES type = EVENT_GENERIC;
+    uint32_t pmdgID = 0;
+    std::array<uint32_t, 2> pmdgActions;
 
     bool IsValid() const {
         return !name.empty();

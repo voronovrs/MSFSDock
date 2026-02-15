@@ -1,0 +1,28 @@
+#include <windows.h>
+
+IDI_ICON1 ICON "@CMAKE_SOURCE_DIR@/resources/app.ico"
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION @PROJECT_VERSION_MAJOR@,@PROJECT_VERSION_MINOR@,@PROJECT_VERSION_PATCH@,@PROJECT_VERSION_TWEAK@
+ PRODUCTVERSION @PROJECT_VERSION_MAJOR@,@PROJECT_VERSION_MINOR@,@PROJECT_VERSION_PATCH@,@PROJECT_VERSION_TWEAK@
+ FILEFLAGSMASK 0x3fL
+ FILEFLAGS 0x0L
+ FILEOS VOS__WINDOWS32
+ FILETYPE VFT_APP
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "CompanyName",      "Roman Voronov"
+            VALUE "FileDescription",  "MSFS Dock Plugin\0"
+            VALUE "FileVersion",      "@PROJECT_VERSION@\0"
+            VALUE "ProductName",      "MSFS Dock\0"
+            VALUE "ProductVersion",   "@PROJECT_VERSION@\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0409, 1200
+    END
+END
