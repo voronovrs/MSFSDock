@@ -1,9 +1,8 @@
 #include "GaugeAction.hpp"
 #include "plugin/Logger.hpp"
-#include "ui/GDIPlusManager.hpp"
-#include "SimData/SimData.hpp"
 #include "Utils.hpp"
 
+namespace EVT = BaseActionEvents;
 
 void GaugeAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
     if (!payload.contains("settings"))
@@ -34,47 +33,17 @@ void GaugeAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
         }
     }
 
-    std::vector<SimVarDefinition> varsToRegister;
-    std::vector<SimVarDefinition> varsToDeregister;
-
     std::string newDisplay = settings.value("displayVar", "");
 
-    // Remove variables if necessary
-    if (!displayVar_.empty() && displayVar_ != newDisplay) {
-        if (displaySubId_) {
-            SimManager::Instance().UnsubscribeFromVariable(displayVar_, displaySubId_);
-        }
-        varsToDeregister.push_back({ displayVar_, LIVE_VARIABLE });
-    }
+    varBindings_ = {
+        {&displayVarDef_, newDisplay, LIVE_VARIABLE, &displaySubId_},
+    };
 
-    // Add new variables if necessary
-    if (!newDisplay.empty() && newDisplay != displayVar_) {
-        displayVarDef_.name = newDisplay;
-        displayVarDef_.group = LIVE_VARIABLE;
-        varsToRegister.push_back(displayVarDef_);
-    }
-
-    // Call add/remove
-    if (!varsToDeregister.empty())
-        SimManager::Instance().RemoveSimVars(varsToDeregister);
-
-    if (!varsToRegister.empty())
-        SimManager::Instance().AddSimVars(varsToRegister);
-
-    // Save new values
-    displayVar_ = newDisplay;
-
-    // Subscribe callbacks
-    if (!newDisplay.empty()) {
-        displaySubId_ = SimManager::Instance().SubscribeToVariable(newDisplay,
-            [this](const std::string& name, double value) {
-                this->OnVariableUpdated(name, value);
-            });
-    }
+    ApplyBindings();
 }
 
 void GaugeAction::OnVariableUpdated(const std::string& name, double value) {
-    if (name == displayVar_) {
+    if (name == displayVarDef_.name) {
         displayVarDef_.value = value;
     }
     UpdateImage();
@@ -120,16 +89,7 @@ void GaugeAction::WillAppear(const nlohmann::json& payload) {
 void GaugeAction::WillDisappear(const nlohmann::json& /*payload*/) {
     // Deregister only the vars coming from this action
     LogInfo("GaugeAction WillDisappear");
-    std::vector<SimVarDefinition> vars;
-    if (!displayVar_.empty()) {
-        if (displaySubId_) {
-            SimManager::Instance().UnsubscribeFromVariable(displayVar_, displaySubId_);
-        }
-        vars.push_back({displayVar_, LIVE_VARIABLE});
-    }
-    if (!vars.empty()) {
-        SimManager::Instance().RemoveSimVars(vars);
-    }
+    UnregisterAll();
 
     ClearSettings();
     UIManager::Instance().Unregister(this);
@@ -137,9 +97,7 @@ void GaugeAction::WillDisappear(const nlohmann::json& /*payload*/) {
 
 void GaugeAction::ClearSettings() {
     header_.clear();
-    displayVar_.clear();
-
-    displaySubId_ = 0;
+    CleanUp();
 }
 
 void GaugeAction::UpdateImage() {

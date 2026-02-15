@@ -485,7 +485,14 @@ void SimManager::RegisterEventsToSim() {
                 continue;
             }
 
-            HRESULT hr = SimConnect_MapClientEventToSimEvent(hSimConnect, event.id, event.name.c_str());
+            HRESULT hr = 0;
+
+            if (event.type == EVENT_PMDG) {
+                std::string simEvent = "#" + std::to_string(event.pmdgID);
+                hr = SimConnect_MapClientEventToSimEvent(hSimConnect, event.id, simEvent.c_str());
+            } else {
+                hr = SimConnect_MapClientEventToSimEvent(hSimConnect, event.id, event.name.c_str());
+            }
             if (FAILED(hr)) {
                 LogError("SimManager: Failed to register event: " + name + " with id: " + std::to_string(event.id));
             } else {
@@ -620,6 +627,8 @@ void SimManager::ParseGroupValues(const SIMCONNECT_RECV_SIMOBJECT_DATA* data, co
 
 void SimManager::SendEvent(const std::string& name) {
     DWORD eventId = 0;
+    bool isPmdg = false;
+    std::array<uint32_t, 2> pmdgActions;
 
     {
         std::lock_guard lock(mutex_);
@@ -640,16 +649,34 @@ void SimManager::SendEvent(const std::string& name) {
         }
 
         eventId = it->second.id;
+        isPmdg = (it->second.type == EVENT_PMDG);
+        pmdgActions = it->second.pmdgActions;
     }
 
-    HRESULT hr = SimConnect_TransmitClientEvent(
-        hSimConnect,
-        SIMCONNECT_OBJECT_ID_USER,
-        eventId,
-        0,
-        SIMCONNECT_GROUP_PRIORITY_HIGHEST,
-        SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY
-    );
+    HRESULT hr = 0;
+    if (isPmdg) {
+        for (uint32_t action : pmdgActions) {
+            if (!action) continue;
+
+            hr = SimConnect_TransmitClientEvent(
+                hSimConnect,
+                SIMCONNECT_OBJECT_ID_USER,
+                eventId,
+                action,
+                SIMCONNECT_GROUP_PRIORITY_HIGHEST,
+                SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY
+            );
+        }
+    } else {
+        hr = SimConnect_TransmitClientEvent(
+            hSimConnect,
+            SIMCONNECT_OBJECT_ID_USER,
+            eventId,
+            0,
+            SIMCONNECT_GROUP_PRIORITY_HIGHEST,
+            SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY
+        );
+    }
 
     if (FAILED(hr)) {
         LogError("SendEvent: failed to transmit event: " + name +
