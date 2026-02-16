@@ -107,22 +107,14 @@ window.bindApplyButton = function (inputId, buttonId, settingKey) {
     const button = document.getElementById(buttonId);
     if (!input || !button) return;
 
-    const updateButton = () => {
-        button.disabled = !input.value.trim();
-    };
-
-    updateButton();
-    input.addEventListener("input", updateButton);
-
     input.addEventListener("keydown", e => {
-        if (e.key === "Enter" && !button.disabled) {
+        if (e.key === "Enter") {
             button.click();
         }
     });
 
     button.addEventListener("click", () => {
         const value = input.value.trim();
-        if (!value) return;
 
         commitSettings({ [settingKey]: value });
 
@@ -133,6 +125,7 @@ window.bindApplyButton = function (inputId, buttonId, settingKey) {
         }
     });
 };
+
 
 /* -------- autocomplete -------- */
 
