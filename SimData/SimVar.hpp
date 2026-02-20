@@ -10,11 +10,13 @@
 enum DEFINITIONS {
     LIVE_VARIABLE = 2,
     FEEDBACK_VARIABLE,
-    EVENT_GROUP,
+    PMDG_VARIABLE,
+    AIR_PATH_REQUEST = 10,
 };
 
 enum EVENT_TYPES {
-    EVENT_GENERIC = 0,
+    EVENT_SIM_START = 0,
+    EVENT_GENERIC,
     EVENT_PMDG,
 };
 
@@ -58,6 +60,7 @@ struct SimVarDefinition {
 
 struct SimEventDefinition {
     std::string name;
+    std::string uniqueName;
     DWORD id;
     uint16_t used = 0;
     bool registered = false;

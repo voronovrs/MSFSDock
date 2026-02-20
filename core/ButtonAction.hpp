@@ -12,9 +12,9 @@ public:
     ButtonAction(HSDConnectionManager* hsd_connection,
                 const std::string& action,
                 const std::string& context,
-                bool isConditional)
+                bool isConditional, bool isPmdg)
         : BaseAction(hsd_connection, action, context),
-          isConditional(isConditional)
+          isConditional(isConditional), isPmdg(isPmdg)
     {}
 
     virtual void SendToPI(const nlohmann::json& payload) override;
@@ -37,6 +37,8 @@ private:
     bool isActive = false;
     std::string header_;
     std::string skin_;
+
+    bool isPmdg = false;
 
     // Conditional events support
     bool isConditional = false;

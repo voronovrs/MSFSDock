@@ -2,6 +2,7 @@
 #include "GDIFonts.hpp"
 #include "plugin/Logger.hpp"
 #include <memory>
+#include <mutex>
 #include <vector>
 #include <sstream>
 #include <iomanip>
@@ -9,6 +10,8 @@
 #pragma comment(lib, "Gdiplus.lib")
 #pragma comment(lib, "Crypt32.lib")
 #pragma comment(lib, "Ole32.lib")
+
+std::mutex gdiDrawMutex;
 
 static ULONG_PTR g_gdiplusToken = 0;
 
@@ -169,6 +172,8 @@ std::string DrawButtonImage(const std::wstring& imagePath,
                       const std::string& data, Color dataColor,
                       int headerOffset, int headerFontSize,
                       int dataOffset, int dataFontSize, bool simConnected) {
+    std::lock_guard lock(gdiDrawMutex);
+
     Gdiplus::Bitmap* bmp = LoadPNGImage(imagePath);
     if (!bmp || bmp->GetLastStatus() != Ok) {
         LogError("DrawTextOverImage LoadPNGImage error!");
@@ -283,6 +288,8 @@ std::string DrawDialImage(const std::wstring& imagePath,
                       int headerOffset, int headerFontSize,
                       int dataOffset, int dataFontSize,
                       int data2Offset, int data2FontSize, bool simConnected) {
+    std::lock_guard lock(gdiDrawMutex);
+
     Gdiplus::Bitmap* bmp = LoadPNGImage(imagePath);
     if (!bmp || bmp->GetLastStatus() != Ok) {
         LogError("DrawTextOverImage LoadPNGImage error!");
@@ -383,6 +390,8 @@ std::string DrawRadioImage(const std::wstring& imagePath,
                       int headerOffset, int headerFontSize,
                       int dataOffset, int dataFontSize,
                       int data2Offset, int data2FontSize, bool simConnected) {
+    std::lock_guard lock(gdiDrawMutex);
+
     Gdiplus::Bitmap* bmp = LoadPNGImage(imagePath);
     if (!bmp || bmp->GetLastStatus() != Ok) {
         LogError("DrawTextOverImage LoadPNGImage error!");
@@ -432,6 +441,8 @@ std::string DrawGaugeImage(const std::string& header, Color headerColor,
                            int dataOffset, int dataFontSize,
                            int minVal, int maxVal, bool fill,
                            std::string scaleColor, std::string indicatorColor, std::string bgColor, bool simConnected) {
+    std::lock_guard lock(gdiDrawMutex);
+
     float baseAngle = 135.0f, arcLength = 180.0f, arcWidth = 12.0f, zeroArcWidth = 2.0f, pointerWidth = 16.0f,
         pointerLength = 9.0f;
 
@@ -523,6 +534,8 @@ void AddRoundedRect(Gdiplus::GraphicsPath& path, Gdiplus::RectF rect, float radi
 
 std::string DrawSwitchImage(const std::vector<std::string>& labels, int currentPosition, const std::string& header,
     bool simConnected) {
+    std::lock_guard lock(gdiDrawMutex);
+
     const float pointerDiameter = 20.0f;
     const float outlineRadius   = 2.0f;
     const float bgXoffset       = 6.0f;
@@ -650,6 +663,8 @@ std::string DrawVerticalGaugeImage(const std::string& header, Color headerColor,
                            std::string scaleColor, std::string indicatorColor, std::string bgColor,
                            bool simConnected,
                            const std::vector<ScaleMarker>& scaleMarkers) {
+    std::lock_guard lock(gdiDrawMutex);
+
     const int bmpW = 72, bmpH = 72;
     // Scale bar on the RIGHT side, value text on the LEFT -4
     const float barX = 53.0f, barY = 4.0f, barW = 6.0f, barH = 52.0f;

@@ -16,6 +16,21 @@
       "Controllers": [ "Keypad" ]
     },
     {
+      "Icon": "images/buttonIcon",
+      "Name": "PMDG button",
+      "States": [
+        {
+          "Image": "images/button",
+          "ShowTitle": false
+        }
+      ],
+      "SupportedInMultiActions": true,
+      "PropertyInspectorPath": "propertyInspector/GenericButton/index.html",
+      "Tooltip": "Use PMDG variables and events to define the button action",
+      "UUID": "com.rvoronov.msfsdock.pmdg.toggle",
+      "Controllers": [ "Keypad" ]
+    },
+    {
       "Icon": "images/buttonIconcond",
       "Name": "Conditional button",
       "States": [
@@ -24,7 +39,7 @@
           "ShowTitle": false
         }
       ],
-      "SupportedInMultiActions": true,
+      "SupportedInMultiActions": false,
       "PropertyInspectorPath": "propertyInspector/ConditionalButton/index.html",
       "Tooltip": "Use SimConnect or MobiFlight variables to define conditional button actions",
       "UUID": "com.rvoronov.msfsdock.conditional.toggle",
@@ -39,10 +54,25 @@
           "ShowTitle": false
         }
       ],
-      "SupportedInMultiActions": true,
+      "SupportedInMultiActions": false,
       "PropertyInspectorPath": "propertyInspector/GenericSwitch/index.html",
       "Tooltip": "Use SimConnect or MobiFlight variables to define the switch action",
       "UUID": "com.rvoronov.msfsdock.generic.switch",
+      "Controllers": [ "Keypad" ]
+    },
+    {
+      "Icon": "images/switchIcon",
+      "Name": "PMDG switch",
+      "States": [
+        {
+          "Image": "images/button",
+          "ShowTitle": false
+        }
+      ],
+      "SupportedInMultiActions": false,
+      "PropertyInspectorPath": "propertyInspector/GenericSwitch/index.html",
+      "Tooltip": "Use PMDG variables to define the switch action",
+      "UUID": "com.rvoronov.msfsdock.pmdg.switch",
       "Controllers": [ "Keypad" ]
     },
     {
@@ -54,7 +84,7 @@
           "ShowTitle": false
         }
       ],
-      "SupportedInMultiActions": true,
+      "SupportedInMultiActions": false,
       "PropertyInspectorPath": "propertyInspector/GenericGauge/index.html",
       "Tooltip": "Use SimConnect or MobiFlight variables to display gauge",
       "UUID": "com.rvoronov.msfsdock.generic.gauge",
@@ -69,10 +99,25 @@
           "ShowTitle": false
         }
       ],
-      "SupportedInMultiActions": true,
+      "SupportedInMultiActions": false,
       "PropertyInspectorPath": "propertyInspector/GenericDial/index.html",
       "Tooltip": "Use SimConnect or MobiFlight variables to dispaly dial and interract with them",
       "UUID": "com.rvoronov.msfsdock.generic.dial",
+      "Controllers": [ "Knob" ]
+    },
+    {
+      "Icon": "images/dialIcon",
+      "Name": "PMDG dial",
+      "States": [
+        {
+          "Image": "images/dial",
+          "ShowTitle": false
+        }
+      ],
+      "SupportedInMultiActions": false,
+      "PropertyInspectorPath": "propertyInspector/GenericDial/index.html",
+      "Tooltip": "Use PMDG variables to dispaly dial and PMDG events to interract with them",
+      "UUID": "com.rvoronov.msfsdock.pmdg.dial",
       "Controllers": [ "Knob" ]
     },
     {
@@ -84,10 +129,25 @@
           "ShowTitle": false
         }
       ],
-      "SupportedInMultiActions": true,
+      "SupportedInMultiActions": false,
       "PropertyInspectorPath": "propertyInspector/DualDial/index.html",
       "Tooltip": "Use SimConnect or MobiFlight variables to dispaly dual dial and interract with them",
       "UUID": "com.rvoronov.msfsdock.generic.dualdial",
+      "Controllers": [ "Knob" ]
+    },
+    {
+      "Icon": "images/dialIcon",
+      "Name": "PMDG dual dial",
+      "States": [
+        {
+          "Image": "images/dial",
+          "ShowTitle": false
+        }
+      ],
+      "SupportedInMultiActions": false,
+      "PropertyInspectorPath": "propertyInspector/DualDial/index.html",
+      "Tooltip": "Use PMDG variables to dispaly two dials and PMDG events to interract with them",
+      "UUID": "com.rvoronov.msfsdock.pmdg.dualdial",
       "Controllers": [ "Knob" ]
     },
     {
@@ -99,7 +159,7 @@
           "ShowTitle": false
         }
       ],
-      "SupportedInMultiActions": true,
+      "SupportedInMultiActions": false,
       "PropertyInspectorPath": "propertyInspector/GenericRadio/index.html",
       "Tooltip": "Use SimConnect or MobiFlight variables to dispaly radio and interract with them",
       "UUID": "com.rvoronov.msfsdock.generic.radio",

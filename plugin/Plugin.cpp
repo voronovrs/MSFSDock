@@ -21,6 +21,7 @@ std::shared_ptr<HSDAction> MSFSDockPlugin::GetOrCreateAction(const std::string& 
             mConnectionManager,
             action,
             context,
+            false,
             false
             );
         mActions.emplace(context, impl);
@@ -30,6 +31,17 @@ std::shared_ptr<HSDAction> MSFSDockPlugin::GetOrCreateAction(const std::string& 
             mConnectionManager,
             action,
             context,
+            true,
+            false
+            );
+        mActions.emplace(context, impl);
+        return impl;
+    } else if (action == "com.rvoronov.msfsdock.pmdg.toggle") {
+        auto impl = std::make_shared<ButtonAction>(
+            mConnectionManager,
+            action,
+            context,
+            false,
             true
             );
         mActions.emplace(context, impl);
@@ -38,7 +50,17 @@ std::shared_ptr<HSDAction> MSFSDockPlugin::GetOrCreateAction(const std::string& 
         auto impl = std::make_shared<SwitchAction>(
             mConnectionManager,
             action,
-            context
+            context,
+            false
+            );
+        mActions.emplace(context, impl);
+        return impl;
+    } else if (action == "com.rvoronov.msfsdock.pmdg.switch") {
+        auto impl = std::make_shared<SwitchAction>(
+            mConnectionManager,
+            action,
+            context,
+            true
             );
         mActions.emplace(context, impl);
         return impl;
@@ -56,7 +78,19 @@ std::shared_ptr<HSDAction> MSFSDockPlugin::GetOrCreateAction(const std::string& 
             action,
             context,
             false,
+            false,
             false
+            );
+        mActions.emplace(context, impl);
+        return impl;
+    } else if (action == "com.rvoronov.msfsdock.pmdg.dial") {
+        auto impl = std::make_shared<DialAction>(
+            mConnectionManager,
+            action,
+            context,
+            false,
+            false,
+            true
             );
         mActions.emplace(context, impl);
         return impl;
@@ -66,7 +100,19 @@ std::shared_ptr<HSDAction> MSFSDockPlugin::GetOrCreateAction(const std::string& 
             action,
             context,
             true,
+            false,
             false
+            );
+        mActions.emplace(context, impl);
+        return impl;
+    } else if (action == "com.rvoronov.msfsdock.pmdg.dualdial") {
+        auto impl = std::make_shared<DialAction>(
+            mConnectionManager,
+            action,
+            context,
+            true,
+            false,
+            true
             );
         mActions.emplace(context, impl);
         return impl;
@@ -76,7 +122,8 @@ std::shared_ptr<HSDAction> MSFSDockPlugin::GetOrCreateAction(const std::string& 
             action,
             context,
             true,
-            true
+            true,
+            false
             );
         mActions.emplace(context, impl);
         return impl;

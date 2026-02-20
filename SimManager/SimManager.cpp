@@ -1,9 +1,12 @@
 #include "SimManager.hpp"
+#include "SimData/SimData.hpp"
 #include "plugin/Logger.hpp"
 #include "ui/UIManager.hpp"
 #include <sstream>
 #include <iomanip>
 
+
+/* ------------ Process events and variables changes comming from UI locally ------------ */
 
 void SimManager::AddSimVars(std::vector<SimVarDefinition>& vars) {
     std::lock_guard lock(mutex_);
@@ -13,6 +16,8 @@ void SimManager::AddSimVars(std::vector<SimVarDefinition>& vars) {
         auto it = vars_.find(v.name);
         if (it == vars_.end()) {
             v.used = 1;
+            if (v.group == PMDG_VARIABLE)
+                v.registered = true;
             vars_.emplace(v.name, v);
             LogInfo("SimManager: Added new variable: " + v.name + " group: " + std::to_string(v.group));
         } else {
@@ -46,15 +51,15 @@ void SimManager::RemoveSimVars(const std::vector<SimVarDefinition>& vars) {
 void SimManager::AddSimEvents(std::vector<SimEventDefinition>& events) {
     std::lock_guard lock(mutex_);
     for (auto& e : events) {
-        auto it = events_.find(e.name);
+        auto it = events_.find(e.uniqueName);
         if (it == events_.end()) {
             e.used = 1;
             e.id = m_nextEventId++;
-            events_.emplace(e.name, e);
-            LogInfo("SimManager: Added new event: " + e.name + " id: " + std::to_string(e.id));
+            events_.emplace(e.uniqueName, e);
+            LogInfo("SimManager: Added new event: " + e.uniqueName + " id: " + std::to_string(e.id));
         } else {
             it->second.IncrementUsage();
-            LogInfo("SimManager: Increment usage for event: " + e.name  + " usage: " + std::to_string(it->second.used));
+            LogInfo("SimManager: Increment usage for event: " + e.uniqueName  + " usage: " + std::to_string(it->second.used));
         }
     }
 }
@@ -62,17 +67,17 @@ void SimManager::AddSimEvents(std::vector<SimEventDefinition>& events) {
 void SimManager::RemoveSimEvents(const std::vector<SimEventDefinition>& events) {
     std::lock_guard lock(mutex_);
     for (auto& e : events) {
-        auto it = events_.find(e.name);
+        auto it = events_.find(e.uniqueName);
         if (it != events_.end()) {
             if (it->second.IsInUse()) {
                 it->second.DecrementUsage();
-                LogInfo("SimManager: Decrement usage for event: " + e.name  + " usage: " + std::to_string(it->second.used));
+                LogInfo("SimManager: Decrement usage for event: " + e.uniqueName  + " usage: " + std::to_string(it->second.used));
             }
             if (!it->second.IsInUse()) {
                 continue;
             }
         } else {
-            LogWarn("SimManager: Event to remove not found: " + e.name);
+            LogWarn("SimManager: Event to remove not found: " + e.uniqueName + " " + e.name);
         }
     }
 }
@@ -98,7 +103,6 @@ void SimManager::ProcessPendingChanges() {
         }
 
         for (auto& [name, var] : vars_) {
-            // if (!var.IsInUse() && var.registered) {
             if (!var.IsInUse()) {
                 anyVarNeedsUnregister = true;
                 break;
@@ -133,6 +137,8 @@ void SimManager::ProcessPendingChanges() {
         RegisterEventsToSim();
     }
 }
+
+/* ------------ Establish sim connection, handle start and stop ------------ */
 
 SimManager& SimManager::Instance() {
     static SimManager instance;
@@ -251,9 +257,10 @@ bool SimManager::IsConnected() const {
         && simReady;
 }
 
-// Update UI indicating sim is connected and ready
+// Subscribe to system events and update UI indicating sim is connected and ready
 void SimManager::OnSimConnected() {
     simReady = true;
+    NotificationsSubscribe();
     UIManager::Instance().UpdateAll();
 }
 
@@ -263,6 +270,10 @@ void SimManager::HandleSimDisconnect() {
         SimConnect_Close(hSimConnect);
         hSimConnect = nullptr;
     }
+
+    aircraftIsPMDG = false;
+    pmdgIdMapped = false;
+    pmdgRegistered = false;
 
     simReady = false;
     simState = SimState::Disconnected;
@@ -317,6 +328,60 @@ void SimManager::NotifyAndClearAllVariables() {
     m_nextEventId = 1000;
 }
 
+/* ------------ Subscribe to system events and PMDG data if PMDG plane is loaded ------------ */
+
+void SimManager::NotificationsSubscribe() {
+    if (!hSimConnect) {
+        LogWarn("SimManager: NotificationsSubscribe called but SimConnect is not ready.");
+        return;
+    }
+
+    HRESULT hr;
+    // Request current aircraft .air file path
+    hr = SimConnect_RequestSystemState(hSimConnect, AIR_PATH_REQUEST, "AircraftLoaded");
+    // Request notifications on sim start and aircraft change
+    hr = SimConnect_SubscribeToSystemEvent(hSimConnect, EVENT_SIM_START, "SimStart");
+}
+
+void SimManager::PmdgSubscribe() {
+    HRESULT hr;
+    // Associate an ID with the PMDG data area name
+    if (!pmdgIdMapped) {
+        hr = SimConnect_MapClientDataNameToID(hSimConnect, PMDG_NG3_DATA_NAME, PMDG_NG3_DATA_ID);
+        pmdgIdMapped = true;
+    }
+
+    // Define the data area structure - this is a required step
+    hr = SimConnect_AddToClientDataDefinition(hSimConnect, PMDG_NG3_DATA_DEFINITION, 0, sizeof(PMDG_NG3_Data), 0, 0);
+
+    // Sign up for notification of data change.
+    // SIMCONNECT_CLIENT_DATA_REQUEST_FLAG_CHANGED flag asks for the data to be sent only when some of the data is changed.
+    hr = SimConnect_RequestClientData(hSimConnect, PMDG_NG3_DATA_ID, PMDG_VARIABLE, PMDG_NG3_DATA_DEFINITION,
+                                        SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET, SIMCONNECT_CLIENT_DATA_REQUEST_FLAG_CHANGED, 0, 0, 0);
+}
+
+void SimManager::PmdgUnsubscribe() {
+    HRESULT hr;
+    hr = SimConnect_RequestClientData(hSimConnect, PMDG_NG3_DATA_ID, PMDG_VARIABLE, PMDG_NG3_DATA_DEFINITION,
+                                SIMCONNECT_CLIENT_DATA_PERIOD_NEVER, 0, 0, 0, 0);
+
+    hr = SimConnect_ClearClientDataDefinition(hSimConnect, PMDG_NG3_DATA_DEFINITION);
+}
+
+void SimManager::UpdatePmdgRegistration() {
+    if (aircraftIsPMDG && !pmdgRegistered) {
+        PmdgSubscribe();
+        LogMessage("PMDG DATA subscribed");
+        pmdgRegistered = true;
+    } else if (!aircraftIsPMDG && pmdgRegistered) {
+        PmdgUnsubscribe();
+        LogMessage("PMDG DATA unsubscribed");
+        pmdgRegistered = false;
+    }
+}
+
+/* ------------ Dispatch, handle data comming from sim ------------ */
+
 void CALLBACK SimManager::DispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, void* pContext) {
     // Handle received SimConnect messages
     auto* manager = static_cast<SimManager*>(pContext);
@@ -333,12 +398,49 @@ void CALLBACK SimManager::DispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, voi
                 manager->HandleSimDisconnect();
             });
             break;
-        case SIMCONNECT_RECV_ID_EXCEPTION:
-        {
+        case SIMCONNECT_RECV_ID_EXCEPTION: {
             auto* ex = reinterpret_cast<SIMCONNECT_RECV_EXCEPTION*>(pData);
             LogError("SimConnect exception received: " + std::to_string(ex->dwException) + " " + std::to_string(ex->dwIndex));
             break;
         }
+
+	    case SIMCONNECT_RECV_ID_EVENT: {
+			SIMCONNECT_RECV_EVENT *evt = (SIMCONNECT_RECV_EVENT*)pData;
+			if (evt->uEventID == EVENT_SIM_START) {
+                {
+                    HRESULT hr = SimConnect_RequestSystemState(manager->hSimConnect, AIR_PATH_REQUEST, "AircraftLoaded");
+                    break;
+                }
+            }
+        }
+
+        // Track aircraft changes
+        case SIMCONNECT_RECV_ID_SYSTEM_STATE: {
+			SIMCONNECT_RECV_SYSTEM_STATE *evt = (SIMCONNECT_RECV_SYSTEM_STATE*)pData;
+			if (evt->dwRequestID == AIR_PATH_REQUEST)
+			{
+				if (strstr(evt->szString, "PMDG") != NULL) {
+					manager->aircraftIsPMDG = true;
+                } else {
+					manager->aircraftIsPMDG = false;
+                }
+			}
+            manager->UpdatePmdgRegistration();
+			break;
+		}
+
+        // Receive and process the PMDG NG3 data block
+        case SIMCONNECT_RECV_ID_CLIENT_DATA: {
+			SIMCONNECT_RECV_CLIENT_DATA *pObjData = (SIMCONNECT_RECV_CLIENT_DATA*)pData;
+
+			if (pObjData->dwRequestID == PMDG_VARIABLE) {
+                PMDG_NG3_Data *pS = (PMDG_NG3_Data*)&pObjData->dwData;
+                manager->ProcessNG3Data(pS);
+                break;
+            }
+			break;
+		}
+
         case SIMCONNECT_RECV_ID_SIMOBJECT_DATA: {
             auto* data = reinterpret_cast<const SIMCONNECT_RECV_SIMOBJECT_DATA*>(pData);
 
@@ -356,6 +458,8 @@ void CALLBACK SimManager::DispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, voi
             break;
     }
 }
+
+/* ------------ Synchronize events and variables with sim ------------ */
 
 void SimManager::RegisterVariablesToSim() {
     QueueTask([this] {
@@ -401,6 +505,12 @@ void SimManager::RegisterVariablesToSim() {
                 LogWarn("SimManager: Group " + std::to_string(def) + " already registered.");
                 continue;
             }
+
+            if (def == LIVE_VARIABLE && liveVarOrder_.empty())
+                continue;
+            if (def == FEEDBACK_VARIABLE && feedbackVarOrder_.empty())
+                continue;
+
             HRESULT hr = SimConnect_RequestDataOnSimObject(
                 hSimConnect,
                 def,
@@ -430,7 +540,7 @@ void SimManager::DeregisterVariablesFromSim() {
 
         for (int def = LIVE_VARIABLE; def <= FEEDBACK_VARIABLE; def++) {
             if (registeredGroups_.count(def) == 0) {
-                LogInfo("SimManager: Group " + std::to_string(def) + " not registered - skipping deregister.");
+                // LogInfo("SimManager: Group " + std::to_string(def) + " not registered - skipping deregister.");
                 continue;
             }
 
@@ -467,7 +577,9 @@ void SimManager::DeregisterVariablesFromSim() {
                 continue;
             }
 
-            it->second.registered = false;
+            if (it->second.group != PMDG_VARIABLE) {
+                it->second.registered = false;
+            }
             ++it;
         }
 
@@ -491,7 +603,7 @@ void SimManager::RegisterEventsToSim() {
                 std::string simEvent = "#" + std::to_string(event.pmdgID);
                 hr = SimConnect_MapClientEventToSimEvent(hSimConnect, event.id, simEvent.c_str());
             } else {
-                hr = SimConnect_MapClientEventToSimEvent(hSimConnect, event.id, event.name.c_str());
+                hr = SimConnect_MapClientEventToSimEvent(hSimConnect, event.id, event.uniqueName.c_str());
             }
             if (FAILED(hr)) {
                 LogError("SimManager: Failed to register event: " + name + " with id: " + std::to_string(event.id));
@@ -507,6 +619,8 @@ void SimManager::DeregisterEventsFromSim() {
     // We can't remove event after registration, so just log it and keep info in case of future use
     // LogInfo("SimManager: Event not used: " + it->first);
 }
+
+/* ------------ Process variable update callbacks ------------ */
 
 bool SimManager::TryGetCachedValue(const std::string& name, double& outValue) {
     std::lock_guard lock(mutex_);
@@ -526,6 +640,7 @@ SubscriptionId SimManager::SubscribeToVariable(const std::string& name, Variable
         std::unique_lock lock(callbackMutex_);
         updateCallbacks_[name].push_back({id, std::move(callback)});
     }
+    LogInfo("Subscribed callback for " + name + " with ID " + std::to_string(id));
 
     // Check if value already exist and calling callback.
     double currentValue = 0.0;
@@ -554,6 +669,137 @@ void SimManager::UnsubscribeFromVariable(const std::string& name, SubscriptionId
     vec.erase(std::remove_if(vec.begin(), vec.end(), [&](const CallbackEntry &e){ return e.id == id; }), vec.end());
     if (vec.empty())
         updateCallbacks_.erase(it);
+    LogInfo("Unsubscribe CB for " + name + " with ID " + std::to_string(id));
+}
+
+/* ------------ Process event sending ------------ */
+
+void SimManager::SendEvent(const std::string& name) {
+    DWORD eventId = 0;
+    bool isPmdg = false;
+    std::array<uint32_t, 2> pmdgActions;
+
+    {
+        std::lock_guard lock(mutex_);
+        auto it = events_.find(name);
+        if (it == events_.end()) {
+            LogError("SendEvent: event not found in events_: " + name);
+            return;
+        }
+
+        if (!it->second.IsInUse()) {
+            LogWarn("SendEvent: event exists but not in use: " + name);
+            return;
+        }
+
+        if (!it->second.registered) {
+            LogError("SendEvent: event not registered in sim: " + name);
+            return;
+        }
+
+        eventId = it->second.id;
+        isPmdg = (it->second.type == EVENT_PMDG);
+        pmdgActions = it->second.pmdgActions;
+    }
+
+    HRESULT hr = 0;
+    if (isPmdg) {
+        for (uint32_t action : pmdgActions) {
+            if (!action) continue;
+
+            hr = SimConnect_TransmitClientEvent(
+                hSimConnect,
+                SIMCONNECT_OBJECT_ID_USER,
+                eventId,
+                action,
+                SIMCONNECT_GROUP_PRIORITY_HIGHEST,
+                SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY
+            );
+        }
+    } else {
+        hr = SimConnect_TransmitClientEvent(
+            hSimConnect,
+            SIMCONNECT_OBJECT_ID_USER,
+            eventId,
+            0,
+            SIMCONNECT_GROUP_PRIORITY_HIGHEST,
+            SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY
+        );
+    }
+
+    if (FAILED(hr)) {
+        LogError("SendEvent: failed to transmit event: " + name +
+                 " id=" + std::to_string(eventId));
+    } else {
+        LogInfo("SendEvent: sent event " + name + " id=" + std::to_string(eventId));
+    }
+}
+
+/* ------------ Process received data from sim ------------ */
+
+void SimManager::ProcessNG3Data(PMDG_NG3_Data* pS) {
+    if (processingPMDG) {
+        LogWarn("Multiple call of ProcessNG3Data");
+        return;
+    }
+
+    processingPMDG = true;
+    std::vector<std::string> pmdgVarNames;
+
+    {
+        std::unique_lock lock(mutex_);
+
+        for (auto& [name, var] : vars_) {
+            if (var.group == PMDG_VARIABLE && var.IsInUse()) {
+                pmdgVarNames.push_back(name);
+            }
+        }
+    }
+
+    std::vector<std::pair<std::string, double>> updatedVars;
+
+    {
+        std::unique_lock lock(mutex_);
+
+        for (const auto& name : pmdgVarNames) {
+
+            auto it = vars_.find(name);
+            if (it == vars_.end())
+                continue;
+
+            auto& var = it->second;
+
+            double newVal = GetPmdgVarValueAsDouble(pS, name);
+
+            if (!IsValueValid(newVal))
+                continue;
+
+            double roundedVal = std::round(newVal * 1000.0) / 1000.0;
+
+            if (var.value != roundedVal) {
+                var.value = roundedVal;
+                updatedVars.emplace_back(name, roundedVal);
+            }
+        }
+    }
+
+    // callbacks
+    for (auto& [name, val] : updatedVars) {
+
+        std::vector<CallbackEntry> callbacksCopy;
+
+        {
+            std::shared_lock lock(callbackMutex_);
+            auto it = updateCallbacks_.find(name);
+            if (it != updateCallbacks_.end())
+                callbacksCopy = it->second;
+        }
+
+        for (auto& entry : callbacksCopy) {
+            entry.cb(name, val);
+        }
+    }
+    processingPMDG = false;
 }
 
 void SimManager::ParseGroupValues(const SIMCONNECT_RECV_SIMOBJECT_DATA* data, const DEFINITIONS group) {
@@ -621,67 +867,5 @@ void SimManager::ParseGroupValues(const SIMCONNECT_RECV_SIMOBJECT_DATA* data, co
                 }
             }
         }
-    }
-
-}
-
-void SimManager::SendEvent(const std::string& name) {
-    DWORD eventId = 0;
-    bool isPmdg = false;
-    std::array<uint32_t, 2> pmdgActions;
-
-    {
-        std::lock_guard lock(mutex_);
-        auto it = events_.find(name);
-        if (it == events_.end()) {
-            LogError("SendEvent: event not found in events_: " + name);
-            return;
-        }
-
-        if (!it->second.IsInUse()) {
-            LogWarn("SendEvent: event exists but not in use: " + name);
-            return;
-        }
-
-        if (!it->second.registered) {
-            LogError("SendEvent: event not registered in sim: " + name);
-            return;
-        }
-
-        eventId = it->second.id;
-        isPmdg = (it->second.type == EVENT_PMDG);
-        pmdgActions = it->second.pmdgActions;
-    }
-
-    HRESULT hr = 0;
-    if (isPmdg) {
-        for (uint32_t action : pmdgActions) {
-            if (!action) continue;
-
-            hr = SimConnect_TransmitClientEvent(
-                hSimConnect,
-                SIMCONNECT_OBJECT_ID_USER,
-                eventId,
-                action,
-                SIMCONNECT_GROUP_PRIORITY_HIGHEST,
-                SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY
-            );
-        }
-    } else {
-        hr = SimConnect_TransmitClientEvent(
-            hSimConnect,
-            SIMCONNECT_OBJECT_ID_USER,
-            eventId,
-            0,
-            SIMCONNECT_GROUP_PRIORITY_HIGHEST,
-            SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY
-        );
-    }
-
-    if (FAILED(hr)) {
-        LogError("SendEvent: failed to transmit event: " + name +
-                 " id=" + std::to_string(eventId));
-    } else {
-        LogInfo("SendEvent: sent event " + name + " id=" + std::to_string(eventId));
     }
 }
