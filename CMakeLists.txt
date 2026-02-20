@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.19)
 
-project(msfsDock VERSION 0.8.0.0)
+project(msfsDock VERSION 0.9.0.0)
 
 # C++ standard
 set(CMAKE_CXX_STANDARD 20)
