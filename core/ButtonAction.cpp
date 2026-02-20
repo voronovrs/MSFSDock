@@ -24,13 +24,13 @@ void ButtonAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
     std::string newEventWhenFalse   = settings.value("eventWhenFalse", "");
 
     varBindings_ = {
-        {&displayVarDef_, newDisplay, LIVE_VARIABLE, &displaySubId_},
-        {&feedbackVarDef_, newFeedback, FEEDBACK_VARIABLE, &feedbackSubId_},
+        {&displayVarDef_, newDisplay, (isPmdg) ? PMDG_VARIABLE : LIVE_VARIABLE, &displaySubId_},
+        {&feedbackVarDef_, newFeedback, (isPmdg) ? PMDG_VARIABLE : FEEDBACK_VARIABLE, &feedbackSubId_},
         {&conditionalVarDef_, newConditionalVar, FEEDBACK_VARIABLE, &conditionalSubId_},
     };
 
     eventBindings_ = {
-        { &toggleEventDef_, newEvent, EVENT_GENERIC, EVT::GENERIC },
+        { &toggleEventDef_, newEvent, (isPmdg) ? EVENT_PMDG : EVENT_GENERIC, (isPmdg) ? EVT::PMDG_CLICK : EVT::GENERIC },
         { &eventWhenTrueDef_, newEventWhenTrue, EVENT_GENERIC, EVT::GENERIC },
         { &eventWhenFalseDef_, newEventWhenFalse, EVENT_GENERIC, EVT::GENERIC },
     };
@@ -79,7 +79,7 @@ void ButtonAction::KeyUp(const nlohmann::json& /*payload*/) {
 
 std::string ButtonAction::GetEventToSend() const {
     if (!isConditional) {
-        return toggleEventDef_.name;
+        return toggleEventDef_.uniqueName;
     }
 
     double varValue = conditionalVarDef_.value;
@@ -99,7 +99,7 @@ std::string ButtonAction::GetEventToSend() const {
         conditionMet = (varValue <= conditionValue_);
     }
 
-    std::string result = conditionMet ? eventWhenTrueDef_.name : eventWhenFalseDef_.name;
+    std::string result = conditionMet ? eventWhenTrueDef_.uniqueName : eventWhenFalseDef_.uniqueName;
     LogInfo("Condition evaluation: varValue=" + std::to_string(varValue) +
             " conditionValue=" + std::to_string(conditionValue_) +
             " operator=" + conditionOperator_ +
@@ -110,18 +110,7 @@ std::string ButtonAction::GetEventToSend() const {
 }
 
 void ButtonAction::SendToPI(const nlohmann::json& payload) {
-    nlohmann::json out_payload;
-    out_payload["type"] = "evt_var_list";
-    out_payload["common_events"] = nlohmann::json::array();
-    out_payload["common_variables"] = nlohmann::json::array();
-
-    for (const auto& evt : GetKnownVariables()) {
-        out_payload["common_variables"].push_back(evt);
-    }
-
-    for (const auto& evt : GetKnownEvents()) {
-        out_payload["common_events"].push_back(evt);
-    }
+    nlohmann::json out_payload = BuildCommonPayloadJson(isPmdg);
 
     SendToPropertyInspector(out_payload);
 }

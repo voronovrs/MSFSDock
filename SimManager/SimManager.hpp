@@ -98,6 +98,17 @@ private:
 
     void ParseGroupValues(const SIMCONNECT_RECV_SIMOBJECT_DATA* data, const DEFINITIONS group);
 
+    // PMDG
+    bool processingPMDG = false;
+    bool aircraftIsPMDG = false;
+    bool pmdgIdMapped = false;
+    bool pmdgRegistered = false;
+    void NotificationsSubscribe();
+    void PmdgSubscribe();
+    void PmdgUnsubscribe();
+    void UpdatePmdgRegistration();
+    void ProcessNG3Data(PMDG_NG3_Data *pS);
+
     static inline bool IsValueValid(double v) {
         if (std::isnan(v)) return false;
         if (std::isinf(v)) return false;

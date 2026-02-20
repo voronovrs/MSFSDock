@@ -56,6 +56,7 @@ protected:
     void ApplyBindings();
     void UnregisterAll();
     void CleanUp();
+    nlohmann::json BuildCommonPayloadJson(bool isPmdg=false) const;
 
 private:
     std::function<void(const std::string&, double)> varCallback_;

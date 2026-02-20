@@ -55,11 +55,11 @@ void SwitchAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
     curPos_ = 0;
 
     varBindings_ = {
-        {&feedbackVarDef_, newFeedback, FEEDBACK_VARIABLE, &feedbackSubId_},
+        {&feedbackVarDef_, newFeedback, (isPmdg) ? PMDG_VARIABLE : FEEDBACK_VARIABLE, &feedbackSubId_},
     };
 
     eventBindings_ = {
-        { &toggleEventDef_, newEvent, EVENT_GENERIC, EVT::GENERIC},
+        { &toggleEventDef_, newEvent, (isPmdg) ? EVENT_PMDG : EVENT_GENERIC, (isPmdg) ? EVT::PMDG_CLICK : EVT::GENERIC},
     };
 
     ApplyBindings();
@@ -93,7 +93,7 @@ void SwitchAction::KeyDown(const nlohmann::json& payload) {
     }
 
     if (!toggleEventDef_.name.empty()) {
-        SimManager::Instance().SendEvent(toggleEventDef_.name);
+        SimManager::Instance().SendEvent(toggleEventDef_.uniqueName);
     }
 }
 
@@ -103,18 +103,7 @@ void SwitchAction::KeyUp(const nlohmann::json& /*payload*/) {
 }
 
 void SwitchAction::SendToPI(const nlohmann::json& payload) {
-    nlohmann::json out_payload;
-    out_payload["type"] = "evt_var_list";
-    out_payload["common_events"] = nlohmann::json::array();
-    out_payload["common_variables"] = nlohmann::json::array();
-
-    for (const auto& evt : GetKnownVariables()) {
-        out_payload["common_variables"].push_back(evt);
-    }
-
-    for (const auto& evt : GetKnownEvents()) {
-        out_payload["common_events"].push_back(evt);
-    }
+    nlohmann::json out_payload = BuildCommonPayloadJson(isPmdg);
 
     SendToPropertyInspector(out_payload);
 }

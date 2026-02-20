@@ -1,5 +1,16 @@
 #include "BaseAction.hpp"
 
+inline std::string to_hex32(uint32_t value)
+{
+    std::ostringstream ss;
+    ss << std::hex
+       << std::uppercase
+       << std::setw(8)
+       << std::setfill('0')
+       << value;
+    return ss.str();
+}
+
 BaseAction::BaseAction(HSDConnectionManager* hsd_connection,
                        const std::string& action,
                        const std::string& context)
@@ -24,8 +35,10 @@ void BaseAction::FillEvent(SimEventDefinition& e, const std::string& name,
     if (type == EVENT_PMDG) {
         e.pmdgID = GetPmdgEventID(name);
         e.pmdgActions = actions;
+        e.uniqueName = name + "::" + to_hex32(actions[0]) + "::" + to_hex32(actions[1]);
     } else {
         e.pmdgActions = {0, 0};
+        e.uniqueName = name;
     }
 }
 
@@ -66,13 +79,11 @@ void BaseAction::DiffEvent(EventBinding& e, std::vector<SimEventDefinition>& toA
     if (!e.def)
         return;
 
-    const std::string& current = e.def->name;
-
-    if (!current.empty() && current != e.next) {
-        toRemove.push_back({ current });
+    if (!e.def->name.empty() && e.def->name != e.next) {
+        toRemove.push_back({ e.def->name, e.def->uniqueName });
     }
 
-    if (!e.next.empty() && current != e.next) {
+    if (!e.next.empty() && e.def->name != e.next) {
         FillEvent(*e.def, e.next, e.type, e.actions);
         toAdd.push_back(*e.def);
     }
@@ -151,4 +162,27 @@ void BaseAction::CleanUp() {
     for (auto& e : eventBindings_) {
         e.def->name.clear();
     }
+}
+
+nlohmann::json BaseAction::BuildCommonPayloadJson(bool isPmdg) const {
+    nlohmann::json out;
+    out["type"] = "evt_var_list";
+    out["common_events"] = nlohmann::json::array();
+    out["common_variables"] = nlohmann::json::array();
+
+    if (isPmdg) {
+        for (const auto& v : GetPmdgVariables())
+            out["common_variables"].push_back(v);
+
+        for (const auto& e : GetPmdgEvents())
+            out["common_events"].push_back(e);
+    } else {
+        for (const auto& v : GetKnownVariables())
+            out["common_variables"].push_back(v);
+
+        for (const auto& e : GetKnownEvents())
+            out["common_events"].push_back(e);
+    }
+
+    return out;
 }

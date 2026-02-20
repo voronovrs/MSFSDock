@@ -67,14 +67,7 @@ void GaugeAction::KeyUp(const nlohmann::json& /*payload*/) {
 }
 
 void GaugeAction::SendToPI(const nlohmann::json& payload) {
-    LogInfo("Sending PI payload");
-    nlohmann::json out_payload;
-    out_payload["type"] = "evt_var_list";
-    out_payload["common_variables"] = nlohmann::json::array();
-
-    for (const auto& evt : GetKnownVariables()) {
-        out_payload["common_variables"].push_back(evt);
-    }
+    nlohmann::json out_payload = BuildCommonPayloadJson();
 
     SendToPropertyInspector(out_payload);
 }

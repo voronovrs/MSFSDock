@@ -25,17 +25,17 @@ void DialAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
 
 
     varBindings_ = {
-        {&displayVarDef_, newDisplay, LIVE_VARIABLE, &displaySubId_},
-        {&display2VarDef_, newDisplay2, LIVE_VARIABLE, &display2SubId_},
-        {&feedbackVarDef_, newFeedback, FEEDBACK_VARIABLE, &feedbackSubId_},
+        {&displayVarDef_, newDisplay, (isPmdg) ? PMDG_VARIABLE : LIVE_VARIABLE, &displaySubId_},
+        {&display2VarDef_, newDisplay2, (isPmdg) ? PMDG_VARIABLE : LIVE_VARIABLE, &display2SubId_},
+        {&feedbackVarDef_, newFeedback, (isPmdg) ? PMDG_VARIABLE : LIVE_VARIABLE, &feedbackSubId_},
     };
 
     eventBindings_ = {
-        { &toggleEventDef_, newEvent, EVENT_GENERIC, EVT::GENERIC },
-        { &incEventDef_, newIncEvent, EVENT_GENERIC, EVT::GENERIC },
-        { &decEventDef_, newDecEvent, EVENT_GENERIC, EVT::GENERIC },
-        { &inc2EventDef_, newInc2Event, EVENT_GENERIC, EVT::GENERIC },
-        { &dec2EventDef_, newDec2Event, EVENT_GENERIC, EVT::GENERIC },
+        { &toggleEventDef_, newEvent, (isPmdg) ? EVENT_PMDG : EVENT_GENERIC, (isPmdg) ? EVT::PMDG_CLICK : EVT::GENERIC },
+        { &incEventDef_, newIncEvent, (isPmdg) ? EVENT_PMDG : EVENT_GENERIC, (isPmdg) ? EVT::PMDG_SCROLL_UP : EVT::GENERIC },
+        { &decEventDef_, newDecEvent, (isPmdg) ? EVENT_PMDG : EVENT_GENERIC, (isPmdg) ? EVT::PMDG_SCROLL_DOWN : EVT::GENERIC },
+        { &inc2EventDef_, newInc2Event, (isPmdg) ? EVENT_PMDG : EVENT_GENERIC, (isPmdg) ? EVT::PMDG_SCROLL_UP : EVT::GENERIC },
+        { &dec2EventDef_, newDec2Event, (isPmdg) ? EVENT_PMDG : EVENT_GENERIC, (isPmdg) ? EVT::PMDG_SCROLL_DOWN : EVT::GENERIC },
     };
 
     ApplyBindings();
@@ -67,7 +67,7 @@ void DialAction::DialDown(const nlohmann::json& payload) {
     }
     if (!isRadio) {
         if (!toggleEventDef_.name.empty()) {
-            SimManager::Instance().SendEvent(toggleEventDef_.name);
+            SimManager::Instance().SendEvent(toggleEventDef_.uniqueName);
         }
     }
 }
@@ -88,7 +88,7 @@ void DialAction::DialUp(const nlohmann::json& payload) {
                 clickPending_ = false;
 
                 if (!toggleEventDef_.name.empty()) {
-                    SimManager::Instance().SendEvent(toggleEventDef_.name);
+                    SimManager::Instance().SendEvent(toggleEventDef_.uniqueName);
                 }
 
                 UpdateImage();
@@ -114,11 +114,11 @@ void DialAction::RotateClockwise(const nlohmann::json& payload, const unsigned i
     LogInfo("DialAction clockwise");
     if ((isDual && active_dial == 1) || (isRadio && active_radio_part == 1)) {
         if (!inc2EventDef_.name.empty()) {
-            SimManager::Instance().SendEvent(inc2EventDef_.name);
+            SimManager::Instance().SendEvent(inc2EventDef_.uniqueName);
         }
     } else {
         if (!incEventDef_.name.empty()) {
-            SimManager::Instance().SendEvent(incEventDef_.name);
+            SimManager::Instance().SendEvent(incEventDef_.uniqueName);
         }
     }
 }
@@ -127,28 +127,17 @@ void DialAction::RotateCounterClockwise(const nlohmann::json& payload, const uns
     LogInfo("DialAction Counterclockwise");
     if ((isDual && active_dial == 1) || (isRadio && active_radio_part == 1)) {
         if (!dec2EventDef_.name.empty()) {
-            SimManager::Instance().SendEvent(dec2EventDef_.name);
+            SimManager::Instance().SendEvent(dec2EventDef_.uniqueName);
         }
     } else {
         if (!decEventDef_.name.empty()) {
-            SimManager::Instance().SendEvent(decEventDef_.name);
+            SimManager::Instance().SendEvent(decEventDef_.uniqueName);
         }
     }
 }
 
 void DialAction::SendToPI(const nlohmann::json& payload) {
-    nlohmann::json out_payload;
-    out_payload["type"] = "evt_var_list";
-    out_payload["common_events"] = nlohmann::json::array();
-    out_payload["common_variables"] = nlohmann::json::array();
-
-    for (const auto& evt : GetKnownVariables()) {
-        out_payload["common_variables"].push_back(evt);
-    }
-
-    for (const auto& evt : GetKnownEvents()) {
-        out_payload["common_events"].push_back(evt);
-    }
+    nlohmann::json out_payload = BuildCommonPayloadJson(isPmdg);
 
     SendToPropertyInspector(out_payload);
 }

@@ -16,8 +16,10 @@ public:
 
     SwitchAction(HSDConnectionManager* hsd_connection,
                 const std::string& action,
-                const std::string& context)
-        : BaseAction(hsd_connection, action, context)
+                const std::string& context,
+                bool isPmdg)
+        : BaseAction(hsd_connection, action, context),
+        isPmdg(isPmdg)
     {}
 
     virtual void SendToPI(const nlohmann::json& payload) override;
@@ -32,6 +34,8 @@ public:
 private:
     void UpdateVariablesAndEvents(const nlohmann::json& payload);
     void ClearSettings();
+
+    bool isPmdg = false;
 
     // parsed settings
     std::vector<SwitchPosition> positions_;
