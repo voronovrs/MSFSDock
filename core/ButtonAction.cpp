@@ -12,6 +12,7 @@ void ButtonAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
 
     header_ = settings.value("header", "");
     skin_ = settings.value("skin", "skin1");
+    varIsInteger_ = settings.value("varFormat", "integer") == "integer";
 
     conditionOperator_ = settings.value("conditionOperator", "==");
     conditionValue_ = getFloatFromJson(settings, "conditionValue", 0.0f);
@@ -152,7 +153,7 @@ void ButtonAction::UpdateImage() {
         headerOffset = 4;
         headerFontSize = 16;
         dataOffset = 25;
-        dataFontSize = 20;
+        dataFontSize = 18;
         header_color = COLOR_WHITE;
         data_color = COLOR_OFF_WHITE;
     } else {
@@ -161,13 +162,13 @@ void ButtonAction::UpdateImage() {
         headerOffset = 44;
         headerFontSize = 16;
         dataOffset = 25;
-        dataFontSize = 20;
+        dataFontSize = 18;
         header_color = COLOR_BRIGHT_ORANGE;
         data_color = COLOR_OFF_WHITE;
     }
 
     std::wstring img_path = (isActive) ? backgroundImageActive : backgroundImageInactive;
-    std::string val = (displayVarDef_.name.empty()) ? "" : std::to_string(static_cast<int>(displayVarDef_.value));
+    std::string val = (displayVarDef_.name.empty()) ? "" : doubleToStr(displayVarDef_.value, varIsInteger_);
     std::string base64Image = DrawButtonImage(img_path, header_, header_color, val, data_color,
         headerOffset, headerFontSize, dataOffset, dataFontSize, SimManager::Instance().IsConnected());
     SetImage(base64Image, kESDSDKTarget_HardwareAndSoftware, -1);

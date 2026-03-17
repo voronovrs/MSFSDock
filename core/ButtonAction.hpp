@@ -37,6 +37,7 @@ private:
     bool isActive = false;
     std::string header_;
     std::string skin_;
+    bool varIsInteger_ = true;
 
     bool isPmdg = false;
 

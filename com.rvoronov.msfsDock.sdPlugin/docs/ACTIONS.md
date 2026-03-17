@@ -38,6 +38,7 @@ Controller - button.
 - Skin - select button skin, either Boeing-like or Airbus-like
 - Button event - event to be triggered by button press
 - Display variable - Variable used in displaying additional data on a button if necessary
+- Display format - Format of displayed data, Integer or Fractional
 - Status variable - Variable used in displaying active status (green light in the button bottom)
 
 ## PMDG Button

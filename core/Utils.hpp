@@ -1,4 +1,8 @@
 #pragma once
+#include <string>
+#include <sstream>
+#include <iomanip>
+#include <cmath>
 
 #include "StreamDockCPPSDK/StreamDockSDK/NlohmannJSONUtils.h"
 
@@ -24,4 +28,13 @@ inline float getFloatFromJson(const nlohmann::json& settings, const std::string&
         return defaultValue;
     }
     return defaultValue;
+}
+
+inline std::string doubleToStr(double v, bool integer) {
+    if (integer)
+        return std::to_string(static_cast<int>(v));
+
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(3) << v;
+    return oss.str();
 }

@@ -3,6 +3,7 @@ window.addEventListener("DOMContentLoaded", () => {
     bindTextField("conditionOperator", "conditionOperator");
     bindTextField("conditionValue", "conditionValue");
     bindRadioGroup("skin", "skin");
+    bindRadioGroup("varFormat", "varFormat");
 
     bindSimVarField({
         inputId: "eventWhenTrue",
