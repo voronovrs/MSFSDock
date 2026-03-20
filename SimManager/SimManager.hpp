@@ -46,7 +46,7 @@ public:
     SubscriptionId SubscribeToVariable(const std::string& name, VariableUpdateCallback callback);
     void UnsubscribeFromVariable(const std::string& name, SubscriptionId id);
 
-    void SendEvent(const std::string& name);
+    void SendEvent(const std::string& name, uint8_t count=1);
 
     void EnsureConnected();
     bool IsConnected() const;

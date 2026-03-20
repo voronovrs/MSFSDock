@@ -1,4 +1,5 @@
 #pragma once
+#define NOMINMAX
 
 #include <memory>
 #include <string>
@@ -33,6 +34,7 @@ public:
 private:
     void UpdateVariablesAndEvents(const nlohmann::json& payload);
     void ClearSettings();
+    uint8_t GetEventsCount();
 
     const std::wstring b_Inactive = L"images/dial.png";
     const std::wstring b_Active = L"images/dial_active.png";
@@ -57,6 +59,7 @@ private:
     int active_radio_part = 0;
 
     std::chrono::steady_clock::time_point lastClickTs_;
+    std::chrono::steady_clock::time_point lastRotateTs_;
     bool clickPending_ = false;
 
     SimVarDefinition displayVarDef_;
