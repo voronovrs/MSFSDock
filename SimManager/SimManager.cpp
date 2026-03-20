@@ -674,7 +674,7 @@ void SimManager::UnsubscribeFromVariable(const std::string& name, SubscriptionId
 
 /* ------------ Process event sending ------------ */
 
-void SimManager::SendEvent(const std::string& name) {
+void SimManager::SendEvent(const std::string& name, uint8_t count) {
     DWORD eventId = 0;
     bool isPmdg = false;
     std::array<uint32_t, 2> pmdgActions;
@@ -703,35 +703,37 @@ void SimManager::SendEvent(const std::string& name) {
     }
 
     HRESULT hr = 0;
-    if (isPmdg) {
-        for (uint32_t action : pmdgActions) {
-            if (!action) continue;
+    for (uint8_t i = 0; i < count; i++) {
+        if (isPmdg) {
+            for (uint32_t action : pmdgActions) {
+                if (!action) continue;
 
+                hr = SimConnect_TransmitClientEvent(
+                    hSimConnect,
+                    SIMCONNECT_OBJECT_ID_USER,
+                    eventId,
+                    action,
+                    SIMCONNECT_GROUP_PRIORITY_HIGHEST,
+                    SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY
+                );
+            }
+        } else {
             hr = SimConnect_TransmitClientEvent(
                 hSimConnect,
                 SIMCONNECT_OBJECT_ID_USER,
                 eventId,
-                action,
+                0,
                 SIMCONNECT_GROUP_PRIORITY_HIGHEST,
                 SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY
             );
         }
-    } else {
-        hr = SimConnect_TransmitClientEvent(
-            hSimConnect,
-            SIMCONNECT_OBJECT_ID_USER,
-            eventId,
-            0,
-            SIMCONNECT_GROUP_PRIORITY_HIGHEST,
-            SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY
-        );
-    }
 
-    if (FAILED(hr)) {
-        LogError("SendEvent: failed to transmit event: " + name +
-                 " id=" + std::to_string(eventId));
-    } else {
-        LogInfo("SendEvent: sent event " + name + " id=" + std::to_string(eventId));
+        if (FAILED(hr)) {
+            LogError("SendEvent: failed to transmit event: " + name +
+                    " id=" + std::to_string(eventId));
+        } else {
+            LogInfo("SendEvent: sent event " + name + " id=" + std::to_string(eventId));
+        }
     }
 }
 

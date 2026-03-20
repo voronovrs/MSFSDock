@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "DialAction.hpp"
 #include "plugin/Logger.hpp"
 #include "ui/GDIPlusManager.hpp"
@@ -110,28 +111,44 @@ void DialAction::DialUp(const nlohmann::json& payload) {
     }
 }
 
-void DialAction::RotateClockwise(const nlohmann::json& payload, const unsigned int ticks, const bool pressed){
+uint8_t DialAction::GetEventsCount() {
+    constexpr double accelThreshold = 120.0;
+    constexpr double minDelta = 15.0;
+    constexpr double maxMultiplier = 10.0;
+
+    auto now = std::chrono::steady_clock::now();
+    double delta = std::chrono::duration<double, std::milli>(now - lastRotateTs_).count();
+    lastRotateTs_ = now;
+
+    double t = std::clamp((accelThreshold - delta) / (accelThreshold - minDelta), 0.0, 1.0);
+
+    double multiplier = 1.0 + (maxMultiplier - 1.0) * t * t * t;
+
+    return static_cast<uint8_t>(std::round(multiplier));
+}
+
+void DialAction::RotateClockwise(const nlohmann::json& payload, const unsigned int ticks, const bool pressed) {
     LogInfo("DialAction clockwise");
     if ((isDual && active_dial == 1) || (isRadio && active_radio_part == 1)) {
         if (!inc2EventDef_.name.empty()) {
-            SimManager::Instance().SendEvent(inc2EventDef_.uniqueName);
+            SimManager::Instance().SendEvent(inc2EventDef_.uniqueName, GetEventsCount());
         }
     } else {
         if (!incEventDef_.name.empty()) {
-            SimManager::Instance().SendEvent(incEventDef_.uniqueName);
+            SimManager::Instance().SendEvent(incEventDef_.uniqueName, GetEventsCount());
         }
     }
 }
 
-void DialAction::RotateCounterClockwise(const nlohmann::json& payload, const unsigned int ticks, const bool pressed){
+void DialAction::RotateCounterClockwise(const nlohmann::json& payload, const unsigned int ticks, const bool pressed) {
     LogInfo("DialAction Counterclockwise");
     if ((isDual && active_dial == 1) || (isRadio && active_radio_part == 1)) {
         if (!dec2EventDef_.name.empty()) {
-            SimManager::Instance().SendEvent(dec2EventDef_.uniqueName);
+            SimManager::Instance().SendEvent(dec2EventDef_.uniqueName, GetEventsCount());
         }
     } else {
         if (!decEventDef_.name.empty()) {
-            SimManager::Instance().SendEvent(decEventDef_.uniqueName);
+            SimManager::Instance().SendEvent(decEventDef_.uniqueName, GetEventsCount());
         }
     }
 }
