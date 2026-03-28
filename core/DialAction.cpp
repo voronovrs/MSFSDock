@@ -2,6 +2,7 @@
 #include "DialAction.hpp"
 #include "plugin/Logger.hpp"
 #include "ui/GDIPlusManager.hpp"
+#include "Utils.hpp"
 
 constexpr int DOUBLE_CLICK_MS = 400;
 namespace EVT = BaseActionEvents;
@@ -12,6 +13,7 @@ void DialAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
 
     header_ = settings.value("header", "");
     skin_ = settings.value("skin", "skin1");
+    accelMultiplier_ = getIntFromJson(settings, "accelMultiplier", 3);
 
     std::string newDisplay = settings.value("displayVar", "");
     std::string newIncEvent = settings.value("incEvent", "");
@@ -112,17 +114,26 @@ void DialAction::DialUp(const nlohmann::json& payload) {
 }
 
 uint8_t DialAction::GetEventsCount() {
+    if (!accelMultiplier_)
+        return 1;
+
     constexpr double accelThreshold = 120.0;
     constexpr double minDelta = 15.0;
-    constexpr double maxMultiplier = 10.0;
+    constexpr double invRange = 1.0 / (accelThreshold - minDelta);
 
     auto now = std::chrono::steady_clock::now();
+
+    if (lastRotateTs_.time_since_epoch().count() == 0) {
+        lastRotateTs_ = now;
+        return 1;
+    }
+
     double delta = std::chrono::duration<double, std::milli>(now - lastRotateTs_).count();
     lastRotateTs_ = now;
 
-    double t = std::clamp((accelThreshold - delta) / (accelThreshold - minDelta), 0.0, 1.0);
+    double t = std::clamp((accelThreshold - delta) * invRange, 0.0, 1.0);
 
-    double multiplier = 1.0 + (maxMultiplier - 1.0) * t * t * t;
+    double multiplier = 1.0 + ((double)accelMultiplier_ - 1.0) * t * t * t;
 
     return static_cast<uint8_t>(std::round(multiplier));
 }

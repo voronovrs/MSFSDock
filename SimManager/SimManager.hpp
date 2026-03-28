@@ -4,6 +4,7 @@
 #include <SimConnect.h>
 #include "SimData/SimVar.hpp"
 #include <atomic>
+#include <chrono>
 #include <condition_variable>
 #include <functional>
 #include <mutex>
@@ -23,6 +24,12 @@ enum class SimState {
     Disconnected,
     Connecting,
     Connected
+};
+
+struct EventRequest {
+    DWORD eventId;
+    bool isPmdg;
+    std::array<uint32_t, 2> eventActions;
 };
 
 class SimManager {
@@ -82,6 +89,13 @@ private:
     std::vector<std::string> liveVarOrder_;
     std::vector<std::string> feedbackVarOrder_;
 
+    // Event sender queue
+    std::queue<EventRequest> eventQueue_;
+    std::mutex queueMutex_;
+    std::condition_variable queueCv_;
+    std::thread senderThread_;
+    std::atomic<bool> senderRunning_ = false;
+
     void Run();
     static void CALLBACK DispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, void* pContext);
     void QueueTask(std::function<void()> task);
@@ -89,6 +103,10 @@ private:
     void HandleSimDisconnect(); // cleanup after disconnect
     void OnSimConnected();
     void NotifyAndClearAllVariables();
+    void StartEventSender();
+    void StopEventSender();
+    void EventSenderLoop();
+    void SendToSim(const EventRequest& req);
 
     void RegisterVariablesToSim();
     void DeregisterVariablesFromSim();

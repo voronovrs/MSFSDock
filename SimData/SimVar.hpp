@@ -67,7 +67,7 @@ struct SimEventDefinition {
 
     EVENT_TYPES type = EVENT_GENERIC;
     uint32_t pmdgID = 0;
-    std::array<uint32_t, 2> pmdgActions;
+    std::array<uint32_t, 2> eventActions;
 
     bool IsValid() const {
         return !name.empty();
