@@ -48,6 +48,7 @@ private:
     // parsed settings
     std::string header_;
     std::string skin_;
+    int accelMultiplier_;
 
     bool isActive = false;
     bool isDual = false;

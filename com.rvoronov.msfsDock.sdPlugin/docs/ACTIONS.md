@@ -122,6 +122,7 @@ Controller - Knob/Display.
 - Dec event - event to be triggered by rotating knob counterclockwise
 - Knob event - event to be triggered by pushing a knob or screen.
 - Status variable - Variable used in displaying active status (bottom field of a dial)
+- Acceleration - maximum encoder acceleration, depending on variable, one or another value could be more suitable (default 3)
 
 ## PMDG Dial
 Same as Generic dial, autocomplete will suggest PMDG variables and events.
@@ -140,6 +141,7 @@ Controller - Knob/Display.
 - Dial 2 variable - Variable to display on dial 2
 - Inc 2 event - event to be triggered by rotating knob clockwise when dial 2 is active
 - Dec 2 event - event to be triggered by rotating knob counterclockwise when dial 2 is active
+- Acceleration - maximum encoder acceleration, depending on variable, one or another value could be more suitable (default 3)
 
 ## PMDG Dual Dial
 Same as Generic dual dial, autocomplete will suggest PMDG variables and events.
@@ -159,6 +161,7 @@ Controller - Knob/Display.
 - Inc frac event - event to increase standby frequency fractional part
 - Dec frac event - event to dencrease standby frequency fractional part
 - Swap event - event to swap standby and active frequency (called by screen doubletap or knob doublepress).
+- Acceleration - maximum encoder acceleration, depending on variable, one or another value could be more suitable (default 3)
 
 #### Changing frequency
 Since we have only 1 knob then only whole part either fractional part could be changed at once.

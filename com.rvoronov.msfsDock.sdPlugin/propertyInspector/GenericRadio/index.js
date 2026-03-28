@@ -1,6 +1,7 @@
 window.addEventListener("DOMContentLoaded", () => {
     bindTextField("header", "header");
     bindRadioGroup("skin", "skin");
+    bindRadioGroup("accelMultiplier", "accelMultiplier");
 
     bindSimVarField({
         inputId: "displayVar",

@@ -34,10 +34,10 @@ void BaseAction::FillEvent(SimEventDefinition& e, const std::string& name,
 
     if (type == EVENT_PMDG) {
         e.pmdgID = GetPmdgEventID(name);
-        e.pmdgActions = actions;
+        e.eventActions = actions;
         e.uniqueName = name + "::" + to_hex32(actions[0]) + "::" + to_hex32(actions[1]);
     } else {
-        e.pmdgActions = {0, 0};
+        e.eventActions = {0, 0};
         e.uniqueName = name;
     }
 }
@@ -69,7 +69,7 @@ void BaseAction::SubscribeVar(VarBinding& v, const std::function<void(const std:
     if (!v.subId)
         return;
 
-    if (!v.next.empty()) {
+    if (!v.next.empty() && *v.subId == 0) {
         *v.subId = SimManager::Instance().SubscribeToVariable(v.next, callback);
     }
 }

@@ -261,6 +261,7 @@ bool SimManager::IsConnected() const {
 void SimManager::OnSimConnected() {
     simReady = true;
     NotificationsSubscribe();
+    StartEventSender();
     UIManager::Instance().UpdateAll();
 }
 
@@ -279,6 +280,7 @@ void SimManager::HandleSimDisconnect() {
     simState = SimState::Disconnected;
 
     NotifyAndClearAllVariables();
+    StopEventSender();
     UIManager::Instance().UpdateAll();
 
     LogMessage("SimManager: SimConnect disconnected.");
@@ -640,7 +642,7 @@ SubscriptionId SimManager::SubscribeToVariable(const std::string& name, Variable
         std::unique_lock lock(callbackMutex_);
         updateCallbacks_[name].push_back({id, std::move(callback)});
     }
-    LogInfo("Subscribed callback for " + name + " with ID " + std::to_string(id));
+    LogInfo("SimManager: Subscribed callback for " + name + " with ID " + std::to_string(id));
 
     // Check if value already exist and calling callback.
     double currentValue = 0.0;
@@ -669,71 +671,127 @@ void SimManager::UnsubscribeFromVariable(const std::string& name, SubscriptionId
     vec.erase(std::remove_if(vec.begin(), vec.end(), [&](const CallbackEntry &e){ return e.id == id; }), vec.end());
     if (vec.empty())
         updateCallbacks_.erase(it);
-    LogInfo("Unsubscribe CB for " + name + " with ID " + std::to_string(id));
+    LogInfo("SimManager: Unsubscribe CB for " + name + " with ID " + std::to_string(id));
 }
 
 /* ------------ Process event sending ------------ */
 
+void SimManager::StartEventSender() {
+    senderRunning_ = true;
+
+    senderThread_ = std::thread(&SimManager::EventSenderLoop, this);
+}
+
+void SimManager::StopEventSender() {
+    senderRunning_ = false;
+
+    queueCv_.notify_all();
+
+    if (senderThread_.joinable())
+        senderThread_.join();
+}
+
 void SimManager::SendEvent(const std::string& name, uint8_t count) {
-    DWORD eventId = 0;
-    bool isPmdg = false;
-    std::array<uint32_t, 2> pmdgActions;
+    EventRequest req;
 
     {
         std::lock_guard lock(mutex_);
+
         auto it = events_.find(name);
         if (it == events_.end()) {
-            LogError("SendEvent: event not found in events_: " + name);
+            LogError("SendEvent: event not found: " + name);
             return;
         }
 
-        if (!it->second.IsInUse()) {
-            LogWarn("SendEvent: event exists but not in use: " + name);
+        if (!it->second.IsInUse())
             return;
-        }
 
-        if (!it->second.registered) {
-            LogError("SendEvent: event not registered in sim: " + name);
+        if (!it->second.registered)
             return;
-        }
 
-        eventId = it->second.id;
-        isPmdg = (it->second.type == EVENT_PMDG);
-        pmdgActions = it->second.pmdgActions;
+        req.eventId = it->second.id;
+        req.isPmdg = (it->second.type == EVENT_PMDG);
+        req.eventActions = it->second.eventActions;
     }
 
-    HRESULT hr = 0;
-    for (uint8_t i = 0; i < count; i++) {
-        if (isPmdg) {
-            for (uint32_t action : pmdgActions) {
-                if (!action) continue;
+    {
+        std::lock_guard lock(queueMutex_);
 
-                hr = SimConnect_TransmitClientEvent(
-                    hSimConnect,
-                    SIMCONNECT_OBJECT_ID_USER,
-                    eventId,
-                    action,
-                    SIMCONNECT_GROUP_PRIORITY_HIGHEST,
-                    SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY
-                );
+        for (uint8_t i = 0; i < count; i++)
+            eventQueue_.push(req);
+    }
+
+    queueCv_.notify_one();
+}
+
+void SimManager::EventSenderLoop() {
+    constexpr size_t MAX_QUEUE = 20;
+    constexpr auto SEND_DELAY = std::chrono::microseconds(500);
+
+    while (senderRunning_) {
+
+        EventRequest req;
+        bool hasEvent = false;
+
+        {
+            std::lock_guard lock(queueMutex_);
+
+            // safety cap (discard oldest)
+            while (eventQueue_.size() > MAX_QUEUE) {
+                eventQueue_.pop();
             }
+
+            if (!eventQueue_.empty()) {
+                req = eventQueue_.front();
+                eventQueue_.pop();
+                hasEvent = true;
+            }
+        }
+
+        if (hasEvent) {
+            SendToSim(req);
+            LogInfo("SimManager: SendEvent id=" + std::to_string(req.eventId));
+            std::this_thread::sleep_for(SEND_DELAY);
         } else {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
+    }
+}
+
+void SimManager::SendToSim(const EventRequest& req) {
+    HRESULT hr = 0;
+
+    if (req.isPmdg) {
+
+        for (uint32_t action : req.eventActions) {
+
+            if (!action)
+                continue;
+
             hr = SimConnect_TransmitClientEvent(
                 hSimConnect,
                 SIMCONNECT_OBJECT_ID_USER,
-                eventId,
-                0,
+                req.eventId,
+                action,
                 SIMCONNECT_GROUP_PRIORITY_HIGHEST,
                 SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY
             );
         }
 
-        if (FAILED(hr)) {
-            LogError("SendEvent: failed to transmit event: " + name +
-                    " id=" + std::to_string(eventId));
-        } else {
-            LogInfo("SendEvent: sent event " + name + " id=" + std::to_string(eventId));
-        }
+    } else {
+
+        hr = SimConnect_TransmitClientEvent(
+            hSimConnect,
+            SIMCONNECT_OBJECT_ID_USER,
+            req.eventId,
+            req.eventActions[0],
+            SIMCONNECT_GROUP_PRIORITY_HIGHEST,
+            SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY
+        );
+    }
+
+    if (FAILED(hr)) {
+        LogError("SimManager: SendEvent failed id=" + std::to_string(req.eventId));
     }
 }
 
