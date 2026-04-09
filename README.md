@@ -53,6 +53,7 @@ Supported actions:
 - Generic Dual Dial
 - PMDG Dual Dial
 - Generic Radio
+- Generic Data
 
 For more information see [ACTIONS.md](/com.rvoronov.msfsDock.sdPlugin/docs/ACTIONS.md)
 

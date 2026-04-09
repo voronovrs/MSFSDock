@@ -212,16 +212,16 @@ void DialAction::UpdateImage() {
     }
 
     if (isDual) {
-        headerOffset = 36;
-        headerFontSize = 26;
+        headerOffset = 42;
+        headerFontSize = 28;
         dataOffset = 0;
         dataFontSize = 46;
         data2Offset = 66;
         data1_color = (active_dial == 0) ? active_data_color : inactive_data_color;
         data2_color = (active_dial == 1) ? active_data_color : inactive_data_color;
     } else {
-        headerOffset = -6;
-        headerFontSize = 28;
+        headerOffset = 0;
+        headerFontSize = 32;
         dataOffset = 32;
         dataFontSize = 46;
         data2Offset = 170;

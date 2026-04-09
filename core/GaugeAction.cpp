@@ -147,7 +147,7 @@ void GaugeAction::UpdateImage() {
                 break;
         }
 
-        int headerOffset = 44, headerFontSize = 14, dataOffset = 22, dataFontSize = 20;
+        int headerOffset = 44, headerFontSize = 16, dataOffset = 22, dataFontSize = 20;
         std::string base64Image = DrawGaugeImage(header_, header_color, value, data, data_color,
             headerOffset, headerFontSize, dataOffset, dataFontSize, minVal_, maxVal_, fill_,
             scaleColor_, indicatorColor_, bgColor_, SimManager::Instance().IsConnected());

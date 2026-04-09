@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>MSFS Dock Generic Data PI</title>
+
+    <!-- SDPI JS -->
+    <script src="../CommonPi/sdpi-components.js"></script>
+    <!-- Common JS -->
+    <script src="../CommonPi/autocomplete.js"></script>
+    <script src="../CommonPi/piCore.js"></script>
+    <!-- Action-specific -->
+    <script src="index.js"></script>
+
+    <link rel="stylesheet" href="../CommonPi/styles.css" />
+</head>
+
+<body>
+    <!-- Data type -->
+    <div class="sdpi-item position-row">
+        <div class="sdpi-item-label">Type</div>
+        <select class="sdpi-item-value select" id="type">
+            <option value="info">Info</option>
+            <option value="attitude">Attitude</option>
+            <option value="heading">Heading</option>
+            <option value="speed">Speed</option>
+            <option value="alt">Altitude</option>
+        </select>
+    </div>
+
+    <!-- Info variables -->
+    <div id="infoVars" style="display:none;">
+
+        <div class="sdpi-item position-row">
+            <div class="sdpi-item-label">Header 1</div>
+            <input id="header" class="sdpi-item-value" placeholder="Header value">
+        </div>
+
+        <div class="sdpi-item position-row" title="Sim variable to be displayed on a button">
+            <div class="sdpi-item-label">Variable 1</div>
+            <div class="sdpi-autocomplete">
+                <input id="infoVar" class="sdpi-item-value" placeholder="DISPLAY VARIABLE" pattern="[A-Za-z0-9:_. ]*">
+            </div>
+            <sdpi-button id="applyInfoVar" variant="primary">✓</sdpi-button>
+        </div>
+
+        <div class="sdpi-item position-row">
+            <div class="sdpi-item-label">Format</div>
+            <div class="sdpi-radio-group">
+                <input type="radio" id="integer" name="varFormat" value="integer" checked>
+                <label for="integer" class="sdpi-item-value">Integer</label>
+
+                <input type="radio" id="fractional" name="varFormat" value="fractional">
+                <label for="fractional" class="sdpi-item-value">Fractional</label>
+            </div>
+        </div>
+
+        <div class="sdpi-item position-row">
+            <div class="sdpi-item-label">Header 2</div>
+            <input id="header2" class="sdpi-item-value" placeholder="Header value">
+        </div>
+
+        <div class="sdpi-item position-row" title="Sim variable to be displayed on a button">
+            <div class="sdpi-item-label">Variable 2</div>
+            <div class="sdpi-autocomplete">
+                <input id="infoVar2" class="sdpi-item-value" placeholder="DISPLAY VARIABLE" pattern="[A-Za-z0-9:_. ]*">
+            </div>
+            <sdpi-button id="applyInfoVar2" variant="primary">✓</sdpi-button>
+        </div>
+
+        <div class="sdpi-item position-row">
+            <div class="sdpi-item-label">Format</div>
+            <div class="sdpi-radio-group">
+                <input type="radio" id="integer2" name="varFormat2" value="integer" checked>
+                <label for="integer2" class="sdpi-item-value">Integer</label>
+
+                <input type="radio" id="fractional2" name="varFormat2" value="fractional">
+                <label for="fractional2" class="sdpi-item-value">Fractional</label>
+            </div>
+        </div>
+
+        <!-- Colors -->
+        <div type="color" class="sdpi-item  position-row">
+            <div class="sdpi-item-label">Background color</div>
+            <input type="color" class="sdpi-item-value" id="bgColor" value="#141414">
+        </div>
+
+        <div type="color" class="sdpi-item  position-row">
+            <div class="sdpi-item-label">Outline color</div>
+            <input type="color" class="sdpi-item-value" id="outlineColor" value="#a05f00">
+        </div>
+
+        <div type="color" class="sdpi-item  position-row">
+            <div class="sdpi-item-label">Header color</div>
+            <input type="color" class="sdpi-item-value" id="headerColor" value="#ebebeb">
+        </div>
+
+        <div type="color" class="sdpi-item  position-row">
+            <div class="sdpi-item-label">Data color</div>
+            <input type="color" class="sdpi-item-value" id="dataColor" value="#ebebeb">
+        </div>
+
+    </div>
+
+
+</body>
+</html>

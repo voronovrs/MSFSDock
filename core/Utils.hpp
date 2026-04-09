@@ -38,3 +38,9 @@ inline std::string doubleToStr(double v, bool integer) {
     oss << std::fixed << std::setprecision(3) << v;
     return oss.str();
 }
+
+inline double RoundToStep(double val, double step) {
+    double roundedVal = std::round(val / step) * step;
+
+    return roundedVal;
+}

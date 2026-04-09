@@ -13,6 +13,15 @@
 
 std::mutex gdiDrawMutex;
 
+constexpr int buttonW = 72;
+constexpr int buttonH = 72;
+constexpr int displayW = 176;
+constexpr int displayH = 112;
+
+std::unique_ptr<Gdiplus::Bitmap> g_horizonBmp;
+const float horizonPixelsPerDeg = 2.2f;
+// const float horizonPixelsPerDeg = 4.0f;
+
 static ULONG_PTR g_gdiplusToken = 0;
 
 static float dialCharWidth      = 0;
@@ -30,19 +39,22 @@ static float radioStartX        = 0;
 using namespace Gdiplus;
 const Color COLOR_WHITE             (255, 255, 255, 255);
 const Color COLOR_OFF_WHITE         (255, 235, 235, 235);
-const Color COLOR_ORANGE            (255, 160, 95, 0);
-const Color COLOR_BRIGHT_ORANGE     (255, 255, 165, 0);
+const Color COLOR_ORANGE            (255, 160,  95,   0);
+const Color COLOR_BRIGHT_ORANGE     (255, 255, 165,   0);
 const Color COLOR_GRAY              (255, 150, 150, 150);
-const Color COLOR_YELLOW            (255, 255, 255, 0);
-const Color COLOR_RED               (255, 139, 0, 0);
-const Color COLOR_BRIGHT_RED        (255, 255, 45, 45);
+const Color COLOR_DARK_GRAY         (255,  60,  60,  60);
+const Color COLOR_YELLOW            (255, 255, 255,   0);
+const Color COLOR_RED               (255, 139,   0,   0);
+const Color COLOR_BRIGHT_RED        (255, 255,  45,  45);
 const Color COLOR_GREEN             (255,   0, 180,   0);
 const Color COLOR_DARK_GREEN        (255,   0, 120,   0);
 const Color COLOR_CYAN              (255,   0, 200, 200);
 const Color COLOR_BLUE              (255,   0, 120, 220);
 const Color COLOR_NEAR_BLACK        (255,  20,  20,  20);
 const Color COLOR_DARK_BLUE         (255,  20,  40,  80);
+const Color COLOR_BROWN             (255,  121, 92,  50);
 
+void GenerateHorizonBitmap();
 
 void InitGDIPlus() {
     if (g_gdiplusToken != 0)
@@ -50,6 +62,7 @@ void InitGDIPlus() {
 
     GdiplusStartupInput gdiplusStartupInput;
     GdiplusStartup(&g_gdiplusToken, &gdiplusStartupInput, nullptr);
+    GenerateHorizonBitmap();
 }
 
 void ShutdownGDIPlus() {
@@ -148,18 +161,18 @@ void DrawNotConnectedOutline(Gdiplus::Graphics& graphics, int width, int height)
 
 // Draw header text
 void DrawHeader(Gdiplus::Graphics& graphics, int frameWidth, const std::string& header, const Gdiplus::Color& headerColor,
-    int headerFontSize, int headerOffset, int startX = 0, StringAlignment strAlign = StringAlignmentCenter) {
+    int headerFontSize, int offsetY, int offsetX = 0, StringAlignment strAlign = StringAlignmentCenter) {
     using namespace Gdiplus;
 
     if (!header.empty()) {
-        FontFamily fontFamily(L"Segoe UI Semibold");
-        Font font(&fontFamily, TO_REAL(headerFontSize), FontStyleRegular, UnitPixel);
+        FontFamily fontFamily(L"Consolas");
+        Font font(&fontFamily, TO_REAL(headerFontSize), FontStyleBold, UnitPixel);
         SolidBrush brush(headerColor);
 
-        RectF rect(startX, TO_REAL(headerOffset), TO_REAL(frameWidth), TO_REAL(headerFontSize + 4));
+        RectF rect(offsetX, TO_REAL(offsetY), TO_REAL(frameWidth - offsetX - 1), TO_REAL(headerFontSize));
         StringFormat format;
         format.SetAlignment(strAlign);
-        format.SetLineAlignment(StringAlignmentNear);
+        format.SetLineAlignment(StringAlignmentCenter);
 
         std::wstring wheader = StringToWString(header);
         graphics.DrawString(wheader.c_str(), -1, &font, rect, &format, &brush);
@@ -446,7 +459,7 @@ std::string DrawGaugeImage(const std::string& header, Color headerColor,
     float baseAngle = 135.0f, arcLength = 180.0f, arcWidth = 12.0f, zeroArcWidth = 2.0f, pointerWidth = 16.0f,
         pointerLength = 9.0f;
 
-    Gdiplus::Bitmap* bmp = new Gdiplus::Bitmap(72, 72, PixelFormat32bppARGB);
+    Gdiplus::Bitmap* bmp = new Gdiplus::Bitmap(buttonW, buttonH, PixelFormat32bppARGB);
 
     if (!bmp || bmp->GetLastStatus() != Ok) {
         LogError("Bitmap create error!");
@@ -542,12 +555,9 @@ std::string DrawSwitchImage(const std::vector<std::string>& labels, int currentP
     const float bgYoffset       = 2.0f;
     const float bgWidth         = 12.0f;
 
-    const int bmpW = 72;
-    const int bmpH = 72;
-
     int numPositions = static_cast<int>(labels.size());
 
-    auto* bmp = new Gdiplus::Bitmap(bmpW, bmpH, PixelFormat32bppARGB);
+    auto* bmp = new Gdiplus::Bitmap(buttonW, buttonH, PixelFormat32bppARGB);
     if (!bmp || bmp->GetLastStatus() != Ok) {
         LogError("Bitmap create error!");
         ShutdownGDIPlus();
@@ -564,7 +574,7 @@ std::string DrawSwitchImage(const std::vector<std::string>& labels, int currentP
         bgXoffset,
         bgYoffset,
         bgWidth,
-        bmpH - bgYoffset * 2 - 16
+        buttonH - bgYoffset * 2 - 16
     );
 
     SolidBrush bgBrush(COLOR_NEAR_BLACK);
@@ -622,7 +632,7 @@ std::string DrawSwitchImage(const std::vector<std::string>& labels, int currentP
     format.SetLineAlignment(StringAlignmentCenter);
 
     for (int pos = 0; pos < numPositions; pos++) {
-        RectF dataRect(dataRectX, dataRectY, bmpW - dataRectX, slotHeight);
+        RectF dataRect(dataRectX, dataRectY, buttonW - dataRectX, slotHeight);
 
         const std::string& text = labels[pos];
 
@@ -646,8 +656,8 @@ std::string DrawSwitchImage(const std::vector<std::string>& labels, int currentP
 
     if (!header.empty()) {
         Pen bottomPen(COLOR_OFF_WHITE, 1);
-        graphics.DrawLine(&bottomPen, Point(0, BG.Height + bgYoffset * 2), Point(bmpW, BG.Height + bgYoffset * 2));
-        DrawHeader(graphics, bmp->GetWidth(), header, COLOR_OFF_WHITE, 15.0f, BG.Height + bgYoffset);
+        graphics.DrawLine(&bottomPen, Point(0, BG.Height + bgYoffset * 2), Point(buttonW, BG.Height + bgYoffset * 2));
+        DrawHeader(graphics, bmp->GetWidth(), header, COLOR_OFF_WHITE, 15.0f, BG.Height + bgYoffset + 2);
     }
 
     std::string base64Image = BitmapToBase64(bmp);
@@ -665,11 +675,10 @@ std::string DrawVerticalGaugeImage(const std::string& header, Color headerColor,
                            const std::vector<ScaleMarker>& scaleMarkers) {
     std::lock_guard lock(gdiDrawMutex);
 
-    const int bmpW = 72, bmpH = 72;
     // Scale bar on the RIGHT side, value text on the LEFT -4
     const float barX = 53.0f, barY = 4.0f, barW = 6.0f, barH = 52.0f;
 
-    auto* bmp = new Gdiplus::Bitmap(bmpW, bmpH, PixelFormat32bppARGB);
+    auto* bmp = new Gdiplus::Bitmap(buttonW, buttonH, PixelFormat32bppARGB);
     if (!bmp || bmp->GetLastStatus() != Ok) {
         LogError("Bitmap create error!");
         return {};
@@ -727,7 +736,7 @@ std::string DrawVerticalGaugeImage(const std::string& header, Color headerColor,
     }
 
     // Header text (bottom, centered full width)
-    DrawHeader(graphics, bmpW, header, headerColor, headerFontSize, headerOffset);
+    DrawHeader(graphics, buttonW, header, headerColor, headerFontSize, headerOffset);
 
     // Data value text (LEFT of bar, vertically centered on the bar)
     if (!data.empty()) {
@@ -748,8 +757,419 @@ std::string DrawVerticalGaugeImage(const std::string& header, Color headerColor,
     }
 
     if (!simConnected) {
-        DrawNotConnectedOutline(graphics, bmpW, bmpH);
+        DrawNotConnectedOutline(graphics, buttonW, buttonH);
     }
+
+    std::string base64Image = BitmapToBase64(bmp);
+    delete bmp;
+    return base64Image;
+}
+
+void GenerateHorizonBitmap() {
+    const int horizonW = 220;
+    const int horizonH = 320;
+
+    g_horizonBmp = std::make_unique<Bitmap>(horizonW, horizonH, PixelFormat32bppARGB);
+
+    Graphics g(g_horizonBmp.get());
+    g.SetSmoothingMode(SmoothingModeAntiAlias);
+
+    const int centerX = horizonW / 2;
+    const int centerY = horizonH / 2;
+
+    SolidBrush sky(COLOR_BLUE);
+    SolidBrush ground(COLOR_BROWN);
+
+    g.FillRectangle(&sky, 0, 0, horizonW, centerY);
+    g.FillRectangle(&ground, 0, centerY, horizonW, horizonH - centerY);
+
+    Pen horizonPen(COLOR_WHITE, 3);
+    Pen pitchMajor(COLOR_WHITE, 2);
+    Pen pitchMinor(COLOR_WHITE, 1);
+
+    // Horizon line
+    g.DrawLine(&horizonPen, 0, centerY, horizonW, centerY);
+
+    FontFamily fontFamily(L"Segoe UI");
+    Font font(&fontFamily, 10, FontStyleBold, UnitPixel);
+    SolidBrush textBrush(COLOR_WHITE);
+
+    for (int deg = -90; deg <= 90; deg += 5)
+    {
+        if (deg == 0)
+            continue;
+
+        float y = centerY - deg * horizonPixelsPerDeg;
+
+        if (y < 0 || y > horizonH)
+            continue;
+
+        bool major = (deg % 10 == 0);
+
+        int lineW = major ? horizonW / 6 : horizonW / 12;
+
+        Pen* pen = major ? &pitchMajor : &pitchMinor;
+
+        g.DrawLine(
+            pen,
+            (float)(horizonW / 2 - lineW / 2),
+            y,
+            (float)(horizonW / 2 + lineW / 2),
+            y
+        );
+
+        StringFormat format;
+        format.SetAlignment(StringAlignmentCenter);
+        format.SetLineAlignment(StringAlignmentCenter);
+
+        if (major && deg != 0) {
+            std::wstring label = std::to_wstring(abs(deg));
+
+            float centerXf = horizonW * 0.5f;
+            float halfLine = lineW * 0.5f;
+            float textGap = 1.0f;
+
+            float textW = 16;
+            float textH = 16;
+
+            RectF leftRect(
+                centerXf - halfLine - textGap - textW,
+                y - textH * 0.5f,
+                textW,
+                textH
+            );
+
+            RectF rightRect(
+                centerXf + halfLine + textGap,
+                y - textH * 0.5f,
+                textW,
+                textH
+            );
+
+            g.DrawString(label.c_str(), -1, &font, leftRect, &format, &textBrush);
+            g.DrawString(label.c_str(), -1, &font, rightRect, &format, &textBrush);
+        }
+    }
+    LogInfo("Draw horizon done");
+}
+
+void DrawADI(Graphics& g, float pitch, float bank, DockScreenType scrType) {
+    if (!g_horizonBmp)
+        return;
+
+    const int bmpW = (scrType == SCREEN_TYPE_BUTTON) ? buttonW : displayW;
+    const int bmpH = (scrType == SCREEN_TYPE_BUTTON) ? buttonH : displayH;
+
+    const float cx = bmpW / 2.0f;
+    const float cy = bmpH / 2.0f;
+
+    const float halfW = g_horizonBmp->GetWidth() * 0.5f;
+    const float halfH = g_horizonBmp->GetHeight() * 0.5f;
+
+    g.TranslateTransform(cx, cy);
+    g.RotateTransform(bank);
+    g.TranslateTransform(0, -pitch * horizonPixelsPerDeg);
+
+    g.DrawImage(g_horizonBmp.get(), -halfW, -halfH);
+
+    g.ResetTransform();
+}
+
+std::string DrawHorizon(float pitch, float bank, DockScreenType scrType, bool simConnected) {
+    std::lock_guard lock(gdiDrawMutex);
+
+    const int bmpW = (scrType == SCREEN_TYPE_BUTTON) ? buttonW : displayW;
+    const int bmpH = (scrType == SCREEN_TYPE_BUTTON) ? buttonH : displayH;
+
+    auto* bmp = new Gdiplus::Bitmap(bmpW, bmpH, PixelFormat32bppARGB);
+    if (!bmp || bmp->GetLastStatus() != Ok) {
+        LogError("Bitmap create error!");
+        ShutdownGDIPlus();
+        return {};
+    }
+
+    Graphics graphics(bmp);
+    graphics.Clear(COLOR_NEAR_BLACK);
+
+    DrawADI(graphics, pitch, bank, scrType);
+
+    // wings profile
+    Point pointsL[] = {
+        Point(10, bmpH / 2),
+        Point(25, bmpH / 2),
+        Point(25, (bmpH / 2) + 5)
+    };
+
+    Point pointsR[] = {
+        Point(bmpW - 10, bmpH / 2),
+        Point(bmpW - 25, bmpH / 2),
+        Point(bmpW - 25, (bmpH / 2) + 5)
+    };
+    Pen blackPen(COLOR_NEAR_BLACK, 2);
+    Pen whitePen(COLOR_WHITE, 4);
+
+    // wings and center
+    graphics.DrawLines(&whitePen, pointsL, ARRAYSIZE(pointsL));
+    graphics.DrawLines(&whitePen, pointsR, ARRAYSIZE(pointsR));
+    graphics.DrawLine(&whitePen, (bmpW / 2) - 1, bmpH / 2, (bmpW / 2) + 1, bmpH / 2);
+
+    graphics.DrawLines(&blackPen, pointsL, ARRAYSIZE(pointsL));
+    graphics.DrawLines(&blackPen, pointsR, ARRAYSIZE(pointsR));
+    graphics.DrawLine(&blackPen, (bmpW / 2) - 1, bmpH / 2, (bmpW / 2) + 1, bmpH / 2);
+
+    if (!simConnected) {
+        DrawNotConnectedOutline(graphics, bmp->GetWidth(), bmp->GetHeight());
+    }
+
+    std::string base64Image = BitmapToBase64(bmp);
+    delete bmp;
+    return base64Image;
+}
+
+std::string DrawHeading(int heading, DockScreenType scrType, bool simConnected) {
+    std::lock_guard lock(gdiDrawMutex);
+
+    const int bmpW = (scrType == SCREEN_TYPE_BUTTON) ? buttonW : displayW;
+    const int bmpH = (scrType == SCREEN_TYPE_BUTTON) ? buttonH : displayH;
+    const float scale = (scrType == SCREEN_TYPE_BUTTON) ? 1.0 : 1.5;
+    const int textSize = (scrType == SCREEN_TYPE_BUTTON) ? 20 : 28;
+    const int textOffset = 6;
+
+    auto* bmp = new Gdiplus::Bitmap(bmpW, bmpH, PixelFormat32bppARGB);
+    if (!bmp || bmp->GetLastStatus() != Ok) {
+        LogError("Bitmap create error!");
+        ShutdownGDIPlus();
+        return {};
+    }
+
+    Graphics graphics(bmp);
+    graphics.SetSmoothingMode(SmoothingModeAntiAlias);
+    graphics.Clear(COLOR_NEAR_BLACK);
+
+    // heading arrow
+    PointF pts[] =
+    {
+        PointF(0, -16),  //top
+        PointF(11, 14),  //right
+        PointF(0, 9),  // center
+        PointF(-11, 14)  //left
+    };
+
+    if (!simConnected) {
+        DrawNotConnectedOutline(graphics, bmp->GetWidth(), bmp->GetHeight());
+    }
+
+    // Draw data
+    SolidBrush textBrush(COLOR_OFF_WHITE);
+    RectF dataRect(textOffset, bmp->GetHeight() - textSize - 2, bmp->GetWidth() - textOffset * 2, textSize);
+
+    // Pen debugPen(Color(180, 255, 0, 0), 1.0f); // debug
+    // graphics.DrawRectangle(&debugPen, dataRect.X, dataRect.Y, dataRect.Width, dataRect.Height);
+
+    StringFormat format;
+    format.SetAlignment(StringAlignmentCenter);
+    format.SetLineAlignment(StringAlignmentCenter);
+    wchar_t buf[16];
+    swprintf(buf, 16, L"%03d\u00B0", heading);
+    std::wstring label = buf;
+    FontFamily fontFamily(L"Consolas");
+    Font font(&fontFamily, textSize, FontStyleRegular, UnitPixel);
+    graphics.DrawString(label.c_str(), -1, &font, dataRect, &format, &textBrush);
+
+    graphics.TranslateTransform(bmpW / 2, (bmpH / 2) - 10);
+    graphics.RotateTransform(heading);
+    graphics.ScaleTransform(scale, scale);
+
+    SolidBrush brush(COLOR_DARK_GREEN);
+    Pen pen(COLOR_OFF_WHITE, 2);
+
+    graphics.FillPolygon(&brush, pts, 4);
+    graphics.DrawPolygon(&pen, pts, 4);
+
+    std::string base64Image = BitmapToBase64(bmp);
+    delete bmp;
+    return base64Image;
+}
+
+static void DrawRibon(Gdiplus::Graphics& graphics, const int bmpW, const int bmpH, const int curValFrameH,
+                      const int curValFrameW, const int curValFramePointerOffsetH, const int curValFramePointerOffsetW,
+                      int curVal, int baseVal, int majorVal, bool left) {
+    using namespace Gdiplus;
+
+    const int ribonOffset = 6;
+    const int bmpHC = bmpH / 2;
+    const int textOffset = 1;
+    // const int textSize = (scrType == SCREEN_TYPE_BUTTON) ? 20 : 28;
+    const int textSize = (left) ? 20 : 17;
+    const float tickSpacing = 16.0f;
+    FontFamily fontFamily(L"Consolas");
+    SolidBrush bgBrush(COLOR_DARK_GRAY);
+    SolidBrush textBrush(COLOR_OFF_WHITE);
+    Pen tickPen(COLOR_OFF_WHITE, 2);
+    StringFormat format;
+    format.SetAlignment(StringAlignmentCenter);
+    format.SetLineAlignment(StringAlignmentCenter);
+    Font smallFont(&fontFamily, (left) ? 16 : 14, FontStyleRegular, UnitPixel);
+
+    graphics.FillRectangle(&bgBrush, (left) ? ribonOffset : 0, 0, bmpW - ribonOffset, bmpH);
+
+    int base = (curVal / baseVal) * baseVal;
+    float frac = float(curVal % baseVal) / baseVal;
+    float offset = frac * tickSpacing;
+
+    const float labelH = 16.0f;
+    const float labelW = 52.0f;
+    const float textGap = 3.0f;
+    int tickCount = int(bmpH / tickSpacing) / 2 + 2;
+
+    for (int i = -tickCount; i <= tickCount; i++)
+    {
+        int value = base + i * baseVal;
+        if (value < 0)
+            continue;
+
+        float y = bmpHC - (i * tickSpacing - offset);
+
+        float x1 = left ? bmpW - 10 : 0;
+        float x2 = left ? bmpW  : 10;
+
+        graphics.DrawLine(&tickPen, x1, y, x2, y);
+
+        if (value % majorVal == 0)
+        {
+            wchar_t buf[16];
+            swprintf(buf, 16, L"%d", value);
+
+            float textX = left ? x1 - labelW - textGap : x2 + textGap;
+
+            RectF r(textX, y - labelH / 2, labelW, labelH);
+            // Pen debugPen(Color(180, 255, 0, 0), 1.0f); // debug
+            // graphics.DrawRectangle(&debugPen, r.X, r.Y, r.Width, r.Height);
+
+            graphics.DrawString(buf, -1, &smallFont, r, &format, &textBrush);
+        }
+    }
+
+    // Draw current value
+    PointF curValFramePts[] =
+    {
+        PointF((left) ? 0 : bmpW - 1, bmpHC - curValFrameH / 2),
+        PointF((left) ? curValFrameW : (bmpW - curValFrameW), bmpHC - curValFrameH / 2),
+        PointF((left) ? curValFrameW : (bmpW - curValFrameW), bmpHC - curValFramePointerOffsetH),
+        PointF((left) ? (curValFrameW + curValFramePointerOffsetW) : (bmpW - curValFrameW - curValFramePointerOffsetW) , bmpHC),
+        PointF((left) ? curValFrameW : (bmpW - curValFrameW), bmpHC + curValFramePointerOffsetH),
+        PointF((left) ? curValFrameW : (bmpW - curValFrameW), bmpHC + curValFrameH / 2),
+        PointF((left) ? 0 : bmpW - 1, bmpHC + curValFrameH / 2),
+    };
+
+    SolidBrush brush(COLOR_NEAR_BLACK);
+    Pen pen(COLOR_OFF_WHITE, 2);
+
+    graphics.FillPolygon(&brush, curValFramePts, std::size(curValFramePts));
+    graphics.DrawPolygon(&pen, curValFramePts, std::size(curValFramePts));
+
+    // Draw data
+    RectF dataRect(
+        left ? textOffset : bmpW - curValFrameW + textOffset,
+        bmpHC - textSize / 2,
+        curValFrameW - textOffset,
+        textSize
+    );
+
+    // Pen debugPen(Color(180, 255, 0, 0), 1.0f); // debug
+    // graphics.DrawRectangle(&debugPen, dataRect.X, dataRect.Y, dataRect.Width, dataRect.Height);
+
+    wchar_t buf[16];
+    swprintf(buf, 16, L"%0*d", (left) ? 3 : 5, curVal);
+    std::wstring label = buf;
+
+    Font font(&fontFamily, textSize, FontStyleRegular, UnitPixel);
+    graphics.DrawString(label.c_str(), -1, &font, dataRect, &format, &textBrush);
+}
+
+std::string DrawRibons(int value, bool speed, DockScreenType scrType, bool simConnected) {
+    std::lock_guard lock(gdiDrawMutex);
+
+    const int bmpW = (scrType == SCREEN_TYPE_BUTTON) ? buttonW : displayW;
+    const int bmpH = (scrType == SCREEN_TYPE_BUTTON) ? buttonH : displayH;
+
+    const int curValFrameW = 55;
+    const int curValFrameH = 22;
+    const int curValFramePointerOffsetH = 5;
+    const int curValFramePointerOffsetW = 7;
+
+    auto* bmp = new Gdiplus::Bitmap(bmpW, bmpH, PixelFormat32bppARGB);
+    if (!bmp || bmp->GetLastStatus() != Ok) {
+        LogError("Bitmap create error!");
+        ShutdownGDIPlus();
+        return {};
+    }
+
+    Graphics graphics(bmp);
+    graphics.SetSmoothingMode(SmoothingModeAntiAlias);
+    graphics.Clear(COLOR_NEAR_BLACK);
+
+    // graphics.SetPixelOffsetMode(PixelOffsetModeHalf);
+
+    if (speed)
+        DrawRibon(graphics, bmpW, bmpH, curValFrameH, curValFrameW, curValFramePointerOffsetH, curValFramePointerOffsetW, value, 10, 20, true);
+    else
+        DrawRibon(graphics, bmpW, bmpH, curValFrameH, curValFrameW, curValFramePointerOffsetH, curValFramePointerOffsetW, value, 100, 200, false);
+
+    if (!simConnected) {
+        DrawNotConnectedOutline(graphics, bmp->GetWidth(), bmp->GetHeight());
+    }
+
+    std::string base64Image = BitmapToBase64(bmp);
+    delete bmp;
+    return base64Image;
+}
+
+std::string DrawInfo(std::string bgColor, std::string outlineColor, std::string headerColor, std::string dataColor,
+                      const std::string& header,  const std::string& data,
+                      const std::string& header2,  const std::string& data2,
+                      DockScreenType scrType, bool simConnected) {
+    std::lock_guard lock(gdiDrawMutex);
+
+    const int bmpW = (scrType == SCREEN_TYPE_BUTTON) ? buttonW : displayW;
+    const int bmpH = (scrType == SCREEN_TYPE_BUTTON) ? buttonH : displayH;
+
+    const int headerFontSize = 14;
+    const int dataFontSize = 20;
+
+    auto* bmp = new Gdiplus::Bitmap(bmpW, bmpH, PixelFormat32bppARGB);
+    if (!bmp || bmp->GetLastStatus() != Ok) {
+        LogError("Bitmap create error!");
+        ShutdownGDIPlus();
+        return {};
+    }
+
+    Graphics graphics(bmp);
+    graphics.SetSmoothingMode(SmoothingModeAntiAlias);
+    graphics.Clear(ColorFromHex(bgColor));
+
+    if (!header.empty())
+        DrawHeader(graphics, bmpW, header, ColorFromHex(headerColor), headerFontSize, 0, 0);
+
+    if (!header2.empty())
+        DrawHeader(graphics, bmpW, header2, ColorFromHex(headerColor), headerFontSize, 36, 0);
+
+    if (!data.empty()) {
+        RectF dataRect(0, 15, bmpW - 1, dataFontSize);
+        Pen outlinePen(ColorFromHex(outlineColor), 2.0f);
+        graphics.DrawRectangle(&outlinePen, dataRect.X, dataRect.Y, dataRect.Width, dataRect.Height);
+        DrawHeader(graphics, bmpW, data, ColorFromHex(dataColor), 16, dataRect.Y + 1, dataRect.X);
+    }
+
+    if (!data2.empty()) {
+        RectF dataRect(0, 51, bmpW - 1, dataFontSize);
+        Pen outlinePen(ColorFromHex(outlineColor), 2.0f);
+        graphics.DrawRectangle(&outlinePen, dataRect.X, dataRect.Y, dataRect.Width, dataRect.Height);
+        DrawHeader(graphics, bmpW, data2, ColorFromHex(dataColor), 16, dataRect.Y + 1, dataRect.X);
+    }
+
+    if (!simConnected)
+        DrawNotConnectedOutline(graphics, bmpW, bmpH);
 
     std::string base64Image = BitmapToBase64(bmp);
     delete bmp;

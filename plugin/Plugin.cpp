@@ -2,6 +2,7 @@
 #include "Logger.hpp"
 #include "Plugin.hpp"
 #include "core/ButtonAction.hpp"
+#include "core/DataAction.hpp"
 #include "core/SwitchAction.hpp"
 #include "core/DialAction.hpp"
 #include "core/GaugeAction.hpp"
@@ -124,6 +125,14 @@ std::shared_ptr<HSDAction> MSFSDockPlugin::GetOrCreateAction(const std::string& 
             true,
             true,
             false
+            );
+        mActions.emplace(context, impl);
+        return impl;
+    } else if (action == "com.rvoronov.msfsdock.generic.data") {
+        auto impl = std::make_shared<DataAction>(
+            mConnectionManager,
+            action,
+            context
             );
         mActions.emplace(context, impl);
         return impl;
