@@ -151,7 +151,7 @@ void ButtonAction::UpdateImage() {
         backgroundImageInactive = b_Inactive;
         backgroundImageActive = b_Active;
         headerOffset = 4;
-        headerFontSize = 16;
+        headerFontSize = 18;
         dataOffset = 25;
         dataFontSize = 18;
         header_color = COLOR_WHITE;
@@ -160,7 +160,7 @@ void ButtonAction::UpdateImage() {
         backgroundImageInactive = ab_Inactive;
         backgroundImageActive = ab_Active;
         headerOffset = 44;
-        headerFontSize = 16;
+        headerFontSize = 18;
         dataOffset = 25;
         dataFontSize = 18;
         header_color = COLOR_BRIGHT_ORANGE;

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.19)
 
-project(msfsDock VERSION 0.9.2.0)
+project(msfsDock VERSION 0.9.3.0)
 
 # C++ standard
 set(CMAKE_CXX_STANDARD 20)
@@ -28,6 +28,7 @@ set(SOURCES
     main.cpp
     core/BaseAction.cpp
     core/ButtonAction.cpp
+    core/DataAction.cpp
     core/DialAction.cpp
     core/GaugeAction.cpp
     core/SwitchAction.cpp

@@ -78,6 +78,31 @@ Suggested configuration for smart Autopilot altitude lock toggle:
 - Event When False: AP_ALT_HOLD_ON (to turn on AP ALTITUDE LOCK when it is off)
 - Status variable: AUTOPILOT ALTITUDE LOCK (to show green light when ALTITUDE LOCK is active)
 
+## Generic Data
+![](/com.rvoronov.msfsDock.sdPlugin/docs/images/data_actions.png)
+
+This action can display various data in different formats. Format types:
+- Info - pick up to two sim variables to show values on display. Only type which require configuration.
+- Attitude - show animated attitude indicator (pitch and roll with horizon).
+- Heading - show current plane heading.
+- Speed - show plane indicated airspeed with PFD style.
+- Altitude - show plane indicated altitude with PFD style.
+
+Controller - button.
+
+![](/com.rvoronov.msfsDock.sdPlugin/docs/images/data_action_settings.png)
+### Info type parameters:
+- Header 1 - header for first displayed data
+- Variable 1 - Sim variable to be used for first data display
+- Foramt - Data display format, integer or fractional
+- Header 2 - header for second displayed data
+- Variable 1 - Sim variable to be used for second data display
+- Foramt - Data display format, integer or fractional
+- Background color - color for background
+- Outline color - color for data outline
+- Header color - color for header text
+- Data color - color for data text
+
 ## Generic Switch
 ![](/com.rvoronov.msfsDock.sdPlugin/docs/images/switch_action.png)
 

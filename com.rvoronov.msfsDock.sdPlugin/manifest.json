@@ -1,6 +1,21 @@
 {
   "Actions": [
     {
+      "Icon": "images/dataIcon",
+      "Name": "Generic data",
+      "States": [
+        {
+          "Image": "images/button",
+          "ShowTitle": false
+        }
+      ],
+      "SupportedInMultiActions": true,
+      "PropertyInspectorPath": "propertyInspector/GenericData/index.html",
+      "Tooltip": "Display various data in graphical format",
+      "UUID": "com.rvoronov.msfsdock.generic.data",
+      "Controllers": [ "Keypad" ]
+    },
+    {
       "Icon": "images/buttonIcon",
       "Name": "Generic button",
       "States": [
@@ -175,7 +190,7 @@
   "Description": "Interact with Microsoft Flight Simulator right from your Stream Dock!",
   "Name": "MSFS Dock",
   "Icon": "images/plugin_icon",
-  "Version": "0.9.2.0",
+  "Version": "0.9.3.0",
   "OS": [
     {
       "Platform": "windows",

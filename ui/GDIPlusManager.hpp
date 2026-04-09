@@ -5,6 +5,11 @@
 #include <string>
 #include <vector>
 
+enum DockScreenType {
+    SCREEN_TYPE_BUTTON = 0,
+    SCREEN_TYPE_DISPLAY
+};
+
 struct ScaleMarker {
     int position = 0;
     std::string color = "#ffffff";
@@ -25,6 +30,7 @@ extern const Gdiplus::Color COLOR_CYAN;
 extern const Gdiplus::Color COLOR_BLUE;
 extern const Gdiplus::Color COLOR_NEAR_BLACK;
 extern const Gdiplus::Color COLOR_DARK_BLUE;
+extern const Gdiplus::Color COLOR_BROWN;
 
 
 void InitGDIPlus();
@@ -75,3 +81,13 @@ std::string DrawVerticalGaugeImage(const std::string& header = "", Gdiplus::Colo
                            std::string bgColor = "#141414",
                            bool simConnected = false,
                            const std::vector<ScaleMarker>& scaleMarkers = {});
+
+std::string DrawHorizon(float pitch = 0, float bank = 0, DockScreenType scrType = SCREEN_TYPE_BUTTON,
+                        bool simConnected = false);
+std::string DrawHeading(int heading = 0, DockScreenType scrType = SCREEN_TYPE_BUTTON, bool simConnected = false);
+std::string DrawRibons(int value = 0, bool speed = true, DockScreenType scrType = SCREEN_TYPE_BUTTON, bool simConnected = false);
+std::string DrawInfo(std::string bgColor = "#141414", std::string outlineColor = "#a05f00",
+                     std::string headerColor = "#ebebeb", std::string dataColor = "#ebebeb",
+                     const std::string& header = "",  const std::string& data = "",
+                     const std::string& header2 = "",  const std::string& data2 = "",
+                     DockScreenType scrType = SCREEN_TYPE_BUTTON, bool simConnected = false);
