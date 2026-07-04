@@ -1,6 +1,5 @@
 #include "GaugeAction.hpp"
 #include "plugin/Logger.hpp"
-#include "Utils.hpp"
 
 namespace EVT = BaseActionEvents;
 
@@ -64,12 +63,6 @@ void GaugeAction::KeyDown(const nlohmann::json& payload) {
 
 void GaugeAction::KeyUp(const nlohmann::json& /*payload*/) {
     // not used for now
-}
-
-void GaugeAction::SendToPI(const nlohmann::json& payload) {
-    nlohmann::json out_payload = BuildCommonPayloadJson();
-
-    SendToPropertyInspector(out_payload);
 }
 
 void GaugeAction::WillAppear(const nlohmann::json& payload) {

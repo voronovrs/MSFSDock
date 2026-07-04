@@ -12,12 +12,11 @@ public:
     ButtonAction(HSDConnectionManager* hsd_connection,
                 const std::string& action,
                 const std::string& context,
-                bool isConditional, bool isPmdg)
+                bool isConditional)
         : BaseAction(hsd_connection, action, context),
-          isConditional(isConditional), isPmdg(isPmdg)
+          isConditional(isConditional)
     {}
 
-    virtual void SendToPI(const nlohmann::json& payload) override;
     virtual void DidReceiveSettings(const nlohmann::json& payload) override;
     virtual void KeyDown(const nlohmann::json& payload) override;
     virtual void KeyUp(const nlohmann::json& payload) override;
@@ -38,8 +37,6 @@ private:
     std::string header_;
     std::string skin_;
     bool varIsInteger_ = true;
-
-    bool isPmdg = false;
 
     // Conditional events support
     bool isConditional = false;

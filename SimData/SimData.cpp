@@ -1,8 +1,8 @@
 #include "plugin/Logger.hpp"
 #include "SimData.hpp"
 #include "KnownVariables.hpp"
-#include "PMDG_NG3_SDK.h"
 
+// ------------- EVENTS --------------
 
 // COMMON EVENT NAMES FOR UI
 #define X(name) #name,
@@ -18,85 +18,146 @@ const std::vector<std::string>& GetKnownEvents() {
 }
 
 // PMDG EVENT ID LOOKUP
-#define X(name) { #name, name },
+#define X(name, id) { #name, id },
 
-static const std::unordered_map<std::string, int> PMDG_EVENT_MAP = {
-#include "pmdg_events.inc"
+static const PMDGEvent PMDG_737_EVENTS[] = {
+#include "pmdg_events_737.inc"
+};
+
+static const PMDGEvent PMDG_777_EVENTS[] = {
+#include "pmdg_events_777.inc"
 };
 
 #undef X
 
-// PMDG EVENT NAMES FOR UI
-#define X(name) #name,
+constexpr size_t PMDG_737_EVENT_COUNT = sizeof(PMDG_737_EVENTS) / sizeof(PMDG_737_EVENTS[0]);
+constexpr size_t PMDG_777_EVENT_COUNT = sizeof(PMDG_777_EVENTS) / sizeof(PMDG_777_EVENTS[0]);
 
-static const std::vector<std::string> PMDG_EVENT_NAMES = {
-#include "pmdg_events.inc"
-};
-
-#undef X
-
-const std::vector<std::string>& GetPmdgEvents() {
-    return PMDG_EVENT_NAMES;
+inline PMDGEventSet GetEventSet(PMDGAircraft t) {
+    return (t == PMDG_737)
+        ? PMDGEventSet{ PMDG_737_EVENTS, PMDG_737_EVENT_COUNT }
+        : PMDGEventSet{ PMDG_777_EVENTS, PMDG_777_EVENT_COUNT };
 }
 
-uint32_t GetPmdgEventID(const std::string& name) {
-    auto it = PMDG_EVENT_MAP.find(name);
+const std::vector<std::string>& GetPmdgEvents(PMDGAircraft planeType) {
+    static const std::vector<std::string> PMDG_737_NAMES = [] {
+        std::vector<std::string> v;
+        v.reserve(PMDG_737_EVENT_COUNT);
+        for (size_t i = 0; i < PMDG_737_EVENT_COUNT; ++i)
+            v.emplace_back(PMDG_737_EVENTS[i].name);
+        return v;
+    }();
 
-    if (it == PMDG_EVENT_MAP.end()) {
-        LogError("Can't find ID for PMDG event " + name);
-        return THIRD_PARTY_EVENT_ID_MIN;
+    static const std::vector<std::string> PMDG_777_NAMES = [] {
+        std::vector<std::string> v;
+        v.reserve(PMDG_777_EVENT_COUNT);
+        for (size_t i = 0; i < PMDG_777_EVENT_COUNT; ++i)
+            v.emplace_back(PMDG_777_EVENTS[i].name);
+        return v;
+    }();
+
+    return (planeType == PMDG_737) ? PMDG_737_NAMES : PMDG_777_NAMES;
+}
+
+uint32_t GetPmdgEventID(const std::string& name, PMDGAircraft planeType) {
+    auto set = GetEventSet(planeType);
+
+    for (size_t i = 0; i < set.size; ++i) {
+        if (name == set.events[i].name)
+            return set.events[i].id;
     }
 
-    return it->second;
+    LogError("Can't find ID for PMDG event " + name);
+    return THIRD_PARTY_EVENT_ID_MIN;
 }
 
+// ------------- VARIABLES --------------
 // COMMON VARIABLE NAMES FOR UI
-std::vector<std::string> GetKnownVariables() {
-    std::vector<std::string> vars;
-    vars.reserve(KnownVariables::kMap.size());
+const std::vector<std::string>& GetKnownVariables() {
+    static const std::vector<std::string> KNOWN_VARIABLE_NAMES = [] {
+        std::vector<std::string> v;
+        v.reserve(KnownVariables::kMap.size());
+        for (const auto& [name, _] : KnownVariables::kMap)
+            v.push_back(name);
+        return v;
+    }();
 
-    for (const auto& [name, _] : KnownVariables::kMap)
-        vars.push_back(name);
-
-    return vars;
+    return KNOWN_VARIABLE_NAMES;
 }
 
 // PMDG VARIABLES
-static const PMDGField PMDG_FIELDS[] = {
 #define X(type, name, offset) { #name, offset, PMDGTypeMap<type>() },
-#include "pmdg_variables.inc"
+
+static const PMDGField PMDG_FIELDS_737[] = {
+#include "pmdg_variables_737.inc"
+};
+
+static const PMDGField PMDG_FIELDS_777[] = {
+#include "pmdg_variables_777.inc"
+};
+
 #undef X
+
+constexpr PMDGFieldSet PMDG_737_FIELD_SET {
+    PMDG_FIELDS_737,
+    sizeof(PMDG_FIELDS_737) / sizeof(PMDG_FIELDS_737[0])
+};
+
+constexpr PMDGFieldSet PMDG_777_FIELD_SET {
+    PMDG_FIELDS_777,
+    sizeof(PMDG_FIELDS_777) / sizeof(PMDG_FIELDS_777[0])
 };
 
 // PMDG VARIABLE MAP LOOKUP
-static std::unordered_map<std::string, const PMDGField*> BuildFieldMap() {
+static std::unordered_map<std::string, const PMDGField*> BuildFieldMap(PMDGAircraft planeType) {
     std::unordered_map<std::string, const PMDGField*> map;
-    map.reserve(sizeof(PMDG_FIELDS) / sizeof(PMDG_FIELDS[0]));
 
-    for (const auto& f : PMDG_FIELDS)
+    auto set = (planeType == PMDG_737) ? PMDG_737_FIELD_SET : PMDG_777_FIELD_SET;
+    map.reserve(set.size);
+
+    for (size_t i = 0; i < set.size; ++i) {
+        const auto& f = set.fields[i];
         map.emplace(f.name, &f);
+    }
 
     return map;
 }
 
-static const auto PMDG_FIELD_MAP = BuildFieldMap();
+static const auto PMDG_FIELD_737_MAP = BuildFieldMap(PMDG_737);
+static const auto PMDG_FIELD_777_MAP = BuildFieldMap(PMDG_777);
 
 // PMDG VARIABLES NAMES FOR UI
-std::vector<std::string> GetPmdgVariables() {
-    std::vector<std::string> names;
-    names.reserve(sizeof(PMDG_FIELDS) / sizeof(PMDG_FIELDS[0]));
+const std::vector<std::string>& GetPmdgVariables(PMDGAircraft planeType) {
+    static const std::vector<std::string> PMDG_737_VAR_NAMES = [] {
+        std::vector<std::string> v;
+        v.reserve(PMDG_737_FIELD_SET.size);
+        for (size_t i = 0; i < PMDG_737_FIELD_SET.size; ++i)
+            v.emplace_back(PMDG_737_FIELD_SET.fields[i].name);
+        return v;
+    }();
 
-    for (const auto& f : PMDG_FIELDS)
-        names.emplace_back(f.name);
+    static const std::vector<std::string> PMDG_777_VAR_NAMES = [] {
+        std::vector<std::string> v;
+        v.reserve(PMDG_777_FIELD_SET.size);
+        for (size_t i = 0; i < PMDG_777_FIELD_SET.size; ++i)
+            v.emplace_back(PMDG_777_FIELD_SET.fields[i].name);
+        return v;
+    }();
 
-    return names;
+    return (planeType == PMDG_737) ? PMDG_737_VAR_NAMES : PMDG_777_VAR_NAMES;
 }
 
 // GET PMDG VARIABLE VALUE BY NAME
-double GetPmdgVarValueAsDouble(const void* dataPtr, const std::string& name) {
-    auto it = PMDG_FIELD_MAP.find(name);
-    if (it == PMDG_FIELD_MAP.end()) {
-        LogError("Unknown PMDG variable: " + name);
+double GetPmdgVarValueAsDouble(const void* dataPtr, const std::string& name, PMDGAircraft planeType) {
+    if (planeType == PMDG_NONE) {
+        LogWarn("Requesting data " + name + " for unregistered PMDG plane");
+        return 0.0;
+    }
+    const auto& field_map = (planeType == PMDG_737) ? PMDG_FIELD_737_MAP : PMDG_FIELD_777_MAP;
+
+    auto it = field_map.find(name);
+    if (it == field_map.end()) {
+        LogError("Unknown PMDG variable: " + name + " plane_type: " + ((planeType == PMDG_737) ? "737" : "777"));
         return 0.0;
     }
 

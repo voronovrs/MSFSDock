@@ -1,5 +1,6 @@
 window.addEventListener("DOMContentLoaded", () => {
     bindTextField("header", "header");
+    bindRadioGroup("pmdgType", "pmdgType");
     bindRadioGroup("numPos", "numPos");
     bindTextField("pos0_value", "pos0_value");
     bindTextField("pos0_label", "pos0_label");

@@ -22,7 +22,6 @@ std::shared_ptr<HSDAction> MSFSDockPlugin::GetOrCreateAction(const std::string& 
             mConnectionManager,
             action,
             context,
-            false,
             false
             );
         mActions.emplace(context, impl);
@@ -32,8 +31,7 @@ std::shared_ptr<HSDAction> MSFSDockPlugin::GetOrCreateAction(const std::string& 
             mConnectionManager,
             action,
             context,
-            true,
-            false
+            true
             );
         mActions.emplace(context, impl);
         return impl;
@@ -42,8 +40,7 @@ std::shared_ptr<HSDAction> MSFSDockPlugin::GetOrCreateAction(const std::string& 
             mConnectionManager,
             action,
             context,
-            false,
-            true
+            false
             );
         mActions.emplace(context, impl);
         return impl;
@@ -51,8 +48,7 @@ std::shared_ptr<HSDAction> MSFSDockPlugin::GetOrCreateAction(const std::string& 
         auto impl = std::make_shared<SwitchAction>(
             mConnectionManager,
             action,
-            context,
-            false
+            context
             );
         mActions.emplace(context, impl);
         return impl;
@@ -60,8 +56,7 @@ std::shared_ptr<HSDAction> MSFSDockPlugin::GetOrCreateAction(const std::string& 
         auto impl = std::make_shared<SwitchAction>(
             mConnectionManager,
             action,
-            context,
-            true
+            context
             );
         mActions.emplace(context, impl);
         return impl;
@@ -79,7 +74,6 @@ std::shared_ptr<HSDAction> MSFSDockPlugin::GetOrCreateAction(const std::string& 
             action,
             context,
             false,
-            false,
             false
             );
         mActions.emplace(context, impl);
@@ -90,8 +84,7 @@ std::shared_ptr<HSDAction> MSFSDockPlugin::GetOrCreateAction(const std::string& 
             action,
             context,
             false,
-            false,
-            true
+            false
             );
         mActions.emplace(context, impl);
         return impl;
@@ -101,7 +94,6 @@ std::shared_ptr<HSDAction> MSFSDockPlugin::GetOrCreateAction(const std::string& 
             action,
             context,
             true,
-            false,
             false
             );
         mActions.emplace(context, impl);
@@ -112,8 +104,7 @@ std::shared_ptr<HSDAction> MSFSDockPlugin::GetOrCreateAction(const std::string& 
             action,
             context,
             true,
-            false,
-            true
+            false
             );
         mActions.emplace(context, impl);
         return impl;
@@ -123,8 +114,7 @@ std::shared_ptr<HSDAction> MSFSDockPlugin::GetOrCreateAction(const std::string& 
             action,
             context,
             true,
-            true,
-            false
+            true
             );
         mActions.emplace(context, impl);
         return impl;

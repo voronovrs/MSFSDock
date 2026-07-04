@@ -2,7 +2,6 @@
 #include "DialAction.hpp"
 #include "plugin/Logger.hpp"
 #include "ui/GDIPlusManager.hpp"
-#include "Utils.hpp"
 
 constexpr int DOUBLE_CLICK_MS = 400;
 namespace EVT = BaseActionEvents;
@@ -10,6 +9,10 @@ namespace EVT = BaseActionEvents;
 void DialAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
     if (!payload.contains("settings")) return;
     const auto& settings = payload["settings"];
+
+    if (UpdatePmdgTypeFromSettings(settings)) {
+        SendToPI(payload);
+    }
 
     header_ = settings.value("header", "");
     skin_ = settings.value("skin", "skin1");
@@ -25,7 +28,6 @@ void DialAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
 
     std::string newFeedback = settings.value("feedbackVar", "");
     std::string newEvent = settings.value("toggleEvent", "");
-
 
     varBindings_ = {
         {&displayVarDef_, newDisplay, (isPmdg) ? PMDG_VARIABLE : LIVE_VARIABLE, &displaySubId_},
@@ -162,12 +164,6 @@ void DialAction::RotateCounterClockwise(const nlohmann::json& payload, const uns
             SimManager::Instance().SendEvent(decEventDef_.uniqueName, GetEventsCount());
         }
     }
-}
-
-void DialAction::SendToPI(const nlohmann::json& payload) {
-    nlohmann::json out_payload = BuildCommonPayloadJson(isPmdg);
-
-    SendToPropertyInspector(out_payload);
 }
 
 void DialAction::WillAppear(const nlohmann::json& payload) {

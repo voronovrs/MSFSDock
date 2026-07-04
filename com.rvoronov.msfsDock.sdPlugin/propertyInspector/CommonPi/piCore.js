@@ -131,7 +131,8 @@ window.bindApplyButton = function (inputId, buttonId, settingKey) {
 
 const SDPIAutocompleteRegistry = {
     sources: {},
-    pending: []
+    pending: [],
+    instances: []
 };
 
 window.registerAutocomplete = function (fieldId, sourceKey, settingKey) {
@@ -142,18 +143,40 @@ window.registerAutocomplete = function (fieldId, sourceKey, settingKey) {
 function tryInitAutocompletes() {
     SDPIAutocompleteRegistry.pending = SDPIAutocompleteRegistry.pending.filter(item => {
         const data = SDPIAutocompleteRegistry.sources[item.sourceKey];
-        if (!Array.isArray(data) || !data.length) return true;
+
+        if (!Array.isArray(data) || !data.length)
+            return true;
 
         const input = document.getElementById(item.fieldId);
-        if (!input) return true;
+        if (!input)
+            return true;
 
-        new SDPIAutocomplete(
+        console.log("New autocomplete created:", item.fieldId);
+
+        // Check if instance was created before
+        const existing = SDPIAutocompleteRegistry.instances.find(i => i.fieldId === item.fieldId);
+        if (existing) return false;
+
+        const ac = new SDPIAutocomplete(
             input,
-            () => data,
+            () => SDPIAutocompleteRegistry.sources[item.sourceKey], // 🔥 всегда live data
             value => commitSettings({ [item.settingKey]: value })
         );
 
+        SDPIAutocompleteRegistry.instances.push({
+            fieldId: item.fieldId,
+            instance: ac,
+            sourceKey: item.sourceKey,
+            settingKey: item.settingKey
+        });
+
         return false;
+    });
+}
+
+function refreshAutocompletes() {
+    SDPIAutocompleteRegistry.instances?.forEach(ac => {
+        ac.instance?.update?.();
     });
 }
 
@@ -161,20 +184,34 @@ function tryInitAutocompletes() {
 
 SDPIComponents.streamDeckClient.sendToPropertyInspector.subscribe(event => {
     const payload = event.payload;
-    if (payload?.type !== "evt_var_list") return;
 
-    if (Array.isArray(payload.common_variables)) {
-        SDPIAutocompleteRegistry.sources.vars = payload.common_variables;
+    if (payload?.type === "evt_var_list") {
+        if (Array.isArray(payload.common_variables)) {
+            SDPIAutocompleteRegistry.sources.vars = payload.common_variables;
+        }
+
+        if (Array.isArray(payload.common_events)) {
+            SDPIAutocompleteRegistry.sources.events = payload.common_events;
+        }
+
+        tryInitAutocompletes();
+        refreshAutocompletes();
     }
 
-    if (Array.isArray(payload.common_events)) {
-        SDPIAutocompleteRegistry.sources.events = payload.common_events;
+    // Show PMDG settings for PMDG actions
+    if (typeof payload?.showPmdgSettings !== "undefined") {
+        updatePmdgVisibility(!!payload.showPmdgSettings);
     }
-
-    tryInitAutocompletes();
 });
 
 /* -------- PI appear ----------- */
+
+function updatePmdgVisibility(isPmdg) {
+    const pmdgBlock = document.getElementById("pmdgSettings");
+    if (!pmdgBlock) return;
+
+    pmdgBlock.style.display = isPmdg ? "" : "none";
+}
 
 SDPIComponents.streamDeckClient.propertyInspectorDidAppear?.subscribe?.(() => {
     SDPIComponents.streamDeckClient.sendToPlugin({ request: "var_list" });

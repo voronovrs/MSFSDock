@@ -2,16 +2,52 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+#include "SimVar.hpp"
+#include "pmdg_data.h"
 
-struct PmdgEvent {
+struct PMDGEvent {
     const char* name;
     uint32_t id;
 };
 
+struct PMDGEventSet {
+    const PMDGEvent* events;
+    size_t size;
+};
+
+struct PmdgDataConfig {
+    const char* name;
+    uint32_t dataId;
+    uint32_t definitionId;
+    uint32_t size;
+};
+
+constexpr PmdgDataConfig PMDG_737_CONFIG {
+    PMDG_NG3_DATA_NAME,
+    PMDG_NG3_DATA_ID,
+    PMDG_NG3_DATA_DEFINITION,
+    PMDG_NG3_DATA_SIZE
+};
+
+constexpr PmdgDataConfig PMDG_777_CONFIG {
+    PMDG_777X_DATA_NAME,
+    PMDG_777X_DATA_ID,
+    PMDG_777X_DATA_DEFINITION,
+    PMDG_777X_DATA_SIZE
+};
+
+inline const PmdgDataConfig* GetPmdgConfig(PMDGAircraft t) {
+    switch (t) {
+        case PMDG_737: return &PMDG_737_CONFIG;
+        case PMDG_777: return &PMDG_777_CONFIG;
+        default: return nullptr;
+    }
+}
+
 const std::vector<std::string>& GetKnownEvents();
-const std::vector<std::string>& GetPmdgEvents();
-uint32_t GetPmdgEventID(const std::string& name);
-std::vector<std::string> GetKnownVariables();
+const std::vector<std::string>& GetPmdgEvents(PMDGAircraft planeType = PMDG_737);
+uint32_t GetPmdgEventID(const std::string& name, PMDGAircraft planeType = PMDG_737);
+const std::vector<std::string>& GetKnownVariables();
 
 // PMDG VARIABLES
 enum class PMDGType {
@@ -43,5 +79,10 @@ struct PMDGField {
     PMDGType type;
 };
 
-std::vector<std::string> GetPmdgVariables();
-double GetPmdgVarValueAsDouble(const void* dataPtr, const std::string& name);
+struct PMDGFieldSet {
+    const PMDGField* fields;
+    size_t size;
+};
+
+const std::vector<std::string>& GetPmdgVariables(PMDGAircraft planeType = PMDG_737);
+double GetPmdgVarValueAsDouble(const void* dataPtr, const std::string& name, PMDGAircraft planeType = PMDG_737);

@@ -42,7 +42,8 @@ Controller - button.
 - Status variable - Variable used in displaying active status (green light in the button bottom)
 
 ## PMDG Button
-Same as Generic button, autocomplete will suggest PMDG variables and events.
+Same as Generic button, autocomplete will suggest PMDG variables and events according to variable:
+- PMDG Aircraft - select PMDG aricraft, 737 or 777
 
 ## Conditional Button
 ![](/com.rvoronov.msfsDock.sdPlugin/docs/images/conditional_button_action.png)
@@ -116,7 +117,8 @@ Controller - button.
 - Positions - Define mapping of switch position value in sim (left field) and displayed text (right field, 5 characters max).
 
 ## PMDG Switch
-Same as Generic switch, autocomplete will suggest PMDG variables and events.
+Same as Generic switch, autocomplete will suggest PMDG variables and events according to variable:
+- PMDG Aircraft - select PMDG aricraft, 737 or 777
 
 ## Generic Gauge
 ![](/com.rvoronov.msfsDock.sdPlugin/docs/images/gauge_action.png)
@@ -150,7 +152,8 @@ Controller - Knob/Display.
 - Acceleration - maximum encoder acceleration, depending on variable, one or another value could be more suitable (default 3)
 
 ## PMDG Dial
-Same as Generic dial, autocomplete will suggest PMDG variables and events.
+Same as Generic dial, autocomplete will suggest PMDG variables and events according to variable:
+- PMDG Aircraft - select PMDG aricraft, 737 or 777
 
 ## Generic Dual Dial
 ![](/com.rvoronov.msfsDock.sdPlugin/docs/images/dual_dial_action.png)
@@ -169,7 +172,8 @@ Controller - Knob/Display.
 - Acceleration - maximum encoder acceleration, depending on variable, one or another value could be more suitable (default 3)
 
 ## PMDG Dual Dial
-Same as Generic dual dial, autocomplete will suggest PMDG variables and events.
+Same as Generic dual dial, autocomplete will suggest PMDG variables and events according to variable:
+- PMDG Aircraft - select PMDG aricraft, 737 or 777
 
 ## Generic Radio
 ![](/com.rvoronov.msfsDock.sdPlugin/docs/images/radio_action.png)

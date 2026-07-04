@@ -25,7 +25,6 @@ public:
         : BaseAction(hsd_connection, action, context)
     {}
 
-    virtual void SendToPI(const nlohmann::json& payload) override;
     virtual void DidReceiveSettings(const nlohmann::json& payload) override;
     virtual void KeyDown(const nlohmann::json& payload) override;
     virtual void KeyUp(const nlohmann::json& payload) override;

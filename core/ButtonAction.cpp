@@ -1,7 +1,6 @@
 #include "ButtonAction.hpp"
 #include "plugin/Logger.hpp"
 #include "ui/GDIPlusManager.hpp"
-#include "Utils.hpp"
 #include <cmath>
 
 namespace EVT = BaseActionEvents;
@@ -16,6 +15,10 @@ void ButtonAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
 
     conditionOperator_ = settings.value("conditionOperator", "==");
     conditionValue_ = getFloatFromJson(settings, "conditionValue", 0.0f);
+
+    if (UpdatePmdgTypeFromSettings(settings)) {
+        SendToPI(payload);
+    }
 
     std::string newDisplay          = settings.value("displayVar", "");
     std::string newFeedback         = settings.value("feedbackVar", "");
@@ -108,12 +111,6 @@ std::string ButtonAction::GetEventToSend() const {
             " event=" + result);
 
     return result;
-}
-
-void ButtonAction::SendToPI(const nlohmann::json& payload) {
-    nlohmann::json out_payload = BuildCommonPayloadJson(isPmdg);
-
-    SendToPropertyInspector(out_payload);
 }
 
 void ButtonAction::WillAppear(const nlohmann::json& payload) {

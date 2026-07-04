@@ -1,6 +1,5 @@
 #include "DataAction.hpp"
 #include "plugin/Logger.hpp"
-#include "Utils.hpp"
 #include <numbers>
 
 namespace EVT = BaseActionEvents;
@@ -118,12 +117,6 @@ void DataAction::KeyDown(const nlohmann::json& payload) {
 
 void DataAction::KeyUp(const nlohmann::json& /*payload*/) {
     // not used for now
-}
-
-void DataAction::SendToPI(const nlohmann::json& payload) {
-    nlohmann::json out_payload = BuildCommonPayloadJson();
-
-    SendToPropertyInspector(out_payload);
 }
 
 void DataAction::WillAppear(const nlohmann::json& payload) {

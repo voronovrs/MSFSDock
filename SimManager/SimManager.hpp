@@ -3,6 +3,7 @@
 #include <Windows.h>
 #include <SimConnect.h>
 #include "SimData/SimVar.hpp"
+#include "SimData/SimData.hpp"
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
@@ -30,6 +31,10 @@ struct EventRequest {
     DWORD eventId;
     bool isPmdg;
     std::array<uint32_t, 2> eventActions;
+};
+
+struct PmdgRuntimeState {
+    bool mapped = false;
 };
 
 class SimManager {
@@ -119,13 +124,18 @@ private:
     // PMDG
     bool processingPMDG = false;
     bool aircraftIsPMDG = false;
-    bool pmdgIdMapped = false;
-    bool pmdgRegistered = false;
+    PMDGAircraft pmdgAircraft = PMDG_NONE;
+    PMDGAircraft pmdgAircraftRegistered = PMDG_NONE;
+
+    PmdgRuntimeState pmdg737State;
+    PmdgRuntimeState pmdg777State;
+
     void NotificationsSubscribe();
     void PmdgSubscribe();
     void PmdgUnsubscribe();
     void UpdatePmdgRegistration();
-    void ProcessNG3Data(PMDG_NG3_Data *pS);
+    void ProcessPMDGData(const void* data);
+    PmdgRuntimeState* GetPmdgState(PMDGAircraft t);
 
     static inline bool IsValueValid(double v) {
         if (std::isnan(v)) return false;

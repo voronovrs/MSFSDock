@@ -12,6 +12,7 @@
 #include "SimData/SimVar.hpp"
 #include "SimManager/SimManager.hpp"
 #include "ui/UIManager.hpp"
+#include "Utils.hpp"
 
 namespace BaseActionEvents
 {
@@ -56,13 +57,24 @@ protected:
     void ApplyBindings();
     void UnregisterAll();
     void CleanUp();
-    nlohmann::json BuildCommonPayloadJson(bool isPmdg=false) const;
+    nlohmann::json BuildCommonPayloadJson() const;
+    virtual void SendToPI(const nlohmann::json& payload) override;
+    bool UpdatePmdgTypeFromSettings(const nlohmann::json& settings);
+
+    // PMDG
+    bool isPmdg = false;
+    PMDGAircraft pmdgPlaneType = PMDG_NONE;
 
 private:
+    // Determine if action is for PMDG by action name
+    static bool IsPmdgAction(const std::string& action) {
+        return action.find(".pmdg.") != std::string::npos;
+    }
+
     std::function<void(const std::string&, double)> varCallback_;
 
     // Helper methods
-    static void FillEvent(SimEventDefinition& e, const std::string& name,
+    void FillEvent(SimEventDefinition& e, const std::string& name,
                           EVENT_TYPES type, const std::array<uint32_t, 2>& actions);
 
     void DiffVar(VarBinding& v, std::vector<SimVarDefinition>& toAdd, std::vector<SimVarDefinition>& toRemove);

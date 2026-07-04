@@ -15,7 +15,9 @@ BaseAction::BaseAction(HSDConnectionManager* hsd_connection,
                        const std::string& action,
                        const std::string& context)
     : HSDAction(hsd_connection, action, context)
-{}
+{
+    isPmdg = IsPmdgAction(action);
+}
 
 BaseAction::~BaseAction() = default;
 
@@ -33,9 +35,11 @@ void BaseAction::FillEvent(SimEventDefinition& e, const std::string& name,
     e.type = type;
 
     if (type == EVENT_PMDG) {
-        e.pmdgID = GetPmdgEventID(name);
+        e.pmdgID = GetPmdgEventID(name, pmdgPlaneType);
         e.eventActions = actions;
-        e.uniqueName = name + "::" + to_hex32(actions[0]) + "::" + to_hex32(actions[1]);
+        e.pmdgPlaneType = pmdgPlaneType;
+
+        e.uniqueName = name + "_" + ((pmdgPlaneType == PMDG_737) ? "737" : "777") + "::" + to_hex32(actions[0]) + "::" + to_hex32(actions[1]);
     } else {
         e.eventActions = {0, 0};
         e.uniqueName = name;
@@ -164,17 +168,19 @@ void BaseAction::CleanUp() {
     }
 }
 
-nlohmann::json BaseAction::BuildCommonPayloadJson(bool isPmdg) const {
+// Track settings and update payload sent to plugin
+nlohmann::json BaseAction::BuildCommonPayloadJson() const {
     nlohmann::json out;
     out["type"] = "evt_var_list";
+    out["showPmdgSettings"] = (int)isPmdg;
     out["common_events"] = nlohmann::json::array();
     out["common_variables"] = nlohmann::json::array();
 
     if (isPmdg) {
-        for (const auto& v : GetPmdgVariables())
+        for (const auto& v : GetPmdgVariables(pmdgPlaneType))
             out["common_variables"].push_back(v);
 
-        for (const auto& e : GetPmdgEvents())
+        for (const auto& e : GetPmdgEvents(pmdgPlaneType))
             out["common_events"].push_back(e);
     } else {
         for (const auto& v : GetKnownVariables())
@@ -185,4 +191,23 @@ nlohmann::json BaseAction::BuildCommonPayloadJson(bool isPmdg) const {
     }
 
     return out;
+}
+
+bool BaseAction::UpdatePmdgTypeFromSettings(const nlohmann::json& settings) {
+    if (!isPmdg)
+        return false;
+
+    PMDGAircraft newType = (getIntFromJson(settings, "pmdgType", 737) == 737) ? PMDG_737 : PMDG_777;
+
+    if (newType == pmdgPlaneType)
+        return false;
+
+    pmdgPlaneType = newType;
+    return true;
+}
+
+void BaseAction::SendToPI(const nlohmann::json& payload) {
+    nlohmann::json out_payload = BuildCommonPayloadJson();
+
+    SendToPropertyInspector(out_payload);
 }

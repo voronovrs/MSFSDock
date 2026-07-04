@@ -13,12 +13,11 @@ public:
     DialAction(HSDConnectionManager* hsd_connection,
                const std::string& action,
                const std::string& context,
-               bool isDual, bool isRadio, bool isPmdg)
+               bool isDual, bool isRadio)
         : BaseAction(hsd_connection, action, context),
-          isDual(isDual), isRadio(isRadio), isPmdg(isPmdg)
+          isDual(isDual), isRadio(isRadio)
     {}
 
-    virtual void SendToPI(const nlohmann::json& payload) override;
     virtual void DidReceiveSettings(const nlohmann::json& payload) override;
     virtual void DialDown(const nlohmann::json& payload) override;
     virtual void DialUp(const nlohmann::json& payload) override;
@@ -53,8 +52,6 @@ private:
     bool isActive = false;
     bool isDual = false;
     bool isRadio = false;
-
-    bool isPmdg = false;
 
     int active_dial = 0;
     int active_radio_part = 0;

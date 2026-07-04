@@ -1,5 +1,4 @@
 #include "SimManager.hpp"
-#include "SimData/SimData.hpp"
 #include "plugin/Logger.hpp"
 #include "ui/UIManager.hpp"
 #include <sstream>
@@ -273,8 +272,10 @@ void SimManager::HandleSimDisconnect() {
     }
 
     aircraftIsPMDG = false;
-    pmdgIdMapped = false;
-    pmdgRegistered = false;
+    pmdgAircraft = PMDG_NONE;
+    pmdgAircraftRegistered = PMDG_NONE;
+    pmdg737State.mapped = false;
+    pmdg777State.mapped = false;
 
     simReady = false;
     simState = SimState::Disconnected;
@@ -345,41 +346,63 @@ void SimManager::NotificationsSubscribe() {
     hr = SimConnect_SubscribeToSystemEvent(hSimConnect, EVENT_SIM_START, "SimStart");
 }
 
+PmdgRuntimeState* SimManager::GetPmdgState(PMDGAircraft t) {
+    switch (t) {
+        case PMDG_737: return &pmdg737State;
+        case PMDG_777: return &pmdg777State;
+        default: return nullptr;
+    }
+}
+
 void SimManager::PmdgSubscribe() {
+    const auto* cfg = GetPmdgConfig(pmdgAircraft);
+    auto* state = GetPmdgState(pmdgAircraft);
+    if (!cfg || !state)
+        return;
+
     HRESULT hr;
     // Associate an ID with the PMDG data area name
-    if (!pmdgIdMapped) {
-        hr = SimConnect_MapClientDataNameToID(hSimConnect, PMDG_NG3_DATA_NAME, PMDG_NG3_DATA_ID);
-        pmdgIdMapped = true;
+    if (!state->mapped) {
+        hr = SimConnect_MapClientDataNameToID(hSimConnect, cfg->name, cfg->dataId);
+        state->mapped = true;
     }
 
     // Define the data area structure - this is a required step
-    hr = SimConnect_AddToClientDataDefinition(hSimConnect, PMDG_NG3_DATA_DEFINITION, 0, sizeof(PMDG_NG3_Data), 0, 0);
+    hr = SimConnect_AddToClientDataDefinition(hSimConnect, cfg->definitionId, 0, cfg->size, 0, 0);
 
     // Sign up for notification of data change.
     // SIMCONNECT_CLIENT_DATA_REQUEST_FLAG_CHANGED flag asks for the data to be sent only when some of the data is changed.
-    hr = SimConnect_RequestClientData(hSimConnect, PMDG_NG3_DATA_ID, PMDG_VARIABLE, PMDG_NG3_DATA_DEFINITION,
-                                        SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET, SIMCONNECT_CLIENT_DATA_REQUEST_FLAG_CHANGED, 0, 0, 0);
+    hr = SimConnect_RequestClientData(hSimConnect, cfg->dataId, PMDG_VARIABLE, cfg->definitionId,
+                                        SIMCONNECT_CLIENT_DATA_PERIOD_VISUAL_FRAME, SIMCONNECT_CLIENT_DATA_REQUEST_FLAG_CHANGED, 0, 0, 0);
+    LogMessage("PMDG subscribed to " + std::string(cfg->name));
 }
 
 void SimManager::PmdgUnsubscribe() {
+    const auto* cfg = GetPmdgConfig(pmdgAircraftRegistered);
+    if (!cfg)
+        return;
+
     HRESULT hr;
-    hr = SimConnect_RequestClientData(hSimConnect, PMDG_NG3_DATA_ID, PMDG_VARIABLE, PMDG_NG3_DATA_DEFINITION,
+    hr = SimConnect_RequestClientData(hSimConnect, cfg->dataId, PMDG_VARIABLE, cfg->definitionId,
                                 SIMCONNECT_CLIENT_DATA_PERIOD_NEVER, 0, 0, 0, 0);
 
-    hr = SimConnect_ClearClientDataDefinition(hSimConnect, PMDG_NG3_DATA_DEFINITION);
+    hr = SimConnect_ClearClientDataDefinition(hSimConnect, cfg->definitionId);
+    LogMessage("PMDG unsubscribed from " + std::string(cfg->name));
 }
 
 void SimManager::UpdatePmdgRegistration() {
-    if (aircraftIsPMDG && !pmdgRegistered) {
-        PmdgSubscribe();
-        LogMessage("PMDG DATA subscribed");
-        pmdgRegistered = true;
-    } else if (!aircraftIsPMDG && pmdgRegistered) {
+    if (pmdgAircraftRegistered == pmdgAircraft)
+        return;
+
+    if (pmdgAircraftRegistered != PMDG_NONE) {
         PmdgUnsubscribe();
-        LogMessage("PMDG DATA unsubscribed");
-        pmdgRegistered = false;
     }
+
+    if (pmdgAircraft != PMDG_NONE) {
+        PmdgSubscribe();
+    }
+
+    pmdgAircraftRegistered = pmdgAircraft;
 }
 
 /* ------------ Dispatch, handle data comming from sim ------------ */
@@ -419,14 +442,21 @@ void CALLBACK SimManager::DispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, voi
         // Track aircraft changes
         case SIMCONNECT_RECV_ID_SYSTEM_STATE: {
 			SIMCONNECT_RECV_SYSTEM_STATE *evt = (SIMCONNECT_RECV_SYSTEM_STATE*)pData;
-			if (evt->dwRequestID == AIR_PATH_REQUEST)
-			{
-				if (strstr(evt->szString, "PMDG") != NULL) {
-					manager->aircraftIsPMDG = true;
+            if (evt->dwRequestID == AIR_PATH_REQUEST) {
+
+                const char* path = evt->szString;
+                LogInfo(path);
+                if (strstr(path, "PMDG 737") != nullptr) {
+                    manager->aircraftIsPMDG = true;
+                    manager->pmdgAircraft = PMDG_737;
+                } else if (strstr(path, "PMDG 777") != nullptr) {
+                    manager->aircraftIsPMDG = true;
+                    manager->pmdgAircraft = PMDG_777;
                 } else {
-					manager->aircraftIsPMDG = false;
+                    manager->aircraftIsPMDG = false;
+                    manager->pmdgAircraft = PMDG_NONE;
                 }
-			}
+            }
             manager->UpdatePmdgRegistration();
 			break;
 		}
@@ -436,8 +466,8 @@ void CALLBACK SimManager::DispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, voi
 			SIMCONNECT_RECV_CLIENT_DATA *pObjData = (SIMCONNECT_RECV_CLIENT_DATA*)pData;
 
 			if (pObjData->dwRequestID == PMDG_VARIABLE) {
-                PMDG_NG3_Data *pS = (PMDG_NG3_Data*)&pObjData->dwData;
-                manager->ProcessNG3Data(pS);
+                const void* data = &pObjData->dwData;
+                manager->ProcessPMDGData(data);
                 break;
             }
 			break;
@@ -709,6 +739,20 @@ void SimManager::SendEvent(const std::string& name, uint8_t count) {
         if (!it->second.registered)
             return;
 
+        if (it->second.type == EVENT_PMDG) {
+            if (pmdgAircraftRegistered == PMDG_NONE) {
+                LogError("SendEvent: calling PMDG event when no PMDG plane registered");
+                return;
+            }
+            if (it->second.pmdgPlaneType != pmdgAircraftRegistered) {
+                std::string target = (it->second.pmdgPlaneType == PMDG_737) ? "737" : "777";
+                std::string current = (pmdgAircraftRegistered == PMDG_737) ? "737" : "777";
+
+                LogError("SendEvent: calling PMDG event for: " + target + " Current plane: " + current);
+                return;
+            }
+        }
+
         req.eventId = it->second.id;
         req.isPmdg = (it->second.type == EVENT_PMDG);
         req.eventActions = it->second.eventActions;
@@ -797,9 +841,9 @@ void SimManager::SendToSim(const EventRequest& req) {
 
 /* ------------ Process received data from sim ------------ */
 
-void SimManager::ProcessNG3Data(PMDG_NG3_Data* pS) {
+void SimManager::ProcessPMDGData(const void* data) {
     if (processingPMDG) {
-        LogWarn("Multiple call of ProcessNG3Data");
+        LogWarn("Multiple call of ProcessPMDGData");
         return;
     }
 
@@ -829,7 +873,7 @@ void SimManager::ProcessNG3Data(PMDG_NG3_Data* pS) {
 
             auto& var = it->second;
 
-            double newVal = GetPmdgVarValueAsDouble(pS, name);
+            double newVal = GetPmdgVarValueAsDouble(data, name, pmdgAircraftRegistered);
 
             if (!IsValueValid(newVal))
                 continue;

@@ -1,7 +1,6 @@
 #include "SwitchAction.hpp"
 #include "plugin/Logger.hpp"
 #include "ui/GDIPlusManager.hpp"
-#include "Utils.hpp"
 
 namespace EVT = BaseActionEvents;
 
@@ -10,6 +9,10 @@ void SwitchAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
     const auto& settings = payload["settings"];
 
     header_ = settings.value("header", "");
+
+    if (UpdatePmdgTypeFromSettings(settings)) {
+        SendToPI(payload);
+    }
 
     std::string newFeedback = settings.value("feedbackVar", "");
     std::string newEvent = settings.value("toggleEvent", "");
@@ -100,12 +103,6 @@ void SwitchAction::KeyDown(const nlohmann::json& payload) {
 void SwitchAction::KeyUp(const nlohmann::json& /*payload*/) {
     // LogInfo("SwitchAction KeyUp");
     // not used for now
-}
-
-void SwitchAction::SendToPI(const nlohmann::json& payload) {
-    nlohmann::json out_payload = BuildCommonPayloadJson(isPmdg);
-
-    SendToPropertyInspector(out_payload);
 }
 
 void SwitchAction::WillAppear(const nlohmann::json& payload) {

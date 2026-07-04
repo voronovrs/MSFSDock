@@ -96,6 +96,12 @@ class SDPIAutocomplete {
         this.list.style.display = matches.length ? "block" : "none";
     }
 
+    refresh() {
+        if (document.activeElement === this.input) {
+            this.update();
+        }
+    }
+
     hide() {
         this.list.style.display = "none";
     }

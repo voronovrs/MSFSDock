@@ -11,7 +11,7 @@
 - Display MSFS2024 L-vars
 - Trigger generic MSFS2024 events
 - Trigger Mobiflight\WASM events
-- PMDG support!!!
+- PMDG support, 737 and 777
 - Support for both buttons and encoders
 
 # Supported devices
@@ -84,6 +84,7 @@ But there is a way to save then. To do so follow this instruction.
 
 # Links and info
 Github page: https://github.com/voronovrs/MSFSDock
+Discord channel: https://discord.gg/a6gMJzbEBg
 
 Standart event IDs could be found here https://docs.flightsimulator.com/html/Programming_Tools/Event_IDs/Event_IDs.htm
 
