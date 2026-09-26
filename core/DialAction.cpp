@@ -66,53 +66,58 @@ void DialAction::DidReceiveSettings(const nlohmann::json& payload) {
 
 void DialAction::DialDown(const nlohmann::json& payload) {
     LogInfo("DialAction DialDown");
+
     if (!SimManager::Instance().IsConnected()) {
         SimManager::Instance().EnsureConnected();
         return;
     }
-    if (!isRadio) {
-        if (!toggleEventDef_.name.empty()) {
-            SimManager::Instance().SendEvent(toggleEventDef_.uniqueName);
+
+    auto now = std::chrono::steady_clock::now();
+
+    // Radio dial handling
+    if (isRadio) {
+        bool isDoubleClick = false;
+        long long dt = 0;
+
+        if (clickPending_) {
+            dt = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastClickTs_).count();
+            if (dt <= DOUBLE_CLICK_MS) {
+                isDoubleClick = true;
+                LogInfo("DialAction Double click, time = " + std::to_string(dt) + " ms");
+            }
         }
+
+        if (isDoubleClick) {
+            clickPending_ = false;
+
+            if (!toggleEventDef_.name.empty()) {
+                SimManager::Instance().SendEvent(toggleEventDef_.uniqueName);
+            }
+            UpdateImage();
+        } else {
+            active_radio_part ^= 1;
+            clickPending_ = true;
+            lastClickTs_ = now;
+            UpdateImage();
+        }
+        return;
+    }
+
+    // Dual dial handling
+    if (isDual) {
+        active_dial ^= 1;
+        UpdateImage();
+        return;
+    }
+
+    // Regular event handling
+    if (!toggleEventDef_.name.empty()) {
+        SimManager::Instance().SendEvent(toggleEventDef_.uniqueName);
     }
 }
 
 void DialAction::DialUp(const nlohmann::json& payload) {
     LogInfo("DialAction DialUp");
-
-    auto now = std::chrono::steady_clock::now();
-
-    // Double click support
-    if (isRadio) {
-        if (clickPending_) {
-            auto dt = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastClickTs_).count();
-
-            if (dt <= DOUBLE_CLICK_MS) {
-                LogInfo("DialAction Double click");
-
-                clickPending_ = false;
-
-                if (!toggleEventDef_.name.empty()) {
-                    SimManager::Instance().SendEvent(toggleEventDef_.uniqueName);
-                }
-
-                UpdateImage();
-                return;
-            }
-        }
-
-        // First click
-        active_radio_part ^= 1;
-        UpdateImage();
-        clickPending_ = true;
-        lastClickTs_ = now;
-        return;
-    }
-
-    if (isDual && !isRadio) {
-        active_dial ^= 1;
-        UpdateImage();
-    }
 }
 
 uint8_t DialAction::GetEventsCount() {
