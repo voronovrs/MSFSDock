@@ -36,7 +36,10 @@ Controller - button.
 ### Generic Button parameters:
 - Header - header to be displayed on a button
 - Skin - select button skin, either Boeing-like or Airbus-like
-- Button event - event to be triggered by button press
+- Button type - select between toggle button or momentary switch
+- Push event - event to be triggered by button press
+- Release event - apears only for momentary button type, set event to be sent on button release \
+(eg. for Fenix FNX320_FCU_EFIS1_LS_PUSH for push and FNX320_FCU_EFIS1_LS_RELEASE for release)
 - Display variable - Variable used in displaying additional data on a button if necessary
 - Display format - Format of displayed data, Integer or Fractional
 - Status variable - Variable used in displaying active status (green light in the button bottom)

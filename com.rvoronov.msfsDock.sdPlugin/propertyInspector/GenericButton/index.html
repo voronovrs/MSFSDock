@@ -48,13 +48,36 @@
         </div>
     </div>
 
-    <!-- Button event -->
-    <div class="sdpi-item position-row" title="Sim event to be called when button pressed">
-        <div class="sdpi-item-label">Button event</div>
+    <!-- Button type selector -->
+    <div class="sdpi-item position-row">
+        <div class="sdpi-item-label">Button type</div>
+        <div class="sdpi-radio-group">
+            <input type="radio" id="toggle" name="buttonType" value="toggle" checked>
+            <label for="toggle" class="sdpi-item-value">Toggle</label>
+
+            <input type="radio" id="momentary" name="buttonType" value="momentary">
+            <label for="momentary" class="sdpi-item-value">Momentary</label>
+        </div>
+    </div>
+
+    <!-- Button push event -->
+    <div class="sdpi-item position-row" title="Sim event to be called when button pushed">
+        <div class="sdpi-item-label">Push event</div>
         <div class="sdpi-autocomplete">
-            <input id="toggleEvent" class="sdpi-item-value" placeholder="BUTTON EVENT" pattern="[A-Za-z0-9:_. ]*">
+            <input id="toggleEvent" class="sdpi-item-value" placeholder="PUSH EVENT" pattern="[A-Za-z0-9:_. ]*">
         </div>
         <sdpi-button id="applyEvent" variant="primary">✓</sdpi-button>
+    </div>
+
+    <!-- Release event -->
+    <div id="buttonReleaseSettings" style="display:none;">
+        <div class="sdpi-item position-row" title="Sim event to be called when button released">
+            <div class="sdpi-item-label">Release event</div>
+            <div class="sdpi-autocomplete">
+                <input id="toggleReleaseEvent" class="sdpi-item-value" placeholder="RELEASE EVENT" pattern="[A-Za-z0-9:_. ]*">
+            </div>
+            <sdpi-button id="applyReleaseEvent" variant="primary">✓</sdpi-button>
+        </div>
     </div>
 
     <!-- Display variable -->
