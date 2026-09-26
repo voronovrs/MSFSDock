@@ -30,13 +30,14 @@ public:
 private:
     void UpdateVariablesAndEvents(const nlohmann::json& payload);
     void ClearSettings();
-    std::string GetEventToSend() const;
+    std::string GetEventToSend(bool releaseEvent) const;
 
     // parsed settings
     bool isActive = false;
     std::string header_;
     std::string skin_;
     bool varIsInteger_ = true;
+    bool buttonTypeMomentary_ = false;
 
     // Conditional events support
     bool isConditional = false;
@@ -51,6 +52,7 @@ private:
     SimVarDefinition displayVarDef_;
     SimVarDefinition feedbackVarDef_;
     SimEventDefinition toggleEventDef_;
+    SimEventDefinition toggleReleaseEventDef_;
     SimVarDefinition conditionalVarDef_;
     SimEventDefinition eventWhenTrueDef_;
     SimEventDefinition eventWhenFalseDef_;

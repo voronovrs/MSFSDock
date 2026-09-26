@@ -12,6 +12,7 @@ void ButtonAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
     header_ = settings.value("header", "");
     skin_ = settings.value("skin", "skin1");
     varIsInteger_ = settings.value("varFormat", "integer") == "integer";
+    buttonTypeMomentary_ = settings.value("buttonType", "toggle") == "momentary";
 
     conditionOperator_ = settings.value("conditionOperator", "==");
     conditionValue_ = getFloatFromJson(settings, "conditionValue", 0.0f);
@@ -24,6 +25,7 @@ void ButtonAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
     std::string newFeedback         = settings.value("feedbackVar", "");
     std::string newConditionalVar   = settings.value("conditionalVar", "");
     std::string newEvent            = settings.value("toggleEvent", "");
+    std::string newReleaseEvent     = settings.value("toggleReleaseEvent", "");
     std::string newEventWhenTrue    = settings.value("eventWhenTrue", "");
     std::string newEventWhenFalse   = settings.value("eventWhenFalse", "");
 
@@ -35,6 +37,7 @@ void ButtonAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
 
     eventBindings_ = {
         { &toggleEventDef_, newEvent, (isPmdg) ? EVENT_PMDG : EVENT_GENERIC, (isPmdg) ? EVT::PMDG_CLICK : EVT::GENERIC },
+        { &toggleReleaseEventDef_, newReleaseEvent, (isPmdg) ? EVENT_PMDG : EVENT_GENERIC, (isPmdg) ? EVT::PMDG_CLICK : EVT::GENERIC },
         { &eventWhenTrueDef_, newEventWhenTrue, EVENT_GENERIC, EVT::GENERIC },
         { &eventWhenFalseDef_, newEventWhenFalse, EVENT_GENERIC, EVT::GENERIC },
     };
@@ -68,7 +71,7 @@ void ButtonAction::KeyDown(const nlohmann::json& payload) {
         return;
     }
 
-    std::string eventToSend = GetEventToSend();
+    std::string eventToSend = GetEventToSend(false);
     if (!eventToSend.empty()) {
         LogInfo("Sending event: " + eventToSend);
         SimManager::Instance().SendEvent(eventToSend);
@@ -78,12 +81,25 @@ void ButtonAction::KeyDown(const nlohmann::json& payload) {
 }
 
 void ButtonAction::KeyUp(const nlohmann::json& /*payload*/) {
-    // not used for now
+    LogInfo("ButtonAction KeyUp");
+    if (!SimManager::Instance().IsConnected()) {
+        return;
+    }
+
+    if (buttonTypeMomentary_) {
+        std::string eventToSend = GetEventToSend(true);
+        if (!eventToSend.empty()) {
+            LogInfo("Sending event: " + eventToSend);
+            SimManager::Instance().SendEvent(eventToSend);
+        } else {
+            LogInfo("No event to send (empty event name)");
+        }
+    }
 }
 
-std::string ButtonAction::GetEventToSend() const {
+std::string ButtonAction::GetEventToSend(bool releaseEvent) const {
     if (!isConditional) {
-        return toggleEventDef_.uniqueName;
+        return (releaseEvent) ? toggleReleaseEventDef_.uniqueName : toggleEventDef_.uniqueName;
     }
 
     double varValue = conditionalVarDef_.value;
