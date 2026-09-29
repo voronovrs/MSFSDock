@@ -1,5 +1,6 @@
 #include "GDIFonts.hpp"
 #include "plugin/Logger.hpp"
+#include <map>
 #include <vector>
 
 using namespace Gdiplus;
@@ -31,6 +32,7 @@ std::string WideToUtf8(const std::wstring& wstr)
 namespace GDIFonts {
     static std::unique_ptr<Gdiplus::PrivateFontCollection> fontCollection;
     static std::wstring customFontName;
+    static std::map<float, std::unique_ptr<Gdiplus::Font>> fontCache;
 
     static std::wstring GetExecutableDir() {
         wchar_t buffer[MAX_PATH];
@@ -69,9 +71,14 @@ namespace GDIFonts {
     }
 
     Font* GetFont(float size) {
+        auto it = fontCache.find(size);
+        if (it != fontCache.end()) {
+            return it->second.get();
+        }
+
         if (!fontCollection || customFontName.empty()) {
-            static Font fallbackFont(L"Arial", size, FontStyleRegular, UnitPixel);
-            return &fallbackFont;
+            static auto fallbackFont = std::make_unique<Font>(L"Arial", size, FontStyleRegular, UnitPixel);
+            return fallbackFont.get();
         }
 
         auto font = std::make_unique<Gdiplus::Font>(
@@ -84,17 +91,19 @@ namespace GDIFonts {
 
         if (font->GetLastStatus() != Ok) {
             LogError("Failed to create font, fallback to Arial");
-            static Font fallbackFont(L"Arial", size, FontStyleRegular, UnitPixel);
-            return &fallbackFont;
+            static auto fallbackFont = std::make_unique<Font>(L"Arial", size, FontStyleRegular, UnitPixel);
+            return fallbackFont.get();
         }
 
         Gdiplus::Font* result = font.get();
-        static std::map<float, std::unique_ptr<Gdiplus::Font>> cache;
-        cache[size] = std::move(font);
+        fontCache[size] = std::move(font);
         return result;
     }
 
     void CleanupFont() {
+        LogInfo("GDIFonts: Cleaning up cache and font collection...");
+        fontCache.clear();
+        fontCollection.reset();
         customFontName.clear();
     }
 }

@@ -6,9 +6,38 @@
 #include "core/SwitchAction.hpp"
 #include "core/DialAction.hpp"
 #include "core/GaugeAction.hpp"
+#include "SimManager/SimManager.hpp"
+#include "ui/GDIFonts.hpp"
+#include "ui/GDIPlusManager.hpp"
 
 #include "StreamDockCPPSDK/StreamDockSDK/NlohmannJSONUtils.h"
 
+MSFSDockPlugin::MSFSDockPlugin() : HSDPlugin() {
+    LogMessage("MSFSDockPlugin: Initialize GDI+.");
+
+    InitGDIPlus();
+    GDIFonts::LoadCustomFont(L"\\fonts\\G7_Segment_7a.ttf");
+
+    LogMessage("MSFSDockPlugin: GDI+ ready.");
+
+    SimManager::Instance().Start();
+}
+
+MSFSDockPlugin::~MSFSDockPlugin() {
+    LogMessage("MSFSDockPlugin: Shutting down.");
+
+    SimManager::Instance().Stop();
+
+    LogMessage("MSFSDockPlugin: SimManager stopped.");
+
+    mActions.clear();
+
+    GDIFonts::CleanupFont();
+    ShutdownGDIPlus();
+    LogMessage("MSFSDockPlugin: GDI+ stopped");
+
+    LogMessage("MSFSDockPlugin: Shutting down complete.");
+}
 
 std::shared_ptr<HSDAction> MSFSDockPlugin::GetOrCreateAction(const std::string& action, const std::string& context)
 {
