@@ -7,7 +7,8 @@
 class MSFSDockPlugin : public HSDPlugin
 {
 public:
-    using HSDPlugin::HSDPlugin;
+    MSFSDockPlugin();
+    virtual ~MSFSDockPlugin() override;
 
     virtual std::shared_ptr<HSDAction> GetOrCreateAction(const std::string& action, const std::string& context) override;
 

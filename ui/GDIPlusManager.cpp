@@ -66,6 +66,10 @@ void InitGDIPlus() {
 }
 
 void ShutdownGDIPlus() {
+    if (g_horizonBmp) {
+        g_horizonBmp.reset();
+    }
+
     if (g_gdiplusToken != 0) {
         GdiplusShutdown(g_gdiplusToken);
         g_gdiplusToken = 0;
