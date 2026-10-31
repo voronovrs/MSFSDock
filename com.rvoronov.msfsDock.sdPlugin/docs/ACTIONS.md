@@ -42,6 +42,8 @@ Controller - button.
 (eg. for Fenix FNX320_FCU_EFIS1_LS_PUSH for push and FNX320_FCU_EFIS1_LS_RELEASE for release)
 - Display variable - Variable used in displaying additional data on a button if necessary
 - Display format - Format of displayed data, Integer or Fractional
+- Scale factor - Only available for fractional format, scale value returned from sim by some factor
+- Precision - Only available for fractional format, number of decimal signs
 - Status variable - Variable used in displaying active status (green light in the button bottom)
 
 ## PMDG Button
@@ -93,15 +95,21 @@ This action can display various data in different formats. Format types:
 - Altitude - show plane indicated altitude with PFD style.
 
 Controller - button.
+### Generic Data Parameters
+- Push event - event to be triggered by button press
 
 ![](/com.rvoronov.msfsDock.sdPlugin/docs/images/data_action_settings.png)
 ### Info type parameters:
 - Header 1 - header for first displayed data
 - Variable 1 - Sim variable to be used for first data display
 - Foramt - Data display format, integer or fractional
+- Scale factor - Only available for fractional format, scale value returned from sim by some factor
+- Precision - Only available for fractional format, number of decimal signs
 - Header 2 - header for second displayed data
 - Variable 1 - Sim variable to be used for second data display
 - Foramt - Data display format, integer or fractional
+- Scale factor - Only available for fractional format, scale value returned from sim by some factor
+- Precision - Only available for fractional format, number of decimal signs
 - Background color - color for background
 - Outline color - color for data outline
 - Header color - color for header text
@@ -131,7 +139,9 @@ Controller - Button.
 ### Generic Gauge parameters:
 - Header - header to be displayed on a gauge
 - Display variable - Variable used in displaying data
-- Format - Format of displayed data, integer or percent value.
+- Format - Format of displayed data, integer, percent or fractional value.
+- Scale factor - Only available for fractional format, scale value returned from sim by some factor
+- Precision - Only available for fractional format, number of decimal signs
 - Style - Select gauge style, Indicator - display current value with indicator on a scale, Fill - fill scale up to current value
 - Min value - Minimum value of a gauge
 - Max value - Maximum value of a gauge
@@ -150,7 +160,8 @@ Controller - Knob/Display.
 - Display variable - Variable to display on a dial
 - Inc event - event to be triggered by rotating knob clockwise
 - Dec event - event to be triggered by rotating knob counterclockwise
-- Knob event - event to be triggered by pushing a knob or screen.
+- Push event - event to be triggered by pushing a knob or screen.
+- 2x push event - event to be triggered by double-pushing a knob or screen.
 - Status variable - Variable used in displaying active status (bottom field of a dial)
 - Acceleration - maximum encoder acceleration, depending on variable, one or another value could be more suitable (default 3)
 
@@ -188,6 +199,7 @@ Controller - Knob/Display.
 - Skin - select radio skin, either Boeing-like or Airbus-like
 - Active Radio var - Variable used to display active radio frequency
 - Stdby Radio var - Variable used to display standby radio frequency
+- Scale factor - Scale values returned from sim by some factor
 - Inc event - event to increase standby frequency whole part
 - Dec event - event to dencrease standby frequency whole part
 - Inc frac event - event to increase standby frequency fractional part

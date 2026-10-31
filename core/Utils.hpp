@@ -30,12 +30,14 @@ inline float getFloatFromJson(const nlohmann::json& settings, const std::string&
     return defaultValue;
 }
 
-inline std::string doubleToStr(double v, bool integer) {
+inline std::string doubleToStr(double v, bool integer, float scaleFactor = 1.0, int precision = 0) {
     if (integer)
         return std::to_string(static_cast<int>(v));
 
+    double scaledValue = v * scaleFactor;
+
     std::ostringstream oss;
-    oss << std::fixed << std::setprecision(3) << v;
+    oss << std::fixed << std::setprecision(precision) << scaledValue;
     return oss.str();
 }
 

@@ -4,6 +4,8 @@ window.addEventListener("DOMContentLoaded", () => {
     bindTextField("maxVal", "maxVal");
 
     bindRadioGroup("dataFormat", "dataFormat");
+    bindTextField("scaleFactor", "scaleFactor");
+    bindTextField("precision", "precision");
     bindRadioGroup("style", "style");
     bindRadioGroup("skin", "skin");
 
@@ -87,9 +89,26 @@ window.addEventListener("DOMContentLoaded", () => {
         saveMarkers();
     });
 
+    // --- Scale variables visibility toggle ---
+    const scaleSettings = document.getElementById("scaleSettings");
+
+    function updateScaleVisibility() {
+        const selectedFormat = document.querySelector('input[name="dataFormat"]:checked');
+
+        if (selectedFormat) {
+            const isFractional = selectedFormat.value === "fractional";
+            scaleSettings.style.display = isFractional ? "" : "none";
+        }
+    }
+
+    document.querySelectorAll('input[name="dataFormat"]').forEach(radio => {
+        radio.addEventListener("change", updateScaleVisibility);
+    });
+
     // Restore markers from settings
     SDPICore.bindings.push({
         apply(settings) {
+            setTimeout(updateScaleVisibility, 0);
             markersContainer.innerHTML = "";
             if (settings.scaleMarkers && Array.isArray(settings.scaleMarkers)) {
                 settings.scaleMarkers.forEach(m => addMarkerRow(m.position, m.color));

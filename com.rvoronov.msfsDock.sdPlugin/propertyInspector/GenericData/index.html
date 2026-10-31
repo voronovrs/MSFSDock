@@ -29,6 +29,15 @@
         </select>
     </div>
 
+    <!-- Button push event -->
+    <div class="sdpi-item position-row" title="Sim event to be called when button pushed">
+        <div class="sdpi-item-label">Push event</div>
+        <div class="sdpi-autocomplete">
+            <input id="toggleEvent" class="sdpi-item-value" placeholder="PUSH EVENT" pattern="[A-Za-z0-9:_. ]*">
+        </div>
+        <sdpi-button id="applyEvent" variant="primary">✓</sdpi-button>
+    </div>
+
     <!-- Info variables -->
     <div id="infoVars" style="display:none;">
 
@@ -56,6 +65,31 @@
             </div>
         </div>
 
+        <!-- Scale factor -->
+        <div id="scaleSettings1" style="display:none;">
+            <div class="sdpi-item position-row" title="Scale factor for data 1 returned by sim.">
+                <div class="sdpi-item-label">Scale factor</div>
+                <select class="sdpi-item-value select" id="scaleFactor1">
+                    <option value="1">1x</option>
+                    <option value="10">10x</option>
+                    <option value="100">100x</option>
+                    <option value="1000">1000x</option>
+                    <option value="0.1">0.1x</option>
+                    <option value="0.01">0.01x</option>
+                    <option value="0.001">0.001x</option>
+                </select>
+            </div>
+            <div class="sdpi-item position-row" title="Fractional part precision.">
+                <div class="sdpi-item-label">Precision</div>
+                <select class="sdpi-item-value select" id="precision1">
+                    <option value="0">0</option>
+                    <option value="1">0.0</option>
+                    <option value="2">0.00</option>
+                    <option value="3">0.000</option>
+                </select>
+            </div>
+        </div>
+
         <div class="sdpi-item position-row">
             <div class="sdpi-item-label">Header 2</div>
             <input id="header2" class="sdpi-item-value" placeholder="Header value">
@@ -77,6 +111,31 @@
 
                 <input type="radio" id="fractional2" name="varFormat2" value="fractional">
                 <label for="fractional2" class="sdpi-item-value">Fractional</label>
+            </div>
+        </div>
+
+        <!-- Scale factor -->
+        <div id="scaleSettings2" style="display:none;">
+            <div class="sdpi-item position-row" title="Scale factor for data 2 returned by sim.">
+                <div class="sdpi-item-label">Scale factor</div>
+                <select class="sdpi-item-value select" id="scaleFactor2">
+                    <option value="1">1x</option>
+                    <option value="10">10x</option>
+                    <option value="100">100x</option>
+                    <option value="1000">1000x</option>
+                    <option value="0.1">0.1x</option>
+                    <option value="0.01">0.01x</option>
+                    <option value="0.001">0.001x</option>
+                </select>
+            </div>
+            <div class="sdpi-item position-row" title="Fractional part precision.">
+                <div class="sdpi-item-label">Precision</div>
+                <select class="sdpi-item-value select" id="precision2">
+                    <option value="0">0</option>
+                    <option value="1">0.0</option>
+                    <option value="2">0.00</option>
+                    <option value="3">0.000</option>
+                </select>
             </div>
         </div>
 

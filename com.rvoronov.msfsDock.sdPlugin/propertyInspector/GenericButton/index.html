@@ -100,6 +100,31 @@
         </div>
     </div>
 
+    <!-- Scale factor -->
+    <div id="scaleSettings" style="display:none;">
+        <div class="sdpi-item position-row" title="Scale factor for data returned by sim.">
+            <div class="sdpi-item-label">Scale factor</div>
+            <select class="sdpi-item-value select" id="scaleFactor">
+                <option value="1">1x</option>
+                <option value="10">10x</option>
+                <option value="100">100x</option>
+                <option value="1000">1000x</option>
+                <option value="0.1">0.1x</option>
+                <option value="0.01">0.01x</option>
+                <option value="0.001">0.001x</option>
+            </select>
+        </div>
+        <div class="sdpi-item position-row" title="Fractional part precision.">
+            <div class="sdpi-item-label">Precision</div>
+            <select class="sdpi-item-value select" id="precision">
+                <option value="0">0</option>
+                <option value="1">0.0</option>
+                <option value="2">0.00</option>
+                <option value="3">0.000</option>
+            </select>
+        </div>
+    </div>
+
     <!-- Status variable -->
     <div class="sdpi-item position-row" title="Sim variable to be used to show active status on a button (green light)">
         <div class="sdpi-item-label">Status variable</div>

@@ -14,8 +14,11 @@ void GaugeAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
     minVal_ = getIntFromJson(settings, "minVal", 0);
     maxVal_ = getIntFromJson(settings, "maxVal", 10000);
 
+    scaleFactor_ = getFloatFromJson(settings, "scaleFactor", 1.0);
+    precision_ = getIntFromJson(settings, "precision", 0);
+
     fill_ = (settings.value("style", "") == "fill") ? true : false;
-    dataFormat = (settings.value("dataFormat", "") == "percent") ? DATA_FMT_PERCENT : DATA_FMT_INT;
+    dataFormat = (settings.value("dataFormat", "") == "percent") ? DATA_FMT_PERCENT : (settings.value("dataFormat", "") == "fractional") ? DATA_FMT_FRACTIONAL : DATA_FMT_INT;
     skinType_ = (settings.value("skin", "") == "vertical") ? GAUGE_SKIN_VERTICAL : GAUGE_SKIN_CIRCULAR;
     scaleColor_ = settings.value("scaleColor", "#ffff00");
     indicatorColor_ = settings.value("indicatorColor", "#8b0000");
@@ -125,7 +128,11 @@ void GaugeAction::UpdateImage() {
         // Circular gauge (original behavior)
         switch (dataFormat) {
             case DATA_FMT_INT:
-                data = std::to_string(static_cast<int>(displayVarDef_.value));
+                data = doubleToStr(displayVarDef_.value, true);
+                value = displayVarDef_.value;
+                break;
+            case DATA_FMT_FRACTIONAL:
+                data = doubleToStr(displayVarDef_.value, false, scaleFactor_, precision_);
                 value = displayVarDef_.value;
                 break;
             case DATA_FMT_PERCENT: {

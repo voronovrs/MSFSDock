@@ -29,6 +29,7 @@ void DataAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
     std::string altVar = (dataType_ == DATA_TYPE_ALTITUDE) ? "INDICATED ALTITUDE" : "";
     std::string infoVar = (dataType_ == DATA_TYPE_INFO) ? settings.value("infoVar", "") : "";
     std::string infoVar2 = (dataType_ == DATA_TYPE_INFO) ? settings.value("infoVar2", "") : "";
+    std::string newEvent = settings.value("toggleEvent", "");
 
     if (dataType_ == DATA_TYPE_INFO) {
         header_ = settings.value("header", "");
@@ -41,6 +42,10 @@ void DataAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
 
         varIsInteger_ = settings.value("varFormat", "integer") == "integer";
         var2IsInteger_ = settings.value("varFormat2", "integer") == "integer";
+        scaleFactor1_ = getFloatFromJson(settings, "scaleFactor1", 1.0);
+        precision1_ = getIntFromJson(settings, "precision1", 0);
+        scaleFactor2_ = getFloatFromJson(settings, "scaleFactor2", 1.0);
+        precision2_ = getIntFromJson(settings, "precision2", 0);
     }
 
     varBindings_ = {
@@ -51,7 +56,11 @@ void DataAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
         {&altVarDef_, altVar, LIVE_VARIABLE, &altSubId_},
         {&infoVarDef_, infoVar, LIVE_VARIABLE, &infoSubId_},
         {&infoVar2Def_, infoVar2, LIVE_VARIABLE, &info2SubId_},
-        };
+    };
+
+    eventBindings_ = {
+        { &toggleEventDef_, newEvent, (isPmdg) ? EVENT_PMDG : EVENT_GENERIC, (isPmdg) ? EVT::PMDG_CLICK : EVT::GENERIC },
+    };
 
     ApplyBindings();
 }
@@ -112,6 +121,11 @@ void DataAction::KeyDown(const nlohmann::json& payload) {
     LogInfo("DataAction KeyDown");
     if (!SimManager::Instance().IsConnected()) {
         SimManager::Instance().EnsureConnected();
+        return;
+    }
+
+    if (!toggleEventDef_.name.empty()) {
+        SimManager::Instance().SendEvent(toggleEventDef_.uniqueName);
     }
 }
 
@@ -156,8 +170,8 @@ void DataAction::UpdateImage() {
     else if (dataType_ == DATA_TYPE_ALTITUDE)
         base64Image = DrawRibons(altVarDef_.value, false, (isButton_) ? SCREEN_TYPE_BUTTON : SCREEN_TYPE_DISPLAY, SimManager::Instance().IsConnected());
     else if (dataType_ == DATA_TYPE_INFO) {
-        std::string infoVal = (infoVarDef_.name.empty()) ? "" : doubleToStr(infoVarDef_.value, varIsInteger_);
-        std::string info2Val = (infoVar2Def_.name.empty()) ? "" : doubleToStr(infoVar2Def_.value, var2IsInteger_);
+        std::string infoVal = (infoVarDef_.name.empty()) ? "" : doubleToStr(infoVarDef_.value, varIsInteger_, scaleFactor1_, precision1_);
+        std::string info2Val = (infoVar2Def_.name.empty()) ? "" : doubleToStr(infoVar2Def_.value, var2IsInteger_, scaleFactor2_, precision2_);
         base64Image = DrawInfo(bgColor_, outlineColor_, headerColor_, dataColor_, header_, infoVal, header2_, info2Val, (isButton_) ? SCREEN_TYPE_BUTTON : SCREEN_TYPE_DISPLAY, SimManager::Instance().IsConnected());
     } else {
         LogWarn("Not implemented");

@@ -16,6 +16,7 @@ void DialAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
 
     header_ = settings.value("header", "");
     skin_ = settings.value("skin", "skin1");
+    scaleFactor_ = getFloatFromJson(settings, "scaleFactor", 1.0);
     accelMultiplier_ = getIntFromJson(settings, "accelMultiplier", 3);
 
     std::string newDisplay = settings.value("displayVar", "");
@@ -27,7 +28,8 @@ void DialAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
     std::string newDec2Event = settings.value("dec2Event", "");
 
     std::string newFeedback = settings.value("feedbackVar", "");
-    std::string newEvent = settings.value("toggleEvent", "");
+    std::string singleEvent = settings.value("singleEvent", "");
+    std::string doubleEvent = settings.value("doubleEvent", "");
 
     varBindings_ = {
         {&displayVarDef_, newDisplay, (isPmdg) ? PMDG_VARIABLE : LIVE_VARIABLE, &displaySubId_},
@@ -36,7 +38,8 @@ void DialAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
     };
 
     eventBindings_ = {
-        { &toggleEventDef_, newEvent, (isPmdg) ? EVENT_PMDG : EVENT_GENERIC, (isPmdg) ? EVT::PMDG_CLICK : EVT::GENERIC },
+        { &singleEventDef_, singleEvent, (isPmdg) ? EVENT_PMDG : EVENT_GENERIC, (isPmdg) ? EVT::PMDG_CLICK : EVT::GENERIC },
+        { &doubleEventDef_, doubleEvent, (isPmdg) ? EVENT_PMDG : EVENT_GENERIC, (isPmdg) ? EVT::PMDG_CLICK : EVT::GENERIC },
         { &incEventDef_, newIncEvent, (isPmdg) ? EVENT_PMDG : EVENT_GENERIC, (isPmdg) ? EVT::PMDG_SCROLL_UP : EVT::GENERIC },
         { &decEventDef_, newDecEvent, (isPmdg) ? EVENT_PMDG : EVENT_GENERIC, (isPmdg) ? EVT::PMDG_SCROLL_DOWN : EVT::GENERIC },
         { &inc2EventDef_, newInc2Event, (isPmdg) ? EVENT_PMDG : EVENT_GENERIC, (isPmdg) ? EVT::PMDG_SCROLL_UP : EVT::GENERIC },
@@ -74,46 +77,50 @@ void DialAction::DialDown(const nlohmann::json& payload) {
 
     auto now = std::chrono::steady_clock::now();
 
-    // Radio dial handling
-    if (isRadio) {
-        bool isDoubleClick = false;
-        long long dt = 0;
-
-        if (clickPending_) {
-            dt = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastClickTs_).count();
-            if (dt <= DOUBLE_CLICK_MS) {
-                isDoubleClick = true;
-                LogInfo("DialAction Double click, time = " + std::to_string(dt) + " ms");
-            }
-        }
-
-        if (isDoubleClick) {
-            clickPending_ = false;
-
-            if (!toggleEventDef_.name.empty()) {
-                SimManager::Instance().SendEvent(toggleEventDef_.uniqueName);
-            }
-            UpdateImage();
-        } else {
-            active_radio_part ^= 1;
-            clickPending_ = true;
-            lastClickTs_ = now;
-            UpdateImage();
-        }
-        return;
-    }
-
-    // Dual dial handling
-    if (isDual) {
+    // Dual dial, only changing active dial
+    if (isDual && !isRadio) {
         active_dial ^= 1;
         UpdateImage();
         return;
     }
 
-    // Regular event handling
-    if (!toggleEventDef_.name.empty()) {
-        SimManager::Instance().SendEvent(toggleEventDef_.uniqueName);
+    // Check if double click pending
+    if (clickPending_) {
+        long long dt = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastClickTs_).count();
+        if (dt <= DOUBLE_CLICK_MS) {
+            clickPending_ = false;
+
+            LogInfo("DialAction Double click, time = " + std::to_string(dt) + " ms");
+            if (!doubleEventDef_.name.empty()) {
+                SimManager::Instance().SendEvent(doubleEventDef_.uniqueName);
+            }
+            UpdateImage();
+            return;
+        }
     }
+
+    // First or single click
+    clickPending_ = true;
+    lastClickTs_ = now;
+
+    // Async wait for second click
+    std::thread([this]() {
+        std::this_thread::sleep_for(std::chrono::milliseconds(DOUBLE_CLICK_MS + 10));
+
+        // No double click
+        if (this->clickPending_) {
+            this->clickPending_ = false;
+            if (this->isRadio) {
+                this->active_radio_part ^= 1;
+                this->UpdateImage();
+            }
+            else {
+                if (!this->singleEventDef_.name.empty()) {
+                    SimManager::Instance().SendEvent(this->singleEventDef_.uniqueName);
+                }
+            }
+        }
+    }).detach();
 }
 
 void DialAction::DialUp(const nlohmann::json& payload) {
@@ -244,11 +251,11 @@ void DialAction::UpdateImage() {
                                     data2Offset, dataFontSize, SimManager::Instance().IsConnected());
     } else {
         double v = displayVarDef_.name.empty() ? 0.0 : displayVarDef_.value;
-        int total = static_cast<int>(std::round(v * 1000.0));
+        int total = static_cast<int>(std::round(v * 1000.0 * scaleFactor_));
         int int_val  = total / 1000;
         int frac_val = total % 1000;
         double stdb_v = display2VarDef_.name.empty() ? 0.0 : display2VarDef_.value;
-        total = static_cast<int>(std::round(stdb_v * 1000.0));
+        total = static_cast<int>(std::round(stdb_v * 1000.0 * scaleFactor_));
         int stdb_int_val  = total / 1000;
         int stdb_frac_val = total % 1000;
         data1_color = (active_radio_part == 0) ? active_data_color : inactive_data_color;

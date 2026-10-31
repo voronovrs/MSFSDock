@@ -78,6 +78,24 @@ window.bindTextField = function (inputId, settingKey) {
     );
 };
 
+/* -------- checkbox --------- */
+
+window.bindCheckbox = function (id, settingKey) {
+    const checkbox = document.getElementById(id);
+    if (!checkbox) return;
+
+    checkbox.addEventListener("change", () => {
+        commitSettings({ [settingKey]: checkbox.checked });
+    });
+
+    bindRestore(
+        s => s[settingKey],
+        v => {
+            checkbox.checked = Boolean(v);
+        }
+    );
+};
+
 /* -------- radio group --------- */
 
 window.bindRadioGroup = function (name, settingKey) {

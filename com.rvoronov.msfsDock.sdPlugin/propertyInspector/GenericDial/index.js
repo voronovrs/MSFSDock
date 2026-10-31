@@ -26,9 +26,16 @@ window.addEventListener("DOMContentLoaded", () => {
     });
 
     bindSimVarField({
-        inputId: "toggleEvent",
-        buttonId: "applyToggleEvent",
-        settingKey: "toggleEvent",
+        inputId: "singleEvent",
+        buttonId: "applySingleEvent",
+        settingKey: "singleEvent",
+        autocompleteSource: "events"
+    });
+
+    bindSimVarField({
+        inputId: "doubleEvent",
+        buttonId: "applyDoubleEvent",
+        settingKey: "doubleEvent",
         autocompleteSource: "events"
     });
 

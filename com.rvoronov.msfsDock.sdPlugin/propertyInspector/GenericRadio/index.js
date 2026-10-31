@@ -1,6 +1,7 @@
 window.addEventListener("DOMContentLoaded", () => {
     bindTextField("header", "header");
     bindRadioGroup("skin", "skin");
+    bindTextField("scaleFactor", "scaleFactor");
     bindRadioGroup("accelMultiplier", "accelMultiplier");
 
     bindSimVarField({
@@ -46,9 +47,9 @@ window.addEventListener("DOMContentLoaded", () => {
     });
 
     bindSimVarField({
-        inputId: "toggleEvent",
-        buttonId: "applyToggleEvent",
-        settingKey: "toggleEvent",
+        inputId: "doubleEvent",
+        buttonId: "applyDoubleEvent",
+        settingKey: "doubleEvent",
         autocompleteSource: "events"
     });
 

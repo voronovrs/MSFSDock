@@ -52,6 +52,17 @@
         <sdpi-button id="applyDisplay2Var" variant="primary">✓</sdpi-button>
     </div>
 
+    <!-- Scale factor -->
+    <div class="sdpi-item position-row" title="Scale factor for data returned by sim.">
+        <div class="sdpi-item-label">Scale factor</div>
+        <select class="sdpi-item-value select" id="scaleFactor">
+            <option value="1">1x</option>
+            <option value="0.1">0.1x</option>
+            <option value="0.01">0.01x</option>
+            <option value="0.001">0.001x</option>
+        </select>
+    </div>
+
     <!-- Inc event -->
     <div class="sdpi-item position-row" title="Sim event to increment integer part">
         <div class="sdpi-item-label">Inc event</div>
@@ -92,9 +103,9 @@
     <div class="sdpi-item position-row" title="Sim event to swap active and standby radio (on doubleclick)">
         <div class="sdpi-item-label">Swap event</div>
         <div class="sdpi-autocomplete">
-            <input id="toggleEvent" class="sdpi-item-value" placeholder="SWAP FREQ EVENT" pattern="[A-Za-z0-9:_. ]*">
+            <input id="doubleEvent" class="sdpi-item-value" placeholder="SWAP FREQ EVENT" pattern="[A-Za-z0-9:_. ]*">
         </div>
-        <sdpi-button id="applyToggleEvent" variant="primary">✓</sdpi-button>
+        <sdpi-button id="applyDoubleEvent" variant="primary">✓</sdpi-button>
     </div>
 
     <!-- Encoder acceleration multiplier -->

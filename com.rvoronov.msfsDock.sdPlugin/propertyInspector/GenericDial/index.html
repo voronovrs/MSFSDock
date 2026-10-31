@@ -75,13 +75,22 @@
         <sdpi-button id="applyDecEvent" variant="primary">✓</sdpi-button>
     </div>
 
-    <!-- Knob event -->
-    <div class="sdpi-item position-row" title="Sim event to be called when knob pushed">
-        <div class="sdpi-item-label">Knob event</div>
+    <!-- Single press knob event -->
+    <div class="sdpi-item position-row" title="Sim event to be called when knob pushed once">
+        <div class="sdpi-item-label">Push event</div>
         <div class="sdpi-autocomplete">
-            <input id="toggleEvent" class="sdpi-item-value" placeholder="KNOB EVENT" pattern="[A-Za-z0-9:_. ]*">
+            <input id="singleEvent" class="sdpi-item-value" placeholder="KNOB EVENT" pattern="[A-Za-z0-9:_. ]*">
         </div>
-        <sdpi-button id="applyToggleEvent" variant="primary">✓</sdpi-button>
+        <sdpi-button id="applySingleEvent" variant="primary">✓</sdpi-button>
+    </div>
+
+    <!-- Double press knob event -->
+    <div class="sdpi-item position-row" title="Sim event to be called when knob pushed twice">
+        <div class="sdpi-item-label">2x push event</div>
+        <div class="sdpi-autocomplete">
+            <input id="doubleEvent" class="sdpi-item-value" placeholder="2x KNOB EVENT" pattern="[A-Za-z0-9:_. ]*">
+        </div>
+        <sdpi-button id="applyDoubleEvent" variant="primary">✓</sdpi-button>
     </div>
 
     <!-- Status variable -->
