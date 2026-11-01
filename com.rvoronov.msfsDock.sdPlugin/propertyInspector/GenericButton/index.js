@@ -1,5 +1,7 @@
 window.addEventListener("DOMContentLoaded", () => {
     bindTextField("header", "header");
+    bindTextField("scaleFactor", "scaleFactor");
+    bindTextField("precision", "precision");
     bindRadioGroup("skin", "skin");
     bindRadioGroup("pmdgType", "pmdgType");
     bindRadioGroup("buttonType", "buttonType");
@@ -46,8 +48,26 @@ window.addEventListener("DOMContentLoaded", () => {
         r.addEventListener("change", updateReleaseSettingsVisibility);
     });
 
+    // --- Scale variables visibility toggle ---
+    const scaleSettings = document.getElementById("scaleSettings");
+
+    function updateScaleVisibility() {
+        const selectedFormat = document.querySelector('input[name="varFormat"]:checked');
+
+        if (selectedFormat) {
+            const isFractional = selectedFormat.value === "fractional";
+            scaleSettings.style.display = isFractional ? "" : "none";
+        }
+    }
+
+    document.querySelectorAll('input[name="varFormat"]').forEach(radio => {
+        radio.addEventListener("change", updateScaleVisibility);
+    });
+
     // Update visibility when settings are restored
     SDPICore.bindings.push({
-        apply() { setTimeout(updateReleaseSettingsVisibility, 0); }
+        apply() { setTimeout(updateReleaseSettingsVisibility, 0);
+            setTimeout(updateScaleVisibility, 0);
+        }
     });
 });

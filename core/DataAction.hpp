@@ -43,6 +43,10 @@ private:
     std::string header_;
     std::string header2_;
     DataType dataType_ = DATA_TYPE_INFO;
+    float scaleFactor1_ = 1.0;
+    int precision1_ = 0;
+    float scaleFactor2_ = 1.0;
+    int precision2_ = 0;
 
     std::string bgColor_ = "#141414";
     std::string outlineColor_ = "#a05f00";
@@ -70,6 +74,7 @@ private:
     SimVarDefinition altVarDef_;
     SimVarDefinition infoVarDef_;
     SimVarDefinition infoVar2Def_;
+    SimEventDefinition toggleEventDef_;
 
     SubscriptionId pitchSubId_ = 0;
     SubscriptionId bankSubId_ = 0;

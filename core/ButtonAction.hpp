@@ -39,6 +39,9 @@ private:
     bool varIsInteger_ = true;
     bool buttonTypeMomentary_ = false;
 
+    float scaleFactor_ = 1.0;
+    int precision_ = 0;
+
     // Conditional events support
     bool isConditional = false;
     std::string conditionOperator_;

@@ -14,6 +14,9 @@ void ButtonAction::UpdateVariablesAndEvents(const nlohmann::json& payload) {
     varIsInteger_ = settings.value("varFormat", "integer") == "integer";
     buttonTypeMomentary_ = settings.value("buttonType", "toggle") == "momentary";
 
+    scaleFactor_ = getFloatFromJson(settings, "scaleFactor", 1.0);
+    precision_ = getIntFromJson(settings, "precision", 0);
+
     conditionOperator_ = settings.value("conditionOperator", "==");
     conditionValue_ = getFloatFromJson(settings, "conditionValue", 0.0f);
 
@@ -181,7 +184,7 @@ void ButtonAction::UpdateImage() {
     }
 
     std::wstring img_path = (isActive) ? backgroundImageActive : backgroundImageInactive;
-    std::string val = (displayVarDef_.name.empty()) ? "" : doubleToStr(displayVarDef_.value, varIsInteger_);
+    std::string val = (displayVarDef_.name.empty()) ? "" : doubleToStr(displayVarDef_.value, varIsInteger_, scaleFactor_, precision_);
     std::string base64Image = DrawButtonImage(img_path, header_, header_color, val, data_color,
         headerOffset, headerFontSize, dataOffset, dataFontSize, SimManager::Instance().IsConnected());
     SetImage(base64Image, kESDSDKTarget_HardwareAndSoftware, -1);

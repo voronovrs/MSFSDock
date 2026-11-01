@@ -10,6 +10,7 @@
 enum DataFormat {
     DATA_FMT_INT = 0,
     DATA_FMT_PERCENT,
+    DATA_FMT_FRACTIONAL,
 };
 
 enum GaugeSkin {
@@ -47,6 +48,9 @@ private:
     int maxVal_;
     int minVal_;
     bool fill_ = false;
+
+    float scaleFactor_ = 1.0;
+    int precision_ = 0;
 
     std::string scaleColor_ = "#ffff00";
     std::string indicatorColor_ = "#8b0000";

@@ -47,6 +47,7 @@ private:
     // parsed settings
     std::string header_;
     std::string skin_;
+    float scaleFactor_ = 1.0;
     int accelMultiplier_;
 
     bool isActive = false;
@@ -67,7 +68,8 @@ private:
     SimEventDefinition decEventDef_;
     SimEventDefinition inc2EventDef_;
     SimEventDefinition dec2EventDef_;
-    SimEventDefinition toggleEventDef_;
+    SimEventDefinition singleEventDef_;
+    SimEventDefinition doubleEventDef_;
 
     SubscriptionId displaySubId_ = 0;
     SubscriptionId display2SubId_ = 0;
